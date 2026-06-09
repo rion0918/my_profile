@@ -71,7 +71,7 @@ const career = [
     title: (
       <>
         <small>神戸電子専門学校非公認</small>
-        We部 communityß
+        We部 community
       </>
     ),
     description: "実務インターン合格をサポートするコミュニティを立ち上げ。",
