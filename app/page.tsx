@@ -63,7 +63,7 @@ const career = [
   {
     period: "2027卒",
     title: "合同会社DMM.com",
-    description: "27卒として内定。",
+    description: "27卒 Webフロントエンドエンジニアとして内定。",
     tags: ["Offer"],
   },
   {
@@ -71,7 +71,7 @@ const career = [
     title: (
       <>
         <small>神戸電子専門学校非公認</small>
-        We部
+        We部 communityß
       </>
     ),
     description: "実務インターン合格をサポートするコミュニティを立ち上げ。",
@@ -80,8 +80,8 @@ const career = [
   {
     period: "2025.03 - 現在",
     title: "Sky株式会社",
-    description: "Webアプリケーション開発に参加。",
-    tags: ["長期インターン", "Next.js", "React", "NestJS"],
+    description: "社内システム部 労務管理チームに配属。",
+    tags: ["長期インターン", "Next.js", "BFF", "NestJS"],
   },
   {
     period: "在学中",
@@ -91,8 +91,8 @@ const career = [
         <small>ITエキスパート学科</small>
       </>
     ),
-    description: "Web開発を中心に学習。",
-    tags: ["Student", "Engineering"],
+    description: "機械学習やスクラム開発の手法について学習。",
+    tags: ["Student", "Engineering", "Machine Learning", "Scrum"],
   },
 ];
 
