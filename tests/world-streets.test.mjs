@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { benches, exhibits, streetlights, lightSupports, roads, roadCurves, buildings, plaza, entrancePlaza, isOnRoad } from "../lib/world-layout.ts";
+import { benches, streetlights, lightSupports, roads, roadCurves, buildings, plaza, entrancePlaza, isOnRoad } from "../lib/world-layout.ts";
 import { distanceToShore, isWalkable, getGroundHeight } from "../lib/world-navigation.ts";
 import { buildStreetNetwork, containsStreetPoint } from "../lib/street-network.ts";
 
@@ -11,7 +11,7 @@ test("benches sit beside the pavement and leave the streets and plaza open", () 
 });
 
 test("furniture footprints clear the pavement and face the closest street", () => {
-  for (const item of [...benches, ...exhibits, ...streetlights]) {
+  for (const item of [...benches, ...streetlights]) {
     const c = Math.cos(item.rotation), s = Math.sin(item.rotation);
     for (const x of [-1, 0, 1]) for (const z of [-1, 0, 1])
       assert.equal(isOnRoad({ x: item.x + c * x * item.width / 2 + s * z * item.depth / 2,

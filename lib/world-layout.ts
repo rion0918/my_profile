@@ -1,10 +1,11 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { centralPlaza, southEntrance } from "./world-zones.ts";
-import { hallMarker } from "./world-tour.ts";
-import { halls } from "./world-halls.ts";
+import { centralPlaza, southEntrance, areaGateSupports } from "./world-zones.ts";
+import { halls, hallIconDisplay } from "./world-halls.ts";
 import { coastPoint, distanceToShore } from "./world-navigation.ts";
 import { harborDecks, harborObstacles } from "./world-harbor.ts";
 import { isOnsenClearing, onsenObstacles } from "./world-onsen.ts";
+import { gamingPC, isGamingPCClearing } from "./world-gaming-pc.ts";
+import { pastaKitchen, isPastaClearing } from "./world-pasta.ts";
 
 import { bikeStation } from "./world-bike.ts";
 
@@ -207,11 +208,6 @@ const treeSites = [
     -22 + Math.floor(i / 2) * 9,
   ]),
 ];
-const exhibitSites = halls.map(h => ({
-  id: h.id, title: `${hallMarker(h.id)}${h.id === "github" || h.id === "zenn" ? " 寄り道" : ""} ${h.name}`, tagline: h.tagline,
-  x: h.x + (h.x < 0 ? -4.5 : 4.5) * (h.id === "github" || h.id === "zenn" ? -1 : 1), z: h.z + 3,
-}));
-
 export const ponds = [
   { x: 28, z: -7, width: 6, depth: 12 },
   { x: -27, z: -8, width: 8, depth: 6 },
@@ -232,7 +228,12 @@ export const lightSupports = [
   { x: 3, z: 5, height: 3.8 },
 ];
 const gardenFootprints = entranceGardens.map(p => ({ ...p, rotation: 0, width: p.radius * 2, depth: p.radius * 2 }));
-const placedProps: StreetProp[] = [...gardenFootprints, ...entranceLamps];
+export const hallIconSites = buildings.filter(b => b.icon).map(b => ({
+  id: b.id, x: b.x - 6, z: b.z + .2,
+  rotation: hallIconDisplay.rotation, scale: hallIconDisplay.scale,
+  width: hallIconDisplay.width * hallIconDisplay.scale, depth: hallIconDisplay.depth * hallIconDisplay.scale,
+}));
+const placedProps: StreetProp[] = [...gardenFootprints, ...entranceLamps, ...areaGateSupports.map(p => ({ ...p, rotation: 0 })), { ...gamingPC, rotation: 0 }, gamingPC.specBoard, { ...pastaKitchen, rotation: 0 }, ...hallIconSites];
 function footprint(prop: StreetProp, margin = 0) {
   const c = Math.cos(prop.rotation), s = Math.sin(prop.rotation);
   return [-1, 0, 1].flatMap((x) => [-1, 0, 1].map((z) => ({
@@ -243,6 +244,8 @@ function footprint(prop: StreetProp, margin = 0) {
 function clearProp(prop: StreetProp) {
   return footprint(prop, 0.15).every((p) =>
     !isOnsenClearing(p, 0.2) &&
+    !isGamingPCClearing(p, .2) &&
+    !isPastaClearing(p, .2) &&
     !isOnRoad(p, 0.05) && distanceToShore(p) < -3.2 &&
     !((Math.abs(p.x - bikeStation.x) < bikeStation.width / 2 + 0.2) && (Math.abs(p.z - bikeStation.z) < bikeStation.depth / 2 + 0.2)) &&
     !harborDecks.some((d) => Math.abs(p.x - d.x) < d.width / 2 + 1 &&
@@ -296,16 +299,11 @@ export const projectExhibits = buildings.filter(b => b.id === 'yoin' || b.id ===
   if (clearProp(prop)) { placedProps.push(prop); return { id: b.id, scale: exhibitScale, ...prop }; }
   return { id: b.id, scale: exhibitScale, ...roadsideSite(preferred, prop.width, prop.depth, true) };
 });
-export const zoneSigns = [{
-  title: '中央広場 · この先は趣味の街', tagline: '南：経歴・作品　／　北：温泉・港・自然散策',
-  ...roadsideSite({ x: 5, z: -3 }, 2.1, 1.1, true),
-}];
 export const benches = [
   { x: -2.5, z: 4.5 }, { x: 3, z: 7 }, { x: 12, z: -15 },
   { x: -15, z: 20 }, { x: 23, z: 22 }, { x: -10, z: -20 },
   { x: 32, z: 6 }, { x: -32, z: -15 },
 ].map((p) => roadsideSite(p, 0.65, 1.6));
-export const exhibits = exhibitSites.map((e) => ({ ...e, ...roadsideSite(e, 2.1, 1.1, true) }));
 export const streetlights: StreetProp[] = [...entranceLamps];
 for (const index of [0, 1, 2, 3, 4, roads.length - 1]) {
   const curve = roadCurves[index], count = Math.floor(curve.getLength() / 13);
@@ -335,6 +333,15 @@ for (const [x, z] of treeSites) {
       Math.abs(p.x) <= 37 && Math.abs(p.z) <= 30 && distanceToShore(p) < -4.5 &&
       !isOnRoad(p, 2.4) &&
       !isOnsenClearing(p, 2.4) &&
+      !isGamingPCClearing(p, 2.4) &&
+      !isPastaClearing(p, 2.4) &&
+      !hallIconSites.some(site => {
+        const dx = p.x - site.x, dz = p.z - site.z;
+        const along = dx * Math.sin(site.rotation) + dz * Math.cos(site.rotation);
+        const across = dx * Math.cos(site.rotation) - dz * Math.sin(site.rotation);
+        return Math.hypot(dx, dz) < 4.1 || (along > 0 && along < 9 && Math.abs(across) < 3.5);
+      }) &&
+      !areaGateSupports.some(s => Math.hypot(p.x - s.x, p.z - s.z) < 3) &&
       Math.hypot(p.x - bikeStation.x, p.z - bikeStation.z) > 4 &&
       !harborDecks.some((d) => Math.abs(p.x - d.x) < d.width / 2 + 2.4 &&
         Math.abs(p.z - d.z) < d.depth / 2 + 2.4) &&
@@ -356,7 +363,7 @@ for (const [x, z] of treeSites) {
         const across = (dx * 20 - dz * 12) / Math.hypot(12, 20);
         return inside || (along > 0 && along < 10 && Math.abs(across) < 2.8);
       }) &&
-      ![...benches, ...exhibits, ...zoneSigns, ...projectExhibits, ...streetlights, ...lightSupports].some((item) =>
+      ![...benches, ...projectExhibits, ...streetlights, ...lightSupports].some((item) =>
         Math.hypot(p.x - item.x, p.z - item.z) < 2.6,
       ) &&
       !trees.some((tree) => Math.hypot(p.x - tree.x, p.z - tree.z) < 3.8),
@@ -365,6 +372,14 @@ for (const [x, z] of treeSites) {
 }
 
 export const obstacles = [
+  { x: pastaKitchen.x, z: pastaKitchen.z, width: pastaKitchen.width, depth: pastaKitchen.depth },
+  { x: gamingPC.x, z: gamingPC.z, width: gamingPC.width, depth: gamingPC.depth },
+  {
+    x: gamingPC.specBoard.x, z: gamingPC.specBoard.z,
+    width: Math.cos(gamingPC.specBoard.rotation) * gamingPC.specBoard.width + Math.sin(gamingPC.specBoard.rotation) * gamingPC.specBoard.depth,
+    depth: Math.sin(gamingPC.specBoard.rotation) * gamingPC.specBoard.width + Math.cos(gamingPC.specBoard.rotation) * gamingPC.specBoard.depth,
+  },
+  ...areaGateSupports,
   ...onsenObstacles,
   ...harborObstacles,
   { x: bikeStation.x - 0.75, z: bikeStation.z, width: 0.9, depth: 2.1 },
@@ -386,7 +401,7 @@ export const obstacles = [
     width: i % 3 === 0 ? 2.7 : 0.65,
     depth: i % 3 === 0 ? 2.7 : 0.65,
   })),
-  ...[...benches, ...exhibits, ...zoneSigns, ...projectExhibits, ...gardenFootprints].map((p) => ({
+  ...[...benches, ...projectExhibits, ...gardenFootprints, ...hallIconSites].map((p) => ({
     x: p.x, z: p.z,
     width: Math.abs(Math.cos(p.rotation)) * p.width + Math.abs(Math.sin(p.rotation)) * p.depth,
     depth: Math.abs(Math.sin(p.rotation)) * p.width + Math.abs(Math.cos(p.rotation)) * p.depth,

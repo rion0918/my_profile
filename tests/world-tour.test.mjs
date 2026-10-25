@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildings, obstacles, roadCurves, roads, projectExhibits, exhibits } from '../lib/world-layout.ts';
+import { buildings, obstacles, roadCurves, roads, projectExhibits } from '../lib/world-layout.ts';
 import { findPath, isWalkable, restorePosition } from '../lib/world-navigation.ts';
 import { harbor } from '../lib/world-harbor.ts';
 import { onsen } from '../lib/world-onsen.ts';
@@ -48,19 +48,21 @@ test('previous-layout saves reset to the south entrance, new saves can resume', 
   assert.deepEqual(restorePosition('{"version":5,"x":0,"z":0}',obstacles),{x:0,z:0});
 });
 
+test('removed roadside boards leave their former footings walkable',()=>{
+  for(const [x,z] of [
+    [12.938642456536023,28.284621926586535],[-12.6446655173924,15.695],
+    [12.6446655173924,15.695],[-12.566249731000617,33.337225065723814],
+    [-16.711652184837945,15.819197956564306],[16.711652184837945,15.819197956564306],
+    [4.9779473893201915,-2.55],
+  ])assert.ok(isWalkable({x,z},obstacles),`removed board at ${x},${z} must not block walking`);
+});
+
 test('the bike station clears the relocated profile building', async()=>{
   const {bikeStation}=await import('../lib/world-bike.ts');
   for(const b of buildings)assert.ok(Math.abs(b.x-bikeStation.x)>(b.width+bikeStation.width)/2 || Math.abs(b.z-bikeStation.z)>(b.depth+bikeStation.depth)/2);
 });
 
-test('profile, career and project signposts stay with their relocated displays',()=>{
-  for(const sign of exhibits){
-    const b=buildings.find(b=>b.id===sign.id);
-    if(b)assert.ok(Math.hypot(sign.x-b.x,sign.z-b.z)<12, sign.title);
-  }
-});
-
-test('all recruiting buildings, screens and signposts stay south of the plaza',()=>{
+test('all recruiting buildings and screens stay south of the plaza',()=>{
   for(const b of buildings)assert.ok(b.z-b.depth/2>0,b.id);
-  for(const p of [...exhibits,...projectExhibits])assert.ok(p.z-Math.hypot(p.width,p.depth)/2>0,p.id);
+  for(const p of projectExhibits)assert.ok(p.z-Math.hypot(p.width,p.depth)/2>0,p.id);
 });

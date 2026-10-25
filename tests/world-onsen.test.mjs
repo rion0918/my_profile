@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { onsen, onsenObstacles, isOnsenClearing, isInsideBathhouse } from '../lib/world-onsen.ts';
-import { obstacles, trees, streetlights, benches, exhibits, roadCurves, roads } from '../lib/world-layout.ts';
+import { obstacles, trees, streetlights, benches, roadCurves, roads } from '../lib/world-layout.ts';
 import { findPath, isWalkable, moveCharacter, getGroundHeight } from '../lib/world-navigation.ts';
 import { createWorldMapData } from '../lib/world-map-data.ts';
 import { mapPoint } from '../lib/world-map.ts';
@@ -35,7 +35,7 @@ test('the onsen sits behind town and both baths are reachable without crossing w
 });
 
 test('the new site keeps streets and existing furniture clear and appears in the guide map', () => {
-  for (const item of [...trees, ...streetlights, ...benches, ...exhibits]) {
+  for (const item of [...trees, ...streetlights, ...benches]) {
     assert.equal(isOnsenClearing(item, trees.includes(item) ? 2.3 : 0.3), false, JSON.stringify(item));
   }
   for (let x = onsen.x - onsen.width / 2; x <= onsen.x + onsen.width / 2; x += 0.5)

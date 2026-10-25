@@ -2,6 +2,7 @@ import { products } from './products.ts';
 import { socials } from './portfolio.ts';
 
 export type HallId = 'experience' | 'yoin' | 'pop-reminder' | 'history' | 'github' | 'zenn';
+export const hallIconDisplay = { width: 2.18, depth: .9, scale: 1.2, rotation: Math.atan2(12, 20) };
 export type Hall = {
   id: HallId;
   name: string;
@@ -10,6 +11,7 @@ export type Hall = {
   x: number; z: number; width: number; depth: number; height: number;
   href: string;
   theme?: { word: string; primary: number; surface: number; light: number; lettering: number };
+  icon?: 'github' | 'zenn';
   external?: { label: string; href: string };
 };
 const fuwatto = products.find(p => p.slug === 'pop-reminder')!;
@@ -29,10 +31,12 @@ export const halls: Hall[] = [
     theme: { word: 'Career', primary: 0x243b55, surface: 0xf2ebdb, light: 0xc5a46b, lettering: 0xf2ebdb } },
   { id: 'github', name: 'GitHub館', tagline: 'コードと開発の記録を見る', model: 'atelier',
     x: -22, z: 14, width: 3.6, depth: 2.7, height: 3.8, href: '/social#github',
+    icon: 'github',
     theme: { word: 'GitHub', primary: 0x0fbf3e, surface: 0x232925, light: 0xf2f5f3, lettering: 0xf2f5f3 },
     external: { label: 'GitHubへ', href: socials.find(s => s.label === 'GitHub')!.href } },
   { id: 'zenn', name: 'Zenn館', tagline: '学びと技術記事を読む', model: 'bookshop',
     x: 22, z: 14, width: 3.6, depth: 2.7, height: 2.9, href: '/social#zenn',
+    icon: 'zenn',
     theme: { word: 'Zenn', primary: 0x3ea8ff, surface: 0xffffff, light: 0xe7f4ff, lettering: 0x3ea8ff },
     external: { label: 'Zennへ', href: socials.find(s => s.label === 'Zenn')!.href } },
 ];

@@ -5,6 +5,7 @@ import { tourStops, hallMarker } from '../../lib/world-tour';
 import { sections } from '../../lib/sections';
 import { mapPoint, type WorldNavigation } from '../../lib/world-map';
 import type { WorldMapData } from '../../lib/world-map-data';
+import { gamingPCSpecs } from '../../lib/world-gaming-pc';
 
 export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExplore}:{map:WorldMapData;navigation:WorldNavigation|null;onSelect:(id:string)=>void;onTour:()=>void;canTour:boolean;onExplore:()=>void}) {
   const details=useRef<HTMLDetailsElement>(null),marker=useRef<SVGCircleElement>(null);
@@ -32,7 +33,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
       <button className="guideTour" disabled={!canTour} onClick={() => { if (details.current) details.current.open = false; onTour(); }}>案内に沿って見る <span>{tourStops[0].title}から、4つの館へ →</span></button>
       <div className="guideMapHeader"><span>りおまるの街</span><span>地図から、次の寄り道へ。</span></div>
       <p className="guideTouchHint">スマホは1本指で移動、離すと停止。2本指で見渡し・拡大できます。</p>
-      <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・作品。01キャリア、02経験館、03Yoin館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館。北：趣味の街。北に港、北西に温泉。青緑の点が現在地です。">
+      <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・作品。01キャリア、02経験館、03Yoin館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館。北：趣味の街。北に港、北西に温泉、北東にゲーミングPC。中央通りの西にパスタキッチン。青緑の点が現在地です。">
         <rect width="100" height="100" rx="5" fill="#b8d9d7" />
         <path d={map.coast} fill="#e4d8b6" stroke="#f0e4c4" strokeWidth="2" />
         {map.roads.map((r,i)=><path key={i} d={r.path} fill="none" stroke="#faf0d8" strokeWidth={r.width} strokeLinecap="round" strokeLinejoin="round"/>)}
@@ -42,6 +43,14 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
         <g>
           <rect x={map.onsen.x-map.onsen.width/2} y={map.onsen.y-map.onsen.height/2} width={map.onsen.width} height={map.onsen.height} rx="1" fill="#9caa87" stroke="#ece0c1" strokeWidth=".5"/>
           <text x={map.onsen.x} y={map.onsen.y+1.5} textAnchor="middle" fontSize="5" fill="#614f3d">♨</text>
+        </g>
+        <g>
+          <rect x={map.gamingPC.x-map.gamingPC.width/2} y={map.gamingPC.y-map.gamingPC.height/2} width={map.gamingPC.width} height={map.gamingPC.height} rx=".8" fill="#eef4f1" stroke="#8bbcb8" strokeWidth=".5"/>
+          <text x={map.gamingPC.x} y={map.gamingPC.y+1.2} textAnchor="middle" fontSize="3.1" fill="#3b6569">PC</text>
+        </g>
+        <g>
+          <rect x={map.pastaKitchen.x-map.pastaKitchen.width/2} y={map.pastaKitchen.y-map.pastaKitchen.height/2} width={map.pastaKitchen.width} height={map.pastaKitchen.height} rx=".8" fill="#e9d5b5" stroke="#b38b5c" strokeWidth=".5"/>
+          <text x={map.pastaKitchen.x} y={map.pastaKitchen.y+1.1} textAnchor="middle" fontSize="2.3" fill="#755c3e">PASTA</text>
         </g>
         {map.buildings.map(b=><g key={b.id}>
           <rect x={b.x-b.width/2} y={b.y-b.height/2} width={b.width} height={b.height} rx="1" fill={b.marker==='G'||b.marker==='Z'?'#649b98':'#d79580'} />
@@ -80,6 +89,11 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
         </div>
       </div>
       <button className="guideHarbor" disabled={!navigation} onClick={()=>walk('harbor')}>海風を感じる寄り道 <span>港の桟橋へ歩く ↗</span></button>
+      <button className="guidePasta" disabled={!navigation} onClick={()=>walk('pasta-kitchen')}>パスタ作りが趣味。よく作るのはカルボナーラ。<span>パスタキッチンへ歩く ↗</span></button>
+      <dl className="guidePCSpecs" aria-label="PCのスペック">
+        {gamingPCSpecs.map(spec=><div key={spec.label}><dt>{spec.label}</dt><dd>{spec.value}</dd></div>)}
+      </dl>
+      <button className="guideGamingPC" disabled={!navigation} onClick={()=>walk('gaming-pc')}>ガラス越しに、白いPCの中へ <span>ゲーミングPCを見に行く ↗</span></button>
     </div>
   </details>;
 }

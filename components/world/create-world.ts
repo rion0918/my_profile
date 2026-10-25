@@ -11,6 +11,11 @@ import { bikeStation } from "../../lib/world-bike";
 import { createBike } from "./create-bike";
 import { createHarbor } from "./create-harbor";
 import { createOnsen } from "./create-onsen";
+import { createAreaGate } from "./create-area-gate";
+import { createGamingPC } from "./create-gaming-pc";
+import { gamingPC } from "../../lib/world-gaming-pc";
+import { pastaKitchen } from "../../lib/world-pasta";
+import { createPastaKitchen } from "./create-pasta-kitchen";
 import { isOnsenClearing } from "../../lib/world-onsen";
 import { createCharacterVisibility } from "./character-visibility";
 import { createWildlife } from "./create-wildlife";
@@ -24,6 +29,7 @@ import {
   getGroundHeight,
 } from "../../lib/world-navigation";
 import { createHallWordGeometry, createHallWordMaterials, createHallWordGlow } from "./create-hall-word";
+import { createHallIcon, hallIcons } from "./create-hall-icon";
 import roundedHallFontData from "./assets/fuwatto.typeface.json";
 import hallFontData from "./assets/helvetiker_regular.typeface.json";
 import fontData from "./assets/riomaru.typeface.json";
@@ -34,12 +40,11 @@ import {
   streetlights,
   lightSupports,
   isOnRoad,
-  exhibits,
-  zoneSigns,
   benches,
   ponds,
   landmark,
   projectExhibits,
+  hallIconSites,
 } from "../../lib/world-layout";
 
 export async function createWorld(person: THREE.Group,requestRender:()=>void,streetNetwork:WorldMapData["streets"],signal:AbortSignal) {
@@ -836,6 +841,21 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       addWordGlow(sign,theme.word,wordFont,edging);
       box(group, 0, y - 0.045, d / 2 + 0.26, railWidth, 0.08, 0.25, edging, 0.018);
     }
+    if (building.icon) {
+      const texture = new THREE.TextureLoader().load(hallIcons[building.icon].texture, () => {
+        if (complete && !signal.aborted) requestRender();
+      });
+      texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4; textures.add(texture);
+      const site = hallIconSites.find(site => site.id === building.id)!;
+      const icon = createHallIcon(building.icon, texture);
+      icon.position.set(site.x, 0, site.z); icon.scale.setScalar(site.scale); icon.userData.detail = building.id;
+      scene.add(icon); selectable.push(icon);
+      icon.traverse(object => {
+        if (!(object instanceof THREE.Mesh)) return;
+        geometries.add(object.geometry);
+        for (const value of Array.isArray(object.material) ? object.material : [object.material]) materials.add(value);
+      });
+    }
     const windowLight = new THREE.PointLight(0xffac58, 7, 7, 2);
     windowLight.position.set(0, 1.3, d / 2 + 0.7);
     group.add(windowLight);
@@ -1134,7 +1154,7 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   blades.receiveShadow = true;
   const landmarkCos = Math.cos(landmark.rotation),
     landmarkSin = Math.sin(landmark.rotation);
-  const furniturePads = [...entranceGardens.map(p => ({ ...p, rotation: 0, width: p.radius * 2, depth: p.radius * 2 })), ...benches, ...exhibits, ...zoneSigns, ...streetlights, ...projectExhibits].map((p) => ({
+  const furniturePads = [{ ...gamingPC, rotation: 0 }, gamingPC.specBoard, { ...pastaKitchen, rotation: 0 }, ...hallIconSites, ...entranceGardens.map(p => ({ ...p, rotation: 0, width: p.radius * 2, depth: p.radius * 2 })), ...benches, ...streetlights, ...projectExhibits].map((p) => ({
     ...p, c: Math.cos(p.rotation), s: Math.sin(p.rotation),
   }));
   let bladeCount = 0;
@@ -1412,21 +1432,6 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   destination.rotation.x = -Math.PI / 2;
   destination.visible = false;
 
-  for (const exhibit of [...exhibits, ...zoneSigns]) {
-    const group = new THREE.Group();
-    group.position.set(exhibit.x, getGroundHeight(exhibit), exhibit.z);
-    group.rotation.y = exhibit.rotation;
-    if ("id" in exhibit) { group.userData.detail = exhibit.id; selectable.push(group); }
-    scene.add(group);
-    box(group, 0, 0.012, 0, 2.1, 0.024, 1.1, 0xe0bfa0, 0.06);
-    box(group, 0, 1.35, 0, 1.9, 1.25, 0.17, 0x6b638d, 0.06);
-    for (const x of [-0.7, 0.7])
-      box(group, x, 0.65, 0, 0.09, 1.3, 0.09, 0xb28c96);
-    text(group, exhibit.title, 0, 1.63, 0.095, 1.65, "#ffdcac");
-    const line = exhibit.tagline;
-    text(group, line, 0, 1.25, 0.095, 1.7, "#fff5e7");
-    pot(group, 0.7, -0.35, 0.65);
-  }
   // The arrival garden frames the mosaic without putting objects on its walking surface.
   const blossomGeometry = new THREE.SphereGeometry(1, 8, 4);
   for (const garden of entranceGardens) {
@@ -1621,6 +1626,12 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   const visibility = createCharacterVisibility(person);
   const thermalBaths = createOnsen(scene, visibility.apply);
   resources.push(thermalBaths.dispose); await pause();
+  const areaGate = createAreaGate(scene, visibility.apply, hallFont);
+  resources.push(areaGate.dispose); await pause();
+  const desktop = createGamingPC(scene, visibility.apply);
+  resources.push(desktop.dispose); await pause();
+  const kitchen = createPastaKitchen(scene, visibility.apply, hallFont);
+  resources.push(kitchen.dispose); await pause();
   const projectDisplays=createProjectExhibits(scene,visibility.apply,requestRender);
   resources.push(projectDisplays.dispose); await pause();
   selectable.push(...projectDisplays.selectable,...wildlife.selectable);
@@ -1651,6 +1662,8 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     water.updateTime(lighting);
     harbor.updateTime(lighting.lamps);
     thermalBaths.updateTime(lighting.lamps);
+    desktop.updateTime(lighting.lamps);
+    kitchen.updateTime(lighting.lamps);
     return lighting;
   };
   updateTime();
@@ -1686,6 +1699,8 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       if (!reduced || !environmentResting) {
         harbor.update(time, reduced);
         wildlife.update(time, reduced);
+        desktop.update(time, reduced);
+        kitchen.update(time, reduced);
       }
       environmentResting = reduced;
       projectDisplays.update(time,position,reduced);

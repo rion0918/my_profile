@@ -154,9 +154,6 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   box(fixed, -5.25, .62, -2.28, .32, .2, .76, hinoki);
   const stream = new THREE.MeshBasicMaterial({ color: 0xd4eee0, transparent: true, opacity: .65, depthWrite: false }); materials.add(stream);
   mesh(fixed, new THREE.CylinderGeometry(.035, .045, .31, 8), stream, -5.25, .36, -1.94).castShadow = false;
-  label('露天風呂', -.95, .88, 1.9, 1.2);
-  box(fixed, -.95, .88, 1.865, 1.3, .33, .055, palette.timber);
-  box(fixed, -.95, .43, 1.86, .075, .8, .075, palette.timber);
   for (const x of [-6, -3.2]) box(fixed, x, .23, 3, .16, .42, .4, palette.timber);
   for (let i = 0; i < 4; i++) box(fixed, -4.6, .48, 2.85 + i * .11, 3.2, .09, .095, hinoki);
 

@@ -9,11 +9,13 @@ import { cats, nearestCat, findCatApproach } from "../../lib/world-wildlife";
 import * as THREE from "three";
 import { viewOffset, getViewSpan, panView, clampZoom, getTouchDirection } from "../../lib/world-view";
 import { createFocusTransition } from "../../lib/world-focus";
-import { positionStorageKey, positionVersion } from "../../lib/world-zones";
+import { positionStorageKey, positionVersion, centralPlaza } from "../../lib/world-zones";
 import { tourFork, hallMarker } from "../../lib/world-tour";
 import { loadCharacter } from "./load-character";
 import { harbor, getHarborDeckHeight } from "../../lib/world-harbor";
 import { onsen } from "../../lib/world-onsen";
+import { gamingPC } from "../../lib/world-gaming-pc";
+import { pastaKitchen } from "../../lib/world-pasta";
 import { createBikeController, cyclingObstacles, getBikeStandingPosition } from "../../lib/world-bike";
 import { createJumpController } from "../../lib/world-jump";
 import { createEntryController } from "../../lib/world-entry";
@@ -50,6 +52,8 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
   const harborRef = useRef<() => void>(() => {});
   const onsenLabel = useRef<HTMLButtonElement>(null);
   const onsenRef = useRef<(indoor: boolean) => void>(() => {});
+  const pcRef = useRef<() => void>(() => {});
+  const pastaRef = useRef<() => void>(() => {});
   const entryLabels = useRef<(HTMLButtonElement | null)[]>([]);
   const resumeRef = useRef<() => void>(() => {});
   const entryRef = useRef<(id: string) => void>(() => {});
@@ -729,6 +733,38 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       element.focus({ preventScroll: true });
       start();
     };
+    pcRef.current = () => {
+      if (pausedRef.current || !compiled) return;
+      beginExploring(); stop();
+      isOverview = false; setOverview(false); manuallyPanned = false;
+      viewZoom = clampZoom(Math.min(.9, element.clientHeight / element.clientWidth * 1.2)); setZoom(viewZoom);
+      cameraTarget.copy(followTarget()); positionCamera(); resize();
+      const navigation = navigationObstacles();
+      if (bike.riding && person.position.z > centralPlaza.z) {
+        const first = findPath(person.position, centralPlaza, navigation), last = findPath(centralPlaza, gamingPC.approach, navigation);
+        path = first.length && last.length ? [...first, ...last] : [];
+      } else path = findPath(person.position, gamingPC.approach, navigation);
+      if (!path.length) { setNotice("PCオブジェへの道を選び直してください。"); return; }
+      world.destination.position.set(gamingPC.approach.x, .08, gamingPC.approach.z);
+      setNotice("白いゲーミングPCへ。ガラス越しに、水冷やGPUの細部を見渡せます。");
+      element.focus({ preventScroll: true }); start();
+    };
+    pastaRef.current = () => {
+      if (pausedRef.current || !compiled) return;
+      beginExploring(); stop();
+      isOverview = false; setOverview(false); manuallyPanned = false;
+      viewZoom = clampZoom(Math.min(.96, element.clientHeight / element.clientWidth * 1.3)); setZoom(viewZoom);
+      cameraTarget.copy(followTarget()); positionCamera(); resize();
+      const navigation = navigationObstacles();
+      if (bike.riding && person.position.z > centralPlaza.z) {
+        const first = findPath(person.position, centralPlaza, navigation), last = findPath(centralPlaza, pastaKitchen.approach, navigation);
+        path = first.length && last.length ? [...first, ...last] : [];
+      } else path = findPath(person.position, pastaKitchen.approach, navigation);
+      if (!path.length) { setNotice("パスタキッチンへの道を選び直してください。"); return; }
+      world.destination.position.set(pastaKitchen.approach.x, .08, pastaKitchen.approach.z);
+      setNotice("パスタキッチンへ。よく作るカルボナーラを、大きな一皿と調理道具で紹介しています。");
+      element.focus({ preventScroll: true }); start();
+    };
     onsenRef.current = (indoor) => {
       if (pausedRef.current || !compiled) return;
       beginExploring();
@@ -1019,6 +1055,8 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         onReady({
           walkTo(id){
             if(id==='harbor')harborRef.current();
+            else if(id==='gaming-pc')pcRef.current();
+            else if(id==='pasta-kitchen')pastaRef.current();
             else if(id==='onsen-outdoor'||id==='onsen-indoor')onsenRef.current(id==='onsen-indoor');
             else entryRef.current(id);
             element.focus({preventScroll:true});
@@ -1096,6 +1134,8 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       entryRef.current = () => {};
       harborRef.current = () => {};
       onsenRef.current = () => {};
+      pcRef.current = () => {};
+      pastaRef.current = () => {};
       jumpRef.current = () => {};
       bikeRef.current = () => {};
       petRef.current=()=>{};
