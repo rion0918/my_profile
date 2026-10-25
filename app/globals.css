@@ -1598,3 +1598,218 @@ a {
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .worldTouchPad { background: #244d48; }
 }
+
+/* Hall exhibitions use their own frame; article pages retain their reading layout. */
+.hallDialog[open] {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, calc(100% - 64px));
+  height: min(880px, calc(100svh - 48px));
+  max-height: calc(100svh - 48px);
+  overflow: hidden;
+  border: 0;
+  border-top: 4px solid var(--hall-accent);
+  border-radius: 12px;
+  background: #fbfcf9;
+}
+.hallDialogHeader {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 24px;
+  min-height: 68px;
+  padding: 10px 32px;
+  border-bottom: 1px solid #e2e6de;
+  background: #fbfcf9;
+}
+.hallDialog .hallDialogHeader h2 { margin: 0 auto 0 0; font-size: 17px; font-weight: 650; white-space: nowrap; }
+.hallDialogHeader > a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 12px; color: #44574b; white-space: nowrap; }
+.hallDialogHeader > a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.hallDialogHeader button { min-height: 44px; border: 1px solid #c9d1c5; border-radius: 6px; padding: 9px 14px; color: #233c31; background: transparent; font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; }
+.hallDialogHeader button span { margin-left: 10px; font-size: 18px; }
+.hallDialog .hallDialogBody { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; scroll-behavior: auto; padding: 0 44px 44px; }
+.hallDialog:has(.tourFooter) .hallDialogBody { min-height: 0; padding-bottom: 44px; }
+.hallDialog .tourFooter { flex: 0 0 auto; position: static; margin: 0; padding: 12px 28px max(12px, env(safe-area-inset-bottom)); background: #fbfcf9; }
+.hallDialog .tourFooter .tourNext { background: #253d36; border-color: #253d36; }
+.hallDialog :is(a, button):focus-visible { outline: 3px solid #346b91; outline-offset: 4px; }
+.hallContent { color: #1c2922; }
+.hallIntroduction h3 { margin: 0 0 24px; font-size: clamp(32px, 4.4vw, 54px); line-height: 1.27; font-weight: 600; letter-spacing: -.045em; }
+.hallIntroduction > p { margin: 0; font-size: 17px; line-height: 1.85; color: #536353; }
+.hallCareerHero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 48px; padding: 40px 0; }
+.hallCurrent { padding: 24px 28px; border-radius: 8px; background: var(--hall-accent); color: #fff; }
+.hallCurrent .hallCurrentLabel { margin: 0 0 18px; color: #dbe4ea; font-size: 12px; }
+.hallCurrentSchool { margin: 0; font-size: 17px; line-height: 1.6; }
+.hallCurrentSchool span { display: block; font-size: 12px; color: #dbe4ea; }
+.hallCurrentOffer { border-top: 1px solid #ffffff38; margin-top: 20px; padding-top: 20px; }
+.hallOfferBadge { display: inline-block; padding: 4px 8px; border-radius: 3px; color: #233c51; background: var(--hall-light); font-size: 11px; font-weight: 650; }
+.hallCurrentOffer h4 { font-size: 26px; font-weight: 600; margin: 10px 0 6px; letter-spacing: -.025em; }
+.hallCurrent .hallFactNote { margin: 0; color: #e1e8ed; font-size: 13px; line-height: 1.75; }
+.hallHistoryExhibit { border-top: 1px solid #dbe2d6; padding-top: 24px; }
+.hallHistoryExhibit > h3 { font-size: 18px; margin: 0 0 22px; font-weight: 600; }
+.hallTimeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; }
+.hallTimeline li { position: relative; padding: 20px 22px 0 0; border-top: 1px solid #a5b3a6; }
+.hallTimeline li::before { content: ''; position: absolute; width: 7px; height: 7px; background: var(--hall-accent); border-radius: 50%; top: -4px; left: 0; }
+.hallTimeline .hallCareerCard { background: transparent; padding: 0; border: 0; border-radius: 0; }
+.hallTimelinePeriod { margin: 0 0 12px; color: #576b60; font-size: 12px; }
+.hallTimeline .hallCareerCard h3 { font-size: 20px; margin: 0 0 12px; line-height: 1.6; }
+.hallTimeline .hallCareerCard h3 small { display: block; font-size: 12px; font-weight: 400; color: #536353; }
+.hallTimeline .hallCareerCard > p:last-child { font-size: 14px; line-height: 1.9; color: #536353; margin: 0; }
+.hallExperienceIntro { padding: 40px 0 32px; }
+.hallActivities { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #b8c8b9; }
+.hallActivities .hallActivity { padding: 30px 32px 12px 0; background: transparent; border: 0; border-radius: 0; }
+.hallActivities .hallActivity + .hallActivity { padding-left: 32px; padding-right: 0; border-left: 1px solid #dbe2d6; }
+.hallActivityType { margin: 0 0 20px; color: #356f5d; font-size: 13px; font-weight: 650; }
+.hallActivity h3 { font-size: 29px; line-height: 1.6; margin: 0 0 12px; letter-spacing: -.03em; }
+.hallActivity h3 small { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 400; color: #536353; letter-spacing: 0; }
+.hallActivityPeriod { font-size: 12px; color: #536353; }
+.hallActivityDescription { margin: 26px 0 20px; font-size: 16px; line-height: 1.85; }
+.hallActivityTags { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 12px; color: #41624d; }
+.hallActivityTags span { border-bottom: 1px solid #c1d2c1; padding-bottom: 5px; }
+.hallAction { display: inline-flex; justify-content: center; align-items: center; gap: 36px; min-height: 48px; padding: 13px 22px; border-radius: 6px; background: #253d36; color: #fff; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.hallAction:hover { background: #152b23; }
+.hallExternalNote { margin: 14px 0 0; color: #5b6c5d; font-size: 12px; line-height: 1.8; }
+.hallSocialHero { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); gap: 56px; align-items: center; padding: 48px 0; }
+.hallSocialMark { display: grid; place-items: center; aspect-ratio: 1; background: var(--hall-surface); border: 1px solid #d9e2d8; border-radius: 10px; }
+.hallSocialMark img { width: 45%; height: auto; }
+.hall-zenn .hallSocialMark { background: #eef7ff; border-color: #c9e3f7; }
+.hallIntroduction .hallAccount { margin: 24px 0; color: #243c31; font: 14px ui-monospace, monospace; overflow-wrap: anywhere; }
+.hallIntroduction .hallExternalNote { margin-top: 14px; font-size: 12px; color: #5b6c5d; }
+.hallChapterNav { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px 24px; min-height: 56px; align-items: center; border-bottom: 1px solid #e0e5dc; background: #fbfcf9; }
+.hallChapterNav button { min-height: 44px; padding: 6px 0; border: 0; background: transparent; font: inherit; font-size: 13px; color: #405348; cursor: pointer; }
+.hallChapterNav button:hover { text-decoration: underline; text-underline-offset: 6px; }
+.hallProductHero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 44px; padding: 28px 0 36px; scroll-margin-top: 72px; }
+.hallProductIntroduction { grid-column: 1; grid-row: 1; }
+.hallProductContext { grid-column: 1; grid-row: 2; align-self: start; }
+.hallProductHero > .hallGallery { grid-column: 2; grid-row: 1 / span 2; }
+.hallProductIntroduction h3 { margin: 0 0 26px; font-size: clamp(44px, 6vw, 72px); font-weight: 600; line-height: 1.15; letter-spacing: -.05em; color: color-mix(in srgb, var(--hall-accent) 75%, #1c2922); }
+.hallProductSummary { margin: 0; font-size: clamp(20px, 2.4vw, 27px); line-height: 1.9; letter-spacing: -.02em; max-width: 22em; }
+.hallProductPlatform { margin: 0; font-size: 13px; color: #445f50; }
+.hallProductMediaNote { margin: 12px 0 0; font-size: 12px; color: #627064; line-height: 1.85; }
+.hallGallery { min-width: 0; }
+.hallGalleryMain { position: relative; display: block; width: 100%; height: clamp(280px, 47svh, 430px); padding: 20px 20px 48px; border: 0; border-radius: 10px; background: var(--hall-surface); cursor: zoom-in; }
+.hallGalleryMain > img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
+.hallGalleryExpand { position: absolute; bottom: 13px; left: 0; right: 0; font-size: 12px; color: #263d34; }
+.hallGalleryCaption { display: flex; justify-content: space-between; gap: 16px; margin-top: 12px; font-size: 12px; line-height: 1.7; color: #4a5e50; }
+.hallGalleryCaption > span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hallGalleryThumbnails { display: flex; gap: 8px; margin-top: 12px; }
+.hallGalleryThumbnails button { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; min-height: 56px; padding: 6px 10px; border: 1px solid #d3dbd0; border-radius: 5px; background: transparent; color: #4a5e50; cursor: pointer; text-align: left; font: inherit; font-size: 11px; line-height: 1.6; }
+.hallGalleryThumbnails button[aria-pressed="true"] { border-color: var(--hall-accent); background: #eef1e9; color: #233e2c; box-shadow: inset 0 0 0 1px var(--hall-accent); }
+.hallGalleryThumbnails img { flex-shrink: 0; width: 22px; height: 40px; object-fit: contain; }
+.hallExhibitSection { padding: 32px 0; border-top: 1px solid #dbe2d6; }
+.hallExhibitSection > h3 { font-size: 26px; font-weight: 600; margin: 0 0 28px; scroll-margin-top: 76px; }
+.hallProductExhibit [tabindex="-1"]:focus { outline: none; }
+.hallFeatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; }
+.hallFeature h4 { margin: 0 0 12px; font-size: 19px; line-height: 1.6; font-weight: 600; }
+.hallFeature p { margin: 0; font-size: 15px; line-height: 1.95; color: #536353; }
+.hallTechnologies { display: flex; flex-wrap: wrap; gap: 12px; }
+.hallTechnologies span { padding: 12px 16px; border: 1px solid #c4d0c3; border-radius: 5px; font-size: 15px; background: #f1f4ed; color: #253e2e; }
+.hallProductFacts { margin: 28px 0; }
+.hallProductFacts > div { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 14px 0; border-bottom: 1px solid #dbe2d6; font-size: 14px; line-height: 1.8; }
+.hallProductFacts dt { color: #536353; }
+.hallProductFacts dd { margin: 0; }
+.hallProductNotes { margin: 28px 0; font-size: 15px; line-height: 1.95; }
+.hallProductNotes h4 { font-size: 19px; margin: 0 0 12px; }
+.hallProductLinks { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; margin-top: 28px; }
+.hallProductLinks .textLink { min-height: 44px; display: inline-flex; align-items: center; }
+.hallImageViewer[open] { display: flex; flex-direction: column; width: min(1200px, calc(100% - 32px)); height: calc(100svh - 32px); max-width: none; max-height: none; padding: 0; border: 1px solid #45534d; border-radius: 10px; overflow: hidden; background: #15221e; color: #f7faf5; }
+.hallImageViewer::backdrop { background: #06130de6; }
+.hallImageToolbar { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; padding: 12px 20px; border-bottom: 1px solid #ffffff29; }
+.hallImageToolbar > span { margin-right: auto; font-size: 14px; }
+.hallImageViewer button { min-width: 44px; min-height: 44px; border: 1px solid #84958a; border-radius: 5px; padding: 8px 12px; background: transparent; color: #f7faf5; font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.hallImageViewer button:hover { background: #30483b; }
+.hallImageViewer :is(button, [tabindex="0"]):focus-visible { outline: 3px solid #b3d7f2; outline-offset: -3px; }
+.hallImageViewport { flex: 1 1 auto; min-height: 0; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: auto; overscroll-behavior: contain; }
+.hallImageViewport img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+.hallImageViewport.isActualSize { display: block; }
+.hallImageViewport.isActualSize img { max-width: none; max-height: none; }
+.hallImageFooter { display: flex; gap: 20px; align-items: center; flex: 0 0 auto; padding: 12px 20px; border-top: 1px solid #ffffff29; }
+.hallImageFooter p { flex: 1; margin: 0; font-size: 13px; text-align: center; line-height: 1.7; }
+.hallImageFooter p span { display: block; color: #bacbc1; font-size: 11px; }
+@media (max-width: 760px) {
+  .hallDialog[open], .detailDialog.hallDialog:has(.tourFooter) { width: 100%; height: 100svh; max-height: 100svh; max-width: 100%; margin: 0; border-radius: 0; }
+  .hallDialogHeader { min-height: 58px; padding: max(6px, env(safe-area-inset-top)) 16px 6px; gap: 14px; }
+  .hallDialog .hallDialogHeader h2 { font-size: 15px; }
+  .hallDialogHeader > a { font-size: 11px; gap: 4px; }
+  .hallDialogHeader button { font-size: 11px; padding: 8px 10px; }
+  .hallDialogHeader button span { margin-left: 5px; }
+  .hallDialog .hallDialogBody { padding: 0 22px 28px; }
+  .hallDialog:has(.tourFooter) .hallDialogBody { padding-bottom: 28px; }
+  .hallDialog .tourFooter { padding: 10px 16px max(10px, env(safe-area-inset-bottom)); gap: 10px; }
+  .hallDialog .tourFooter button { min-height: 44px; font-size: 12px; }
+  .hallCareerHero { grid-template-columns: 1fr; gap: 24px; padding: 26px 0 28px; }
+  .hallIntroduction h3 { font-size: 34px; margin-bottom: 14px; }
+  .hallIntroduction > p { font-size: 14px; line-height: 1.8; }
+  .hallCurrent { padding: 18px 20px; }
+  .hallCurrent .hallCurrentLabel { margin-bottom: 12px; font-size: 11px; }
+  .hallCurrentSchool { font-size: 16px; }
+  .hallCurrentSchool span { font-size: 11px; }
+  .hallCurrentOffer { margin-top: 14px; padding-top: 14px; }
+  .hallCurrentOffer h4 { font-size: 24px; }
+  .hallCurrent .hallFactNote { font-size: 12px; }
+  .hallHistoryExhibit { padding-top: 22px; }
+  .hallTimeline { grid-template-columns: 1fr; margin-left: 3px; }
+  .hallTimeline li { border-top: 0; border-left: 1px solid #a5b3a6; padding: 0 0 24px 24px; }
+  .hallTimeline li:last-child { padding-bottom: 0; }
+  .hallTimeline li::before { top: 5px; left: -4px; }
+  .hallTimeline .hallCareerCard h3 { font-size: 19px; margin-bottom: 8px; }
+  .hallTimelinePeriod { margin-bottom: 8px; }
+  .hallTimeline .hallCareerCard > p:last-child { font-size: 13px; }
+  .hallExperienceIntro { padding: 26px 0; }
+  .hallActivities { grid-template-columns: 1fr; }
+  .hallActivities .hallActivity { padding: 24px 0; }
+  .hallActivities .hallActivity + .hallActivity { border-left: 0; border-top: 1px solid #dbe2d6; padding: 24px 0 0; }
+  .hallActivityType { margin-bottom: 14px; }
+  .hallActivity h3 { font-size: 26px; }
+  .hallActivityDescription { font-size: 15px; margin: 18px 0; }
+  .hallSocialHero { grid-template-columns: 1fr; gap: 28px; padding: 26px 0; }
+  .hallSocialMark { aspect-ratio: auto; height: 180px; }
+  .hallSocialMark img { width: 100px; }
+  .hallIntroduction .hallAccount { font-size: 13px; margin: 20px 0; }
+  .hallIntroduction .hallExternalNote { font-size: 11px; }
+  .hallChapterNav { min-height: 48px; gap: 24px; }
+  .hallChapterNav button { font-size: 12px; }
+  .hallProductHero { grid-template-columns: 1fr; gap: 24px; padding: 24px 0 28px; scroll-margin-top: 56px; }
+  .hallProductHero > .hallGallery { grid-column: 1; grid-row: 2; }
+  .hallProductContext { grid-row: 3; }
+  .hallProductIntroduction h3 { font-size: 38px; margin-bottom: 14px; }
+  .hallProductSummary { font-size: 18px; line-height: 1.8; }
+  .hallProductPlatform { font-size: 12px; }
+  .hallProductMediaNote { font-size: 11px; margin-top: 8px; }
+  .hallGalleryMain { height: clamp(260px, 44svh, 380px); padding: 18px 16px 42px; }
+  .hallGalleryThumbnails button { min-height: 54px; gap: 8px; padding: 6px; font-size: 10px; }
+  .hallGalleryCaption { font-size: 11px; }
+  .hallExhibitSection { padding: 28px 0; }
+  .hallExhibitSection > h3 { font-size: 22px; margin-bottom: 22px; scroll-margin-top: 64px; }
+  .hallFeatures { grid-template-columns: 1fr; gap: 24px; }
+  .hallFeature h4 { font-size: 18px; }
+  .hallFeature p { font-size: 14px; }
+  .hallTechnologies { gap: 8px; }
+  .hallTechnologies span { font-size: 13px; padding: 10px 12px; }
+  .hallImageViewer[open] { width: 100%; height: 100svh; max-height: 100svh; margin: 0; border: 0; border-radius: 0; }
+  .hallImageToolbar { gap: 8px; padding: max(8px, env(safe-area-inset-top)) 12px 8px; }
+  .hallImageToolbar > span { font-size: 12px; }
+  .hallImageViewer button { font-size: 11px; padding: 8px 10px; }
+  .hallImageViewport { padding: 12px; }
+  .hallImageFooter { gap: 12px; padding: 10px 12px max(10px, env(safe-area-inset-bottom)); }
+  .hallImageFooter p { font-size: 12px; }
+}
+@media (max-height: 500px) and (min-width: 761px) {
+  .hallDialog[open], .detailDialog.hallDialog:has(.tourFooter) { width: calc(100% - 24px); height: calc(100svh - 16px); max-height: calc(100svh - 16px); }
+  .hallDialogHeader { min-height: 52px; padding-block: 4px; }
+  .hallCareerHero { padding: 20px 0; gap: 28px; }
+  .hallIntroduction h3 { font-size: 32px; margin-bottom: 14px; }
+  .hallIntroduction > p { font-size: 14px; }
+  .hallCurrent { padding: 16px 20px; }
+  .hallCurrent .hallCurrentLabel { margin-bottom: 8px; }
+  .hallCurrentOffer { margin-top: 12px; padding-top: 12px; }
+  .hallCurrentOffer h4 { font-size: 22px; margin-top: 6px; }
+  .hallProductHero { gap: 26px; padding-top: 18px; }
+  .hallProductIntroduction h3 { font-size: 38px; margin-bottom: 16px; }
+  .hallProductSummary { font-size: 18px; }
+  .hallGalleryMain { height: 250px; }
+  .hallSocialHero { padding-top: 24px; gap: 32px; }
+  .hallSocialMark { height: 220px; aspect-ratio: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hallDialogBody, .hallImageViewport { scroll-behavior: auto; }
+}

@@ -7,6 +7,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { halls } from "../../lib/world-halls";
@@ -195,6 +196,13 @@ export default function WorldExperience({
       modal.scrollTop = 0;
       modal.querySelector<HTMLElement>('#detail-title')?.focus({ preventScroll: true });
     }
+    if (modalVisible && modal) {
+      const body = modal.querySelector<HTMLElement>('.hallDialogBody');
+      if (body) {
+        body.scrollTop = 0;
+        modal.querySelector<HTMLElement>('#detail-title')?.focus({ preventScroll: true });
+      }
+    }
     if (!modalVisible && modal?.open) {
       modal.close();
       returnFocus.current?.focus({ preventScroll: true });
@@ -226,6 +234,13 @@ export default function WorldExperience({
   useEffect(() => () => { ++focusGeneration.current; navigationRef.current?.cancelFocus(); }, []);
   const guided = tourActive.current && (phase === 'focusing' || phase === 'reading');
   const current = sections.find((section) => section.id === selected);
+  const currentHall = halls.find(hall => hall.id === selected);
+  const hallTheme = currentHall?.theme;
+  const hallStyle = hallTheme ? {
+    '--hall-accent': `#${hallTheme.primary.toString(16).padStart(6, '0')}`,
+    '--hall-surface': `#${hallTheme.surface.toString(16).padStart(6, '0')}`,
+    '--hall-light': `#${hallTheme.light.toString(16).padStart(6, '0')}`,
+  } as CSSProperties : undefined;
   return (
     <div className="worldPage" data-tour-phase={phase}>
       <main className="worldMain">
@@ -277,7 +292,8 @@ export default function WorldExperience({
 
       </main>
       <dialog
-        className="detailDialog"
+        className={`detailDialog${currentHall ? ' hallDialog' : ''}`}
+        style={hallStyle}
         ref={dialog}
         onCancel={(event) => {
           event.preventDefault();
@@ -305,8 +321,13 @@ export default function WorldExperience({
           }
         }}
       >
-        <div className="dialogInner">
-          <div className="dialogToolbar">
+        {currentHall && <header className="hallDialogHeader">
+          <h2 id="detail-title" tabIndex={-1}>{currentHall.name}</h2>
+          <a href={currentHall.href} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></a>
+          <button onClick={close} aria-label={guided ? '案内を離れて探索' : '詳細を閉じる'}>街へ戻る <span aria-hidden="true">×</span></button>
+        </header>}
+        <div className={`dialogInner${currentHall ? ' hallDialogBody' : ''}`} key={selected ?? 'complete'}>
+          {!currentHall && <div className="dialogToolbar">
             {(guided || complete) && <a className="textLink" href="/profile">通常表示で読む ↗</a>}
             {current && <a className="textLink" href={current.href}>
               この詳細のURLを開く ↗
@@ -314,13 +335,13 @@ export default function WorldExperience({
             <button onClick={close} aria-label={complete ? "自由に街を歩く" : guided ? "案内を離れて探索" : "詳細を閉じる"}>
               {complete ? '自由に街を歩く' : guided ? '案内を離れて探索' : '閉じる'} <span aria-hidden="true">×</span>
             </button>
-          </div>
-          {guided && <nav className="tourProgress" aria-label="案内の順番">
+          </div>}
+          {guided && !currentHall && <nav className="tourProgress" aria-label="案内の順番">
             {tourStops.map((stop, index) => <span key={stop.id} aria-current={index === step ? 'step' : undefined}>
               {String(index + 1).padStart(2, '0')}<span>{stop.title}</span>
             </span>)}
           </nav>}
-          <h2 id="detail-title" tabIndex={-1}>{complete ? '採用向けの案内はここまで' : guided ? tourStops[step].title : current?.title}</h2>
+          {!currentHall && <h2 id="detail-title" tabIndex={-1}>{complete ? '採用向けの案内はここまで' : guided ? tourStops[step].title : current?.title}</h2>}
           {complete ? <div className="tourComplete">
             <p className="hallLead">経歴と2つの作品をご覧いただき、ありがとうございます。</p>
             <p>ここは中央広場です。開発の記録を確認したり、北の温泉や港へ街歩きを続けたりできます。</p>

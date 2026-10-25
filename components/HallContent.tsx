@@ -1,33 +1,75 @@
-import { ProductContent } from "./ProductContent";
 import { halls, type HallId } from '../lib/world-halls';
 import { products } from '../lib/products';
-import { careerGroups } from '../lib/portfolio';
+import { careerGroups, socials } from '../lib/portfolio';
+import { HallProductExhibit } from './HallProductExhibit';
 
 export function HallContent({ id }: { id: HallId }) {
   const hall = halls.find(h => h.id === id)!;
   const product = products.find(p => p.slug === id);
-  const link = hall.external;
-  return <div className={`hallContent hall-${id}`}>
-    {!product && <p className="hallLead">{hall.tagline}</p>}
-    {product && <ProductContent product={product} />}
-    {(id === 'experience' || id === 'history') && <div className="hallCareerGrid">
-      {careerGroups.find(group => group.id === id)!.items.map((entry, index) => <article className="hallCareerCard" key={entry.title}>
-        <p className="hallCareerPeriod"><span>{String(index + 1).padStart(2, '0')}</span> {entry.period}</p>
-        <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
-        <p>{entry.description}</p>
-        {id === 'experience' && <div className="miniTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
+  if (product) return <div className={`hallContent hall-${id}`}><HallProductExhibit product={product} /></div>;
+
+  if (id === 'history') {
+    const entries = careerGroups.find(group => group.id === id)!.items;
+    const school = entries[1], offer = entries[2];
+    return <div className="hallContent hall-history">
+      <div className="hallCareerHero">
+        <div className="hallIntroduction">
+          <h3>学びの先へ、<br />次の現場へ。</h3>
+          <p>{hall.tagline}</p>
+        </div>
+        <section className="hallCurrent" aria-label="現在の立場">
+          <p className="hallCurrentLabel">現在の立場</p>
+          <p className="hallCurrentSchool">{school.title}<span>{'suffix' in school && school.suffix} · {school.period}</span></p>
+          <div className="hallCurrentOffer">
+            <span className="hallOfferBadge">{offer.period}・内定</span>
+            <h4>{offer.title}</h4>
+            <p className="hallFactNote">{offer.description}</p>
+          </div>
+        </section>
+      </div>
+      <section className="hallHistoryExhibit" aria-labelledby="hall-history-heading">
+        <h3 id="hall-history-heading">これまでの歩み</h3>
+        <ol className="hallTimeline" aria-label="これまでの歩み">
+          {entries.map(entry => <li key={entry.title}>
+            <article className="hallCareerCard">
+              <p className="hallTimelinePeriod">{entry.period}</p>
+              <h3>{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
+              <p>{entry.description}</p>
+            </article>
+          </li>)}
+        </ol>
+      </section>
+    </div>;
+  }
+
+  if (id === 'experience') return <div className="hallContent hall-experience">
+    <div className="hallIntroduction hallExperienceIntro">
+      <h3>現場で学び、<br />仲間とつくる。</h3>
+      <p>{hall.tagline}</p>
+    </div>
+    <div className="hallActivities">
+      {careerGroups.find(group => group.id === id)!.items.map((entry, index) => <article className="hallCareerCard hallActivity" key={entry.title}>
+        <p className="hallActivityType">{index === 0 ? '実務経験' : 'コミュニティづくり'}</p>
+        <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}</h3>
+        <p className="hallActivityPeriod">{entry.period}</p>
+        <p className="hallActivityDescription">{entry.description}</p>
+        <div className="hallActivityTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
       </article>)}
-    </div>}
-    {(id === 'github' || id === 'zenn') && <p className="hallInvitation">{id === 'github' ? '取り組んできたコードやリポジトリは、GitHubでご覧いただけます。' : '技術についての学びや発信は、Zennでご覧いただけます。'}</p>}
-    <a className="hallLinkDoor" href={link?.href ?? hall.href} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined}>
-      <span><strong>{link?.label ?? (product ? `${product.name}の作品詳細へ` : id === 'history' ? 'これまでの歩みを詳しく読む' : '経験を詳しく読む')}</strong>
-        <small>{link ? `${new URL(link.href).hostname} · 別タブで開きます` : product ? '制作の意図や、機能・使用技術を読む' : id === 'history' ? '学校・内定先について読む' : '実務経験とコミュニティ活動を読む'}</small></span>
-      <span aria-hidden="true">{link ? '↗' : '→'}</span>
-    </a>
-    {id === 'history' && <p className="hallFactNote">合同会社DMM.comは、27卒 Webフロントエンドエンジニアとして内定しています。</p>}
-    {product && <div className="hallDetailLinks">
-      {link && <a className="textLink" href={hall.href}>機能・使用技術を詳しく読む ↗</a>}
-      <a className="textLink" href="/tech">技術スタックの一覧を見る ↗</a>
-    </div>}
+    </div>
+  </div>;
+
+  const github = id === 'github';
+  const account = socials.find(s => s.label === (github ? 'GitHub' : 'Zenn'))!;
+  return <div className={`hallContent hall-${id}`}>
+    <div className="hallSocialHero">
+      <div className="hallSocialMark"><img src={github ? '/images/brands/github-invertocat-white.png' : '/images/brands/zenn-mark.png'} alt={`${account.label}の公式アイコン`} width="180" height="180" /></div>
+      <div className="hallIntroduction">
+        <h3>{github ? <>コードから、<br />取り組みを知る。</> : <>学びを、<br />言葉に残す。</>}</h3>
+        <p>{hall.tagline}</p>
+        <p className="hallAccount">{account.display}</p>
+        <a className="hallAction" href={hall.external!.href} target="_blank" rel="noopener noreferrer">{hall.external!.label} <span aria-hidden="true">↗</span></a>
+        <p className="hallExternalNote">別タブで開きます。街の案内はそのまま続けられます。</p>
+      </div>
+    </div>
   </div>;
 }

@@ -24,6 +24,7 @@ async(page)=>{
   for(let i=0;i<stops.length;i++){
    const [id,title]=stops[i];await p.getByRole('dialog').waitFor({state:'visible'});
    if(await p.locator('#detail-title').innerText()!==title)throw Error('incorrect stop '+id);
+   if(await p.locator('.hallDialogBody').evaluate(e=>e.scrollTop)!==0)throw Error('new hall did not start at the top');
    const point=await position(p);await p.keyboard.down('w');await p.waitForTimeout(80);await p.keyboard.up('w');const held=await position(p);
    if(point[0]!==held[0]||point[2]!==held[2])throw Error('movement during reading');
    if(id==='experience'){
@@ -31,21 +32,23 @@ async(page)=>{
    }
    if(id==='history'){
     const titles=await p.locator('.hallContent .hallCareerCard h3').allTextContents();if(titles.length!==3||!titles[0].includes('上宮')||!titles[1].includes('神戸電子')||!titles[2].includes('DMM'))throw Error('history missing facts '+titles);
-    const bottom=await p.locator('.hallCareerCard').last().boundingBox(),footer=await p.locator('.tourFooter').boundingBox();if(bottom.y+bottom.height>footer.y)throw Error('three history exhibits need unnecessary scrolling');
+    const current=await p.getByRole('region',{name:'現在の立場',exact:true}).boundingBox(),footer=await p.locator('.tourFooter').boundingBox();if(current.y+current.height>footer.y)throw Error('current position hidden below tour footer');
     if(!await p.locator('.hallFactNote').innerText().then(t=>t.includes('27卒')&&t.includes('内定')))throw Error('offer misrepresented');
    }
    if(destinations[id]){
-    const door=p.locator('.hallLinkDoor');if(await door.getAttribute('target')!=='_blank'||!await door.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe external door');
+    const door=p.locator('.hallProductLinks .hallAction');if(await door.getAttribute('target')!=='_blank'||!await door.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe external door');
     const popupPromise=p.waitForEvent('popup');await door.click();const popup=await popupPromise;await popup.waitForLoadState('domcontentloaded');
     if(popup.url().replace(/\/$/,'')!==destinations[id].replace(/\/$/,''))throw Error('wrong external destination '+popup.url());await popup.close();
     if(!await p.getByRole('dialog').isVisible()||!p.url().includes('detail='+id)||await p.evaluate(()=>history.length)!==h+1)throw Error('external link lost tour');
    }
    if(id==='yoin'||id==='pop-reminder'){
-    if(await p.locator('.productShowcase img').count()!==2)throw Error('missing product screens');
-    await p.locator('.productShowcase').scrollIntoViewIfNeeded();
-    await p.waitForFunction(()=>[...document.querySelectorAll('.productShowcase img')].every(i=>i.complete&&i.naturalWidth>300));
-    const headings=await p.locator('.productDetail h3').allTextContents();if(!headings.includes('使用技術')||headings.length<3)throw Error('product detail missing inside hall');
-    await p.getByRole('dialog').evaluate(d=>d.scrollTop=0);
+    if(await p.locator('.hallGalleryThumbnails button').count()!==2)throw Error('missing product screens');
+    await p.locator('.hallGalleryMain').scrollIntoViewIfNeeded();
+    await p.waitForFunction(()=>document.querySelector('.hallGalleryMain img')?.complete&&document.querySelector('.hallGalleryMain img').naturalWidth>300);
+    const headings=await p.locator('.hallProductExhibit h3').allTextContents();if(!headings.includes('使用技術')||!headings.includes('画面と機能'))throw Error('product detail missing inside hall');
+    await p.locator('.hallGalleryMain').click();await p.locator('.hallImageViewer').waitFor({state:'visible'});await p.keyboard.press('Escape');await p.locator('.hallImageViewer').waitFor({state:'detached'});
+    if(!await p.locator('.tourFooter').isVisible()||!await p.locator('.hallGalleryMain').evaluate(e=>e===document.activeElement))throw Error('viewer interrupted tour or lost focus');
+    await p.locator('.hallDialogBody').evaluate(d=>d.scrollTop=0);
    }
    await p.screenshot({path:`output/playwright/hall-${id}-desktop.png`});
    if(i===0){await p.getByRole('button',{name:`次：${stops[1][1]} →`,exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});await p.getByRole('button',{name:'← 前へ',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});}
