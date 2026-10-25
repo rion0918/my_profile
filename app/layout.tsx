@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   referrer: "no-referrer",
-  metadataBase: new URL("https://rion0918.dev"),
+  metadataBase: new URL("https://riomaru.jp"),
   title: "橋本怜苑 | Student Engineer",
   description:
     "神戸電子専門学校に所属する学生エンジニア、橋本怜苑のプロフィールサイト。",
