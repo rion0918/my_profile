@@ -70,7 +70,7 @@ test('the new site keeps streets and existing furniture clear and appears in the
 
 test('the bathhouse has a real roof, reveals its interior on entry, rests in low settings and disposes resources', () => {
   const context = { fillRect() {}, fillText() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, arc() {}, fill() {} };
-  globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => context }) };
+  globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => context }), createElementNS: () => ({ addEventListener() {}, removeEventListener() {} }) };
   const scene = new THREE.Scene(), world = createOnsen(scene, () => {});
   try {
     const roof = scene.getObjectByName('onsen-roof');
@@ -92,7 +92,16 @@ test('the bathhouse has a real roof, reveals its interior on entry, rests in low
     assert.equal(bathWater.length,5,'the outdoor, indoor and three pottery baths share clear water');
     for(const m of bathWater){assert.ok(m.transparent&&!m.depthWrite);assert.ok(m.uniforms.waterOpacity?.value>=.5&&m.uniforms.waterOpacity.value<=.75,'bath water reveals the basin beneath it while retaining its color');}
     const falls=scene.getObjectByName('onsen-waterfall'),sheets=falls.children.filter(o=>o.name==='onsen-cascade'),rocks=falls.children.filter(o=>o.isMesh&&!o.material.transparent),direction=new THREE.Vector3(12,12.4,20).normalize();
+    const stoneMaterials=new Set(rocks.map(o=>o.material).filter(m=>m.vertexColors));
+    assert.ok([...stoneMaterials].some(m=>m.map?.isTexture&&m.normalMap?.isTexture&&m.roughnessMap?.isTexture&&m.aoMap?.isTexture),'natural stone has photographic color, normal, roughness and occlusion rather than a flat green surface');
+    assert.equal(falls.children.filter(o=>o.name==='onsen-cascade-body').length,3,'each drop contains a volume of water beneath the surface flow');
+    const splash=scene.getObjectByName('onsen-splash');
+    assert.ok(splash?.isPoints&&splash.geometry.getAttribute('velocity')?.count>=60,'the landings emit actual ballistic droplets');
     assert.equal(sheets.length,3,'three actual cascade surfaces descend into the outdoor bath');
+    for(let i=1;i<sheets.length;i++){
+      const a=new THREE.Vector3().fromBufferAttribute(sheets[i-1].geometry.getAttribute('position'),28*9+4),b=new THREE.Vector3().fromBufferAttribute(sheets[i].geometry.getAttribute('position'),4);
+      assert.ok(a.distanceTo(b)<.12,'water remains continuous between successive rock ledges');
+    }
     for(const sheet of sheets)for(const row of [3,8,13,18,23]){
       const point=new THREE.Vector3().fromBufferAttribute(sheet.geometry.getAttribute('position'),row*9+4).applyMatrix4(sheet.matrixWorld);
       const ray=new THREE.Raycaster(point.clone().addScaledVector(direction,20),direction.clone().negate());
@@ -109,12 +118,14 @@ test('the bathhouse has a real roof, reveals its interior on entry, rests in low
     assert.equal(roof.visible, false, 'roof behavior is identical in low settings');
     const steam = scene.getObjectByName('onsen-steam');
     assert.equal(steam.visible, false);
+    assert.equal(splash.visible,false,'low settings stop spray while preserving all rock and water geometry');
     const water = [];
     scene.traverse(o => { if (o instanceof THREE.Mesh && o.material.uniforms?.time) water.push(o.material); });
     assert.ok(water.length>=5,'the rock bath, indoor bath and pottery baths all contain actual water surfaces');
     assert.ok(water.every(material => material.uniforms.time.value === 0), 'low settings freeze both water surfaces');
     world.update(3, onsen.outdoor, false);
     assert.equal(roof.visible, true); assert.equal(steam.visible, true);
+    assert.equal(splash.visible,true);
     assert.ok(water.every(material => material.uniforms.time.value === 3));
     const after = []; scene.traverse(o => { if (o instanceof THREE.Mesh) after.push(o.geometry); });
     assert.deepEqual(after, original, 'changing settings keeps all bath and building geometry');

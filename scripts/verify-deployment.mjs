@@ -10,7 +10,7 @@ const headers = {
   'referrer-policy': 'no-referrer',
   'permissions-policy': 'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
 };
-const assets = new Set(['/models/rion-walker.glb', '/audio/bossa-antigua.mp3', '/images/projects/yoin/library.jpg', '/images/projects/pop-reminder/home.png']);
+const assets = new Set(['/models/rion-walker.glb', '/audio/bossa-antigua.mp3', '/images/projects/yoin/library.jpg', '/images/projects/pop-reminder/home.png', '/textures/onsen/stone-color.webp', '/textures/onsen/stone-normal.webp', '/textures/onsen/stone-arm.webp']);
 for (const path of pages) {
   const response = await fetch(new URL(path, origin));
   assert.equal(response.status, path.includes('missing-page') ? 404 : 200, path);

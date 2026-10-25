@@ -11,6 +11,7 @@ async page=>{
    },width===1440);
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))errors.push(m.text());});p.on('response',r=>{if(r.status()>=400&&!r.url().endsWith('/favicon.ico'))errors.push(r.status()+' '+r.url());});
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.waitForFunction(()=>{const materials=new Set();window.__onsenQA.scene.getObjectByName('onsen').traverse(o=>{if(o.material?.normalMap)materials.add(o.material);});return materials.size>0&&[...materials].every(m=>[m.map,m.normalMap,m.roughnessMap,m.aoMap].every(t=>t.image?.width===1024));});
    await p.evaluate(()=>{const q=window.__onsenQA;q.person=q.scene.children.find(o=>o.getObjectByName('Hips'));q.geometry=[];q.scene.getObjectByName('onsen').traverse(o=>{if(o.isMesh)q.geometry.push(o.geometry.uuid);});});
    if(width===1440){await p.getByRole('button',{name:'自転車に乗る',exact:true}).click();await p.getByRole('button',{name:'自転車を降りる',exact:true}).waitFor({timeout:20000});}
    const visits=[];
@@ -23,12 +24,14 @@ async page=>{
     const state=await p.evaluate(()=>{const q=window.__onsenQA,r=q.scene.getObjectByName('onsen'),water=[];r.traverse(o=>{if(o.isMesh&&o.material.uniforms?.time)water.push(o);});return {roof:q.scene.getObjectByName('onsen-roof').visible,frontWalls:q.scene.getObjectByName('onsen-cutaway').visible,water:water.length,geometry:water.map(o=>o.geometry.uuid)};});
     if(await p.getByRole('button',{name:'木もれびの湯の露天風呂へ歩く',exact:true}).isVisible())throw Error('floating onsen label obscures the garden at close range');
     if(state.roof!==(id!=='indoor')||state.frontWalls!==(id!=='indoor')||state.water<8)throw Error('incorrect cutaway or missing bath water '+JSON.stringify(state));
+    const falls=await p.evaluate(()=>{const r=window.__onsenQA.scene.getObjectByName('onsen-waterfall');return {bodies:r.children.filter(o=>o.name==='onsen-cascade-body').length,spray:r.getObjectByName('onsen-splash').geometry.getAttribute('velocity').count};});
+    if(falls.bodies!==3||falls.spray<60)throw Error('waterfall has no depth or splash '+JSON.stringify(falls));
     if(width===1440&&await p.getByRole('button',{name:'自転車を降りる',exact:true}).isVisible())throw Error('did not dismount before entering garden');
     await p.keyboard.press('Escape');await p.locator('.worldSurface').evaluate(e=>e.blur());await p.screenshot({path:`output/playwright/onsen/${id}-${width}-day.png`});
     await p.clock.setFixedTime(new Date('2026-10-25T21:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.dataset.night==='true');await p.locator('.worldSurface').evaluate(e=>e.blur());await p.screenshot({path:`output/playwright/onsen/${id}-${width}-night.png`});
     await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
-    const low=await p.evaluate(()=>{const q=window.__onsenQA,g=[],times=[];q.scene.getObjectByName('onsen').traverse(o=>{if(o.isMesh)g.push(o.geometry.uuid);if(o.material?.uniforms?.time)times.push(o.material.uniforms.time.value);});return {same:JSON.stringify(g)===JSON.stringify(q.geometry),frozen:times.every(t=>t===0),steam:q.scene.getObjectByName('onsen-steam').visible,shadows:q.renderer.shadowMap.enabled};});
-    if(!low.same||!low.frozen||low.steam||low.shadows)throw Error('low settings changed garden or continue costly animation '+JSON.stringify(low));
+    const low=await p.evaluate(()=>{const q=window.__onsenQA,g=[],times=[];q.scene.getObjectByName('onsen').traverse(o=>{if(o.isMesh)g.push(o.geometry.uuid);if(o.material?.uniforms?.time)times.push(o.material.uniforms.time.value);});return {same:JSON.stringify(g)===JSON.stringify(q.geometry),frozen:times.every(t=>t===0),steam:q.scene.getObjectByName('onsen-steam').visible,spray:q.scene.getObjectByName('onsen-splash').visible,shadows:q.renderer.shadowMap.enabled};});
+    if(!low.same||!low.frozen||low.steam||low.spray||low.shadows)throw Error('low settings changed garden or continue costly animation '+JSON.stringify(low));
     await p.screenshot({path:`output/playwright/onsen/${id}-${width}-low.png`});
     await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('quality');await p.getByLabel('画質・BGM設定').click();await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
     visits.push({id,...state,low});

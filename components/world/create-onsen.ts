@@ -3,10 +3,11 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { onsen, onsenBoundary, onsenBambooGroves, onsenRocks, onsenLanterns, isInsideBathhouse, isBathhouseApproach } from '../../lib/world-onsen.ts';
 
-export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial) => void) {
+export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial) => void, onTextureReady:()=>void=()=>{}) {
   const root = new THREE.Group(); root.name = 'onsen'; root.position.set(onsen.x,0,onsen.z); scene.add(root);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>();
   const parts: THREE.Group[] = [], time = {value:0}, waterLight = {value:1};
+  let disposed=false;
   let seed=7629;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
   const local=(x:number,y:number,z:number)=>new THREE.Vector3(x-onsen.x,y,z-onsen.z);
   const part=(name:string)=>{const g=new THREE.Group();g.name='onsen-'+name;root.add(g);parts.push(g);return g;};
@@ -51,18 +52,49 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   for(const m of [hinoki,cedar,timber]){m.bumpMap=wood;m.bumpScale=.017;}
   const floor=part('garden'),rockwork=part('rockwork'),paths=part('paths'),entry=part('entry'),house=part('bathhouse'),roof=part('roof'),cutaway=part('cutaway');
   const potGroup=part('pot-baths'),falls=part('waterfall'),bamboo=part('bamboo'),ferns=part('ferns');
-  const rockGeometries=Array.from({length:6},(_,k)=>{
-    const g=new THREE.IcosahedronGeometry(1,3),p=g.getAttribute('position'),colors=[];
+  const rockGeometries=Array.from({length:8},(_,k)=>{
+    const g=new THREE.IcosahedronGeometry(1,5),p=g.getAttribute('position'),colors=[];
+    const planes=[[1,.15,.2],[-1,.12,-.1],[.12,.1,1],[-.2,.08,-1],[.1,1,.1],[-.12,-1,.16],[.7,.4,-.65],[-.6,-.1,.7]].map((v,j)=>({normal:new THREE.Vector3(...v).normalize(),distance:.72+.13*Math.sin(k*2.71+j*4.3)}));
     for(let i=0;i<p.count;i++){
-      const x=p.getX(i),y=p.getY(i),z=p.getZ(i),noise=1+.09*Math.sin(x*8+k)*Math.cos(z*7+y*6);
-      p.setXYZ(i,x*noise,y*(1+.08*Math.cos(z*9+x*5+k)),z*noise);
-      const c=new THREE.Color().setRGB(.79+y*.13,.83+y*.14,.75+y*.11);colors.push(c.r,c.g,c.b);
+      const direction=new THREE.Vector3().fromBufferAttribute(p,i).normalize(),{x,y,z}=direction;
+      let radius=1;
+      for(const plane of planes){const projection=plane.normal.dot(direction);if(projection>0)radius=Math.min(radius,plane.distance/projection);}
+      const erosion=.018*Math.sin(x*27+Math.sin(z*17)+k)*Math.cos(y*23-z*11)+.012*Math.sin((y+x*.18)*43+k);
+      p.setXYZ(i,x*(radius+erosion),y*(radius+erosion),z*(radius+erosion));
+      const shade=.87+.09*Math.sin(x*13+y*17+z*11+k)+.04*Math.cos(y*35+x*9);
+      colors.push(shade,shade*.99,shade*.96);
     }
-    g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.deleteAttribute('normal');const rounded=mergeVertices(g);g.dispose();rounded.computeVertexNormals();return rounded;
+    g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.deleteAttribute('normal');g.deleteAttribute('uv');const fractured=mergeVertices(g);g.dispose();fractured.computeVertexNormals();geometries.add(fractured);return fractured;
   });
-  const rockMaterial=material(0x7f8a7a,.86);rockMaterial.vertexColors=true;rockMaterial.bumpMap=granite;rockMaterial.bumpScale=.055;
-  const rock=(p:THREE.Object3D,x:number,y:number,z:number,sx:number,sy:number,sz:number,k=0)=>{
-    const o=mesh(p,rockGeometries[Math.abs(k)%6],rockMaterial,x,y,z);o.scale.set(sx,sy,sz);o.rotation.y=k*.87;return o;
+  const stoneTexture=(name:string,color=false)=>{
+    const t=new THREE.TextureLoader().load('/textures/onsen/stone-'+name+'.webp',()=>{if(!disposed)onTextureReady();});
+    t.name='onsen-stone-'+name;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;if(color)t.colorSpace=THREE.SRGBColorSpace;textures.add(t);return t;
+  };
+  const rockMaterial=material(0xc4c4bc,1);rockMaterial.vertexColors=true;rockMaterial.map=stoneTexture('color',true);rockMaterial.normalMap=stoneTexture('normal');rockMaterial.normalScale.set(.85,.85);rockMaterial.roughnessMap=rockMaterial.aoMap=stoneTexture('arm');rockMaterial.aoMapIntensity=.8;
+  const stoneCompile=rockMaterial.onBeforeCompile,stoneProgram=rockMaterial.customProgramCacheKey();
+  rockMaterial.onBeforeCompile=function(shader,renderer){
+    stoneCompile.call(this,shader,renderer);
+    shader.vertexShader='attribute float stoneWetness; varying float wetStone;\n'+shader.vertexShader;
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwetStone=stoneWetness;');
+    shader.fragmentShader='varying float wetStone;\n'+shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(vec3(dot(diffuseColor.rgb,vec3(.2126,.7152,.0722))),diffuseColor.rgb,.28);\ndiffuseColor.rgb*=mix(vec3(1.),vec3(.43,.49,.46),wetStone);');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.23,wetStone);');
+  };
+  rockMaterial.customProgramCacheKey=()=>stoneProgram+'|weathered-stone-v1';
+  const wetCourse=new THREE.Line3(new THREE.Vector3(-30,2.5,-26.15),new THREE.Vector3(-27.7,.27,-25.05)),nearestWet=new THREE.Vector3();
+  const rock=(p:THREE.Object3D,x:number,y:number,z:number,sx:number,sy:number,sz:number,k=0,rotation=k*.87)=>{
+    const g=rockGeometries[Math.abs(k)%rockGeometries.length].toNonIndexed(),o=mesh(p,g,rockMaterial,x,y,z);o.scale.set(sx,sy,sz);o.rotation.y=rotation;o.updateMatrix();
+    const positions=g.getAttribute('position'),uvs=[],wet=[],a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),normal=new THREE.Vector3();
+    for(let i=0;i<positions.count;i+=3){
+      a.fromBufferAttribute(positions,i).applyMatrix4(o.matrix);b.fromBufferAttribute(positions,i+1).applyMatrix4(o.matrix);c.fromBufferAttribute(positions,i+2).applyMatrix4(o.matrix);normal.crossVectors(b.clone().sub(a),c.clone().sub(a)).normalize();
+      for(const v of [a,b,c]){
+        v.add(root.position);const ax=Math.abs(normal.x),ay=Math.abs(normal.y),az=Math.abs(normal.z);
+        if(ay>ax&&ay>az)uvs.push(v.x*.55,v.z*.55);else if(ax>az)uvs.push(v.z*.55,v.y*.55);else uvs.push(v.x*.55,v.y*.55);
+        wetCourse.closestPointToPoint(v,true,nearestWet);const runoff=Math.exp(-v.distanceToSquared(nearestWet)*1.8);
+        wet.push(p===falls?Math.min(.95,.15+runoff*.85):p.name==='onsen-outdoor-bath'?THREE.MathUtils.clamp((.43-v.y)/.32,0,.9):0);
+      }
+    }
+    g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setAttribute('stoneWetness',new THREE.Float32BufferAttribute(wet,1));return o;
   };
   const groundShape=new THREE.Shape();onsenBoundary.forEach((p,i)=>{const x=p.x-onsen.x,z=p.z-onsen.z;if(!i)groundShape.moveTo(x,-z);else groundShape.lineTo(x,-z);});groundShape.closePath();
   const foundation=new THREE.ExtrudeGeometry(groundShape,{depth:.10,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:2,steps:1});foundation.rotateX(-Math.PI/2);mesh(floor,foundation,gravel,onsen.x,-.08,onsen.z);
@@ -109,9 +141,9 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   for(let i=0;i<=96;i++){const p=poolPoint(i/96*Math.PI*2);if(!i)poolShape.moveTo(p.x,-p.z);else poolShape.lineTo(p.x,-p.z);}poolShape.closePath();
   const basin=new THREE.ExtrudeGeometry(poolShape,{depth:.18,bevelEnabled:false});basin.rotateX(-Math.PI/2);mesh(outdoor,basin,darkStone,pool.x,.025,pool.z);
   water(outdoor,new THREE.ShapeGeometry(poolShape),pool.x,.27,pool.z);
-  for(let i=0;i<54;i++){
-    const a=i/54*Math.PI*2,p=poolPoint(a,.15),size=.33+random()*.12;
-    rock(outdoor,pool.x+p.x,.21,pool.z+p.z,size*1.12,.22+random()*.08,size*.87,i);
+  for(let i=0;i<34;i++){
+    const a=(i+.14*Math.sin(i*2.7))/34*Math.PI*2,p=poolPoint(a,.15),size=.63+random()*.24,tangent=Math.atan2(-pool.depth*Math.cos(a),-pool.width*Math.sin(a))+.15*Math.sin(i);
+    rock(outdoor,pool.x+p.x,.19,pool.z+p.z,size,.20+random()*.27,.32+random()*.11,i,tangent);
     if(i%3===0)rock(outdoor,pool.x+p.x*.99,.08,pool.z+p.z*.96,size*.6,.08,size*.6,i+3);
   }
   const wetStone=material(0x657267,.48);wetStone.bumpMap=granite;wetStone.bumpScale=.025;
@@ -123,34 +155,92 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   for(let i=0;i<12;i++){
     const t=i/11,x=-30.25+t*2.6,z=-27.5+t*1.8;
     rock(falls,x,.55+(1-t)*1.3,z,.58+random()*.24,.38+random()*.3,.45+random()*.3,i);
-    if(i%2===0){const m=mesh(falls,new THREE.SphereGeometry(1,12,8),moss,x-.22,.84+(1-t)*1.25,z-.05);m.scale.set(.45,.09,.34);}
   }
   root.updateMatrixWorld(true);
   const rockFaces=falls.children.filter(o=>o instanceof THREE.Mesh),surfaceRay=new THREE.Raycaster(),forward=new THREE.Vector3(12,0,20).normalize();
-  const flow=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,
-    uniforms:{time,waterLight},vertexShader:'varying vec2 flowUv;void main(){flowUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader:`varying vec2 flowUv;uniform float time;uniform float waterLight;
+  const flow=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:true,
+    uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),time,waterLight},
+    vertexShader:`varying vec2 flowUv;varying vec3 flowNormal;varying vec3 flowView;
+      #include <fog_pars_vertex>
+      void main(){flowUv=uv;flowNormal=normalize(normalMatrix*normal);vec4 mvPosition=modelViewMatrix*vec4(position,1.);flowView=-mvPosition.xyz;gl_Position=projectionMatrix*mvPosition;
+      #include <fog_vertex>
+      }`,
+    fragmentShader:`varying vec2 flowUv;varying vec3 flowNormal;varying vec3 flowView;uniform float time;uniform float waterLight;
+      #include <fog_pars_fragment>
       float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
-      void main(){float coarse=noise(vec2(flowUv.x*19.,flowUv.y*14.-time*2.4));float fine=noise(vec2(flowUv.x*61.,flowUv.y*39.-time*5.));float rush=coarse*.65+fine*.35;
-      float edge=smoothstep(0.,.08,flowUv.x)*smoothstep(1.,.92,flowUv.x);float foam=smoothstep(.2,.8,rush);
-      gl_FragColor=vec4(mix(vec3(.49,.72,.64),vec3(.94,.98,.94),foam*.82)*waterLight,edge*(.48+foam*.38));}`});materials.add(flow);
+      void main(){vec2 uv=flowUv;float streams=noise(vec2(uv.x*27.+sin(uv.y*8.)*.5,uv.y*4.-time*2.7));float fine=noise(vec2(uv.x*83.,uv.y*51.-time*22.));
+      float fresnel=pow(1.-abs(dot(normalize(flowNormal),normalize(flowView))),3.);float foam=smoothstep(.49,.79,streams*.66+fine*.34);
+      float edge=smoothstep(0.,.11,uv.x)*smoothstep(0.,.11,1.-uv.x);edge*=smoothstep(.12,.35,streams+sin(uv.x*43.+uv.y*5.)*.1);
+      vec3 color=mix(vec3(.20,.39,.35),vec3(.65,.80,.76),.38+fresnel*.5);color=mix(color,vec3(.89,.95,.92),foam*.85);
+      gl_FragColor=vec4(color*waterLight,edge*(.08+streams*.22+fresnel*.12+foam*.55));
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      #include <fog_fragment>
+      }`});materials.add(flow);
+  const waterBody=new THREE.MeshPhysicalMaterial({color:0x729f96,roughness:.16,metalness:0,transparent:true,opacity:.16,clearcoat:1,clearcoatRoughness:.12,depthWrite:false,side:THREE.DoubleSide});materials.add(waterBody);
+  const landings:THREE.Vector3[]=[];
   for(const points of [
-    [[-29.9,2.5,-26.15],[-29.65,2.43,-25.98],[-29.35,1.55,-25.7]],
-    [[-29.2,1.62,-25.65],[-28.9,1.57,-25.48],[-28.5,.77,-25.25]],
-    [[-28.4,.85,-25.24],[-28.05,.8,-25.15],[-27.7,.28,-25.05]],
+    [[-29.9,2.5,-26.15],[-29.65,2.43,-25.98],[-29.35,1.6,-25.7]],
+    [[-29.35,1.6,-25.7],[-28.9,1.55,-25.48],[-28.5,.82,-25.25]],
+    [[-28.5,.82,-25.25],[-28.05,.77,-25.15],[-27.7,.28,-25.05]],
   ]){
     const curve=new THREE.CatmullRomCurve3(points.map(([x,y,z])=>local(x,y,z))),positions=[],uvs=[],indices=[];
-    for(let j=0;j<=28;j++){const p=curve.getPoint(j/28),width=.75+Math.sin(j*.31)*.045;
+    for(let j=0;j<=28;j++){const p=curve.getPoint(j/28),width=.95+Math.sin(j*.63)*.09+Math.sin(j*1.7)*.04;
       for(let i=0;i<=8;i++){const t=i/8,q=new THREE.Vector3(p.x+(t-.5)*width,p.y+.014*Math.sin(i*2+j),p.z+.035*Math.sin(i*2+j*.3));
         const world=q.clone().add(root.position);surfaceRay.set(world.clone().addScaledVector(forward,8),forward.clone().negate());const hit=surfaceRay.intersectObjects(rockFaces,false)[0];
         if(hit&&hit.distance<8.03)q.copy(hit.point).addScaledVector(forward,.055).sub(root.position);
         positions.push(q.x,q.y,q.z);uvs.push(t,j/28);if(j<28&&i<8){const k=j*9+i;indices.push(k,k+1,k+9,k+1,k+10,k+9);}}
     }
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();const sheet=mesh(falls,g,flow);sheet.castShadow=false;sheet.name='onsen-cascade';
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();const sheet=mesh(falls,g,flow);sheet.castShadow=false;sheet.name='onsen-cascade';sheet.renderOrder=2;
+    const volume=[],volumeIndices=[];
+    for(let j=0;j<=28;j++){
+      const center=new THREE.Vector3().fromArray(positions,(j*9+4)*3).addScaledVector(forward,-.055),width=.68+Math.sin(j*.31)*.04;
+      for(let i=0;i<8;i++){const a=i/8*Math.PI*2;volume.push(center.x+Math.cos(a)*width/2,center.y,center.z+Math.sin(a)*.065);if(j<28){const k=j*8+i,n=j*8+(i+1)%8;volumeIndices.push(k,n,k+8,n,n+8,k+8);}}
+    }
+    const bodyGeometry=new THREE.BufferGeometry();bodyGeometry.setAttribute('position',new THREE.Float32BufferAttribute(volume,3));bodyGeometry.setIndex(volumeIndices);bodyGeometry.computeVertexNormals();const body=mesh(falls,bodyGeometry,waterBody);body.name='onsen-cascade-body';body.castShadow=false;body.renderOrder=1;
+    landings.push(new THREE.Vector3().fromArray(positions,(28*9+4)*3));
   }
-  const foam=new THREE.MeshBasicMaterial({color:0xe1eee0,transparent:true,opacity:.38,depthWrite:false});materials.add(foam);
-  for(let i=0;i<4;i++)ring(falls,-27.7,.287+i*.001,-25.05,.18+i*.11,.014,foam).castShadow=false;
+  const foam=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:true,uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),time,waterLight},
+    vertexShader:`varying vec2 foamUv;
+      #include <fog_pars_vertex>
+      void main(){foamUv=uv;vec4 mvPosition=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mvPosition;
+      #include <fog_vertex>
+      }`,
+    fragmentShader:`varying vec2 foamUv;uniform float time;uniform float waterLight;
+      #include <fog_pars_fragment>
+      float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
+      void main(){vec2 p=foamUv*2.-1.;float r=length(p);float n=noise(p*9.+vec2(time*.43,time*.29));float edge=1.-smoothstep(.27,.95,r+n*.19);float bubbles=smoothstep(.42,.75,n*.7+noise(p*23.-time*.32)*.3);
+      float ripple=pow(max(0.,sin(r*26.-time*4.+n*.7)),12.)*(1.-smoothstep(.3,1.,r));gl_FragColor=vec4(vec3(.82,.91,.86)*waterLight,edge*(.08+bubbles*.48)+ripple*.11);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      #include <fog_fragment>
+      }`});materials.add(foam);
+  const sprayPositions=[],velocities=[],sprayPhases=[];
+  for(const [index,landing] of landings.entries()){
+    const patch=mesh(falls,new THREE.PlaneGeometry(index===2?1.5:.82,index===2?1.15:.7),foam);patch.position.copy(landing).add(new THREE.Vector3(0,.035,.025));patch.rotation.x=-Math.PI/2;patch.name='onsen-impact';patch.castShadow=false;patch.renderOrder=3;
+    for(let i=0;i<64;i++){
+      const a=random()*Math.PI*2,speed=.18+random()*.55;
+      sprayPositions.push(landing.x+Math.cos(a)*.1,landing.y+.04,landing.z+Math.sin(a)*.08);
+      velocities.push(Math.cos(a)*speed,.75+random()*1.35,Math.sin(a)*speed);sprayPhases.push(random());
+    }
+  }
+  const sprayGeometry=new THREE.BufferGeometry();sprayGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sprayPositions,3));sprayGeometry.setAttribute('velocity',new THREE.Float32BufferAttribute(velocities,3));sprayGeometry.setAttribute('phase',new THREE.Float32BufferAttribute(sprayPhases,1));sprayGeometry.computeBoundingSphere();sprayGeometry.boundingSphere!.radius+=2;geometries.add(sprayGeometry);
+  const sprayMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:true,uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),time,waterLight},
+    vertexShader:`attribute vec3 velocity;attribute float phase;uniform float time;varying float dropletOpacity;
+      #include <fog_pars_vertex>
+      void main(){float age=fract(time*1.43+phase)*.7;vec3 p=position+velocity*age-vec3(0.,4.9*age*age,0.);dropletOpacity=sin(age/.7*3.14159)*.45;vec4 mvPosition=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mvPosition;gl_PointSize=1.6+phase*1.7;
+      #include <fog_vertex>
+      }`,
+    fragmentShader:`varying float dropletOpacity;uniform float waterLight;
+      #include <fog_pars_fragment>
+      void main(){float r=length(gl_PointCoord-vec2(.5));if(r>.5)discard;gl_FragColor=vec4(vec3(.84,.95,.91)*waterLight,(1.-smoothstep(.18,.5,r))*dropletOpacity);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      #include <fog_fragment>
+      }`});materials.add(sprayMaterial);
+  const splash=new THREE.Points(sprayGeometry,sprayMaterial);splash.name='onsen-splash';splash.renderOrder=4;falls.add(splash);
   const potColors=[0x537b6b,0x7b5d42,0x5c6f68];
   for(const [i,p] of onsen.potBaths.entries()){
     const pottery=new THREE.MeshPhysicalMaterial({color:potColors[i],roughness:.26,clearcoat:.8,clearcoatRoughness:.22,bumpMap:granite,bumpScale:.009,vertexColors:true});materials.add(pottery);applyVisibility(pottery);
@@ -328,9 +418,8 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   }
   const live=new Set<THREE.BufferGeometry>(),instances:THREE.InstancedMesh[]=[];root.traverse(o=>{if(o instanceof THREE.Mesh)live.add(o.geometry);if(o instanceof THREE.InstancedMesh)instances.push(o);if(o instanceof THREE.Points)live.add(o.geometry);});
   for(const g of geometries)if(!live.has(g)){g.dispose();geometries.delete(g);}
-  let disposed=false;
   return {
-    update(elapsed:number,position:{x:number;z:number},reduced:boolean){const reveal=isInsideBathhouse(position)||isBathhouseApproach(position);roof.visible=!reveal;cutaway.visible=!reveal;steam.visible=!reduced;time.value=reduced?0:elapsed;},
+    update(elapsed:number,position:{x:number;z:number},reduced:boolean){const reveal=isInsideBathhouse(position)||isBathhouseApproach(position);roof.visible=!reveal;cutaway.visible=!reveal;steam.visible=!reduced;splash.visible=!reduced;time.value=reduced?0:elapsed;},
     updateTime(night:number){lamp.emissiveIntensity=.16+night*1.5;waterLight.value=1-night*.36;},
     dispose(){if(disposed)return;disposed=true;root.removeFromParent();instances.forEach(o=>o.dispose());geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());},
   };

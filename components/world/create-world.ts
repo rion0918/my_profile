@@ -1624,7 +1624,7 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   resources.push(wildlife.dispose); await pause();
   selectable.push(bike.group);
   const visibility = createCharacterVisibility(person);
-  const thermalBaths = createOnsen(scene, visibility.apply);
+  const thermalBaths = createOnsen(scene, visibility.apply, ()=>{if(complete&&!signal.aborted)requestRender();});
   resources.push(thermalBaths.dispose); await pause();
   const areaGate = createAreaGate(scene, visibility.apply, hallFont);
   resources.push(areaGate.dispose); await pause();
