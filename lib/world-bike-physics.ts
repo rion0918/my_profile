@@ -2,6 +2,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { coastPoint, distanceToShore, getGroundHeight, getWalkingHeight, type Point, type Obstacle } from './world-navigation.ts';
 import { getHarborDeckHeight, harborDecks } from './world-harbor.ts';
 import { isOnRoad } from './world-layout.ts';
+import { cyclingSpeed, getCyclingSpeed } from './world-bike.ts';
 
 let initialization: Promise<void> | undefined;
 const step = 1 / 120, chassisHeight = 0.7;
@@ -84,12 +85,12 @@ export async function createBikePhysics(obstacles: Obstacle[]) {
       while (accumulator + 1e-9 >= step) {
         accumulator -= step;
         const before = pose(), velocity = body.linvel();
-        const maxSpeed = distanceToShore(before) > 0 && getHarborDeckHeight(before) === null ? 1.1 : 6;
-        const maxSteer = 0.65 - 0.2 * clamp(Math.abs(before.speed) / 6, 0, 1);
+        const maxSpeed = getCyclingSpeed(distanceToShore(before), getHarborDeckHeight(before) !== null);
+        const maxSteer = 0.65 - 0.2 * clamp(Math.abs(before.speed) / cyclingSpeed, 0, 1);
         steering += (clamp(input.steer, -1, 1) * maxSteer - steering) * (1 - Math.exp(-step * 9));
         const braking = input.brake || input.throttle < 0 && before.speed > 0.15;
         const targetSpeed = input.throttle >= 0 ? input.throttle * maxSpeed : input.throttle * 2.2;
-        const engine = braking || Math.abs(input.throttle) < 0.001 ? 0 : clamp((targetSpeed - before.speed) * 85 * 4, -380, 440);
+        const engine = braking || Math.abs(input.throttle) < 0.001 ? 0 : clamp((targetSpeed - before.speed) * 85 * 4, -380, 1000);
         vehicle.setWheelSteering(1, steering);
         vehicle.setWheelEngineForce(0, engine);
         for (const i of [0, 1]) vehicle.setWheelBrake(i, braking ? 8 : Math.abs(input.throttle) < 0.001 ? 0.12 : 0);
@@ -109,7 +110,7 @@ export async function createBikePhysics(obstacles: Obstacle[]) {
   };
 }
 
-export function followBikePath(physics: BikePhysics, path: Point[], delta: number) {
+export function followBikePath(physics: BikePhysics, path: Point[], delta: number, stopAtEnd = true) {
   const p = physics.pose;
   while (path.length > 1 && Math.hypot(path[0].x - p.x, path[0].z - p.z) < 0.7) path.shift();
   for (let i = path.length - 1; i >= 1; i--) {
@@ -120,7 +121,7 @@ export function followBikePath(physics: BikePhysics, path: Point[], delta: numbe
   const goal = path.at(-1);
   if (!goal) return physics.update(delta, { throttle: 0, steer: 0, brake: true });
   const remaining = Math.hypot(goal.x - p.x, goal.z - p.z);
-  if (path.length === 1 && remaining < 0.16 && Math.abs(p.speed) < 0.4) { path.shift(); physics.halt(); return physics.pose; }
+  if (stopAtEnd && path.length === 1 && remaining < 0.16 && Math.abs(p.speed) < 0.4) { path.shift(); physics.halt(); return physics.pose; }
   let target = path[0], previous: Point = p, look = 2.4 + Math.abs(p.speed) * 0.12;
   for (const point of path) {
     const length = Math.hypot(point.x - previous.x, point.z - previous.z);
@@ -129,6 +130,9 @@ export function followBikePath(physics: BikePhysics, path: Point[], delta: numbe
   }
   const angle = Math.atan2(target.x - p.x, target.z - p.z);
   const error = Math.atan2(Math.sin(angle - p.heading), Math.cos(angle - p.heading));
-  const targetSpeed = Math.min(6, path.length === 1 ? Math.sqrt(5 * remaining) : 6) * Math.max(0.25, Math.cos(error));
-  return physics.update(delta, { throttle: clamp(targetSpeed / 6, 0.08, 1), steer: clamp(error * 1.7, -1, 1), brake: p.speed > targetSpeed + 0.35 });
+  let routeRemaining = Math.hypot(path[0].x - p.x, path[0].z - p.z);
+  for (let i = 1; i < path.length; i++) routeRemaining += Math.hypot(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z);
+  const turningSpeed = Math.max(1.5, cyclingSpeed / (1 + Math.abs(error) * 3));
+  const targetSpeed = Math.min(turningSpeed, stopAtEnd ? Math.min(Math.sqrt(5 * routeRemaining), routeRemaining * 2) : cyclingSpeed);
+  return physics.update(delta, { throttle: clamp(targetSpeed / cyclingSpeed, 0, 1), steer: clamp(error * 1.7, -1, 1), brake: p.speed > targetSpeed + 0.35 });
 }

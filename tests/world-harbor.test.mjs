@@ -32,8 +32,8 @@ test("deck height follows the access ramp, stays above water and retains land mo
   }
   const p = harbor.destination;
   assert.ok(distanceToShore(p) > 3);
-  assert.equal(getMoveSpeed(false, distanceToShore(p), true), getMoveSpeed(false, -4));
-  assert.equal(getMoveSpeed(true, distanceToShore(p), true), getMoveSpeed(true, -4));
+  assert.equal(getMoveSpeed(distanceToShore(p), true), 5);
+  assert.equal(getMoveSpeed(distanceToShore(p), true), getMoveSpeed(-4));
   assert.equal(getHarborDeckHeight({ x: 6, z: -41 }), null);
   assert.ok(harborDecks.length >= 3);
 });

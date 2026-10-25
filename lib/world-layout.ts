@@ -222,7 +222,7 @@ const treeSites = [
   ]),
 ];
 export const ponds = [
-  { x: 28, z: -7, width: 6, depth: 12 },
+  { x: 28, z: -10, width: 6, depth: 12 },
   { x: -27, z: -8, width: 8, depth: 6 },
 ];
 export const landmark = {

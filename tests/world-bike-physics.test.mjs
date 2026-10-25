@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { createBikePhysics, followBikePath } from '../lib/world-bike-physics.ts';
 import { obstacles, buildings } from '../lib/world-layout.ts';
 import { bikeStart, cyclingObstacles } from '../lib/world-bike.ts';
-import { findPath, isWalkable } from '../lib/world-navigation.ts';
+import { findPath, isWalkable, getMoveSpeed } from '../lib/world-navigation.ts';
 const simulate=(physics,seconds,input,h=1/60)=>{for(let t=0;t<seconds-1e-8;t+=h)physics.update(h,input);return physics.pose;};
 
 test('real rigid-body wheels accelerate, coast, brake and reverse while remaining grounded', async()=>{
  const p=await createBikePhysics([]);try{
   p.reset({x:0,z:6},0);
-  const early=simulate(p,.3,{throttle:1,steer:0});assert.ok(early.speed>0&&early.speed<3);
-  const fast=simulate(p,2.7,{throttle:1,steer:0});assert.ok(fast.speed>4.5&&fast.speed<6.5);
+  const early=simulate(p,.3,{throttle:1,steer:0});assert.ok(early.speed>0&&early.speed<5);
+  const fast=simulate(p,2.7,{throttle:1,steer:0});assert.ok(fast.speed>8&&fast.speed<9.5);
   const coast=simulate(p,.3,{throttle:0,steer:0});assert.ok(coast.z>fast.z&&coast.speed>1,'momentum continues after releasing W');
   const brake=simulate(p,.8,{throttle:-1,steer:0});assert.ok(brake.speed<coast.speed*.5);
   const reverse=simulate(p,1.4,{throttle:-1,steer:0});assert.ok(reverse.speed<-.5);
@@ -51,5 +51,24 @@ test('tap navigation physically steers from the rack to all six entrances and th
    assert.equal(path.length,0,'path finishes '+JSON.stringify({target,pose:p.pose,path}));
    assert.ok(Math.hypot(p.pose.x-target.x,p.pose.z-target.z)<.25);
   }
+ }finally{p.dispose();}
+});
+
+test('cycling overtakes running promptly after setting off',async()=>{
+ const p=await createBikePhysics([]);try{
+  const start={x:0,z:20};p.reset(start,Math.PI);
+  const first=simulate(p,1,{throttle:1,steer:0});assert.ok(first.speed>getMoveSpeed(-2)*1.4,'does not spend the first second below running pace');
+  const next=simulate(p,1,{throttle:1,steer:0});assert.ok(Math.hypot(next.x-start.x,next.z-start.z)>getMoveSpeed(-2)*2*1.15,'covers more ground than running over the first two seconds');
+ }finally{p.dispose();}
+});
+
+test('continuous touch steering cruises faster than running without braking for its moving target',async()=>{
+ const p=await createBikePhysics([]);try{
+  p.reset({x:0,z:20},Math.PI);
+  for(let i=0;i<120;i++){const pos=p.pose;followBikePath(p,[{x:pos.x,z:pos.z-3}],1/60,false);}
+  assert.ok(p.pose.speed>8,'the temporary steering target must not act like a destination');
+  const path=[{x:p.pose.x,z:p.pose.z-5}],goal={...path[0]};
+  for(let i=0;i<600&&path.length;i++)followBikePath(p,path,1/60);
+  assert.equal(path.length,0);assert.ok(Math.hypot(p.pose.x-goal.x,p.pose.z-goal.z)<.25);assert.ok(Math.abs(p.pose.speed)<.05,'real destinations still brake and stop');
  }finally{p.dispose();}
 });

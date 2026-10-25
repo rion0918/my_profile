@@ -30,6 +30,7 @@ import {
 } from "../../lib/world-navigation";
 import { createHallWordGeometry, createHallWordMaterials, createHallWordGlow } from "./create-hall-word";
 import { createHallIcon, hallIcons } from "./create-hall-icon";
+import { createHallArchitecture } from "./create-hall-architecture";
 import roundedHallFontData from "./assets/fuwatto.typeface.json";
 import hallFontData from "./assets/helvetiker_regular.typeface.json";
 import fontData from "./assets/riomaru.typeface.json";
@@ -98,19 +99,15 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   });
   const glass = new THREE.MeshStandardMaterial({
     color: 0xb8ece4,
-    metalness: 0.25,
-    roughness: 0.22,
+    metalness: 0.08,
+    roughness: 0.12,
     transparent: true,
-    opacity: 0.42,
+    opacity: 0.2,
     side: THREE.DoubleSide,
+    forceSinglePass: true,
     depthWrite: false,
   });
-  const darkGlass = new THREE.MeshStandardMaterial({
-    color: 0x647e9d,
-    metalness: 0.4,
-    roughness: 0.25,
-  });
-  [glow, glass, darkGlass].forEach((value) => materials.add(value));
+  [glow, glass].forEach((value) => materials.add(value));
   const mesh = (
     geometry: THREE.BufferGeometry,
     mat: THREE.Material | THREE.Material[],
@@ -242,32 +239,6 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       ),
       typeof color === "number" ? material(color) : color,
       parent,
-    );
-  const extrude = (
-    parent: THREE.Object3D,
-    shape: THREE.Shape,
-    depth: number,
-    color: number | THREE.Material,
-    x = 0,
-    y = 0,
-    z = 0,
-    bevel = 0.04,
-  ) =>
-    mesh(
-      new THREE.ExtrudeGeometry(shape, {
-        depth,
-        steps: 1,
-        bevelEnabled: bevel > 0,
-        bevelSize: bevel,
-        bevelThickness: bevel,
-        bevelSegments: 2,
-        curveSegments: 24,
-      }),
-      typeof color === "number" ? material(color) : color,
-      parent,
-      x,
-      y,
-      z,
     );
   const text = (
     parent: THREE.Object3D,
@@ -420,15 +391,6 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     sprite.scale.setScalar(size);
     parent.add(sprite);
   };
-  const arch = (width: number, spring: number) => {
-    const shape = new THREE.Shape();
-    shape.moveTo(-width / 2, 0);
-    shape.lineTo(width / 2, 0);
-    shape.lineTo(width / 2, spring);
-    shape.absarc(0, spring, width / 2, 0, Math.PI, false);
-    shape.closePath();
-    return shape;
-  };
   const pot = (
     parent: THREE.Object3D,
     x: number,
@@ -492,340 +454,18 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       d = building.depth / building.scale;
     shadow(landscape, building.x + 0.1, building.z + 0.15, w + 2.2, d + 1.7);
     const theme = building.theme;
-    if (building.model === "atelier") {
-      // Timber A-frame: open, furnished interior behind a triangular glass facade.
-      box(group, 0, 0.12, 0, w + 0.3, 0.24, d + 0.65, theme?.surface ?? 0xaca58c, 0.08);
-      for (let i = 0; i < 13; i++)
-        box(group, -1.5 + i * 0.25, 0.26, 0, 0.22, 0.06, d + 0.4, 0xe4b17c);
-      const roof = new THREE.Shape();
-      roof.moveTo(-1.95, 0.32);
-      roof.lineTo(0, 3.8);
-      roof.lineTo(1.95, 0.32);
-      roof.lineTo(1.68, 0.32);
-      roof.lineTo(0, 3.34);
-      roof.lineTo(-1.68, 0.32);
-      roof.closePath();
-      extrude(group, roof, d + 0.35, theme?.surface ?? 0x38aaa5, 0, 0, -(d + 0.35) / 2);
-      const facade = new THREE.Shape();
-      facade.moveTo(-1.61, 0.3);
-      facade.lineTo(1.61, 0.3);
-      facade.lineTo(0, 3.25);
-      facade.closePath();
-      const opening = new THREE.Path();
-      opening.moveTo(-0.56, 0.28);
-      opening.lineTo(0.56, 0.28);
-      opening.lineTo(0.56, 1.85);
-      opening.lineTo(-0.56, 1.85);
-      opening.closePath();
-      facade.holes.push(opening);
-      mesh(new THREE.ShapeGeometry(facade), glass, group, 0, 0, d / 2 + 0.06);
-      for (const z of [-1.3, -0.75, -0.2, 0.35, 0.9, 1.5])
-        for (const side of [-1, 1])
-          beam(group, [0, 3.83, z], [side * 1.97, 0.32, z], 0.035, theme?.primary ?? 0x88d7c1);
-      for (const side of [-1, 1])
-        beam(group, [0, 3.35, 1.42], [side * 1.7, 0.3, 1.42], 0.075, theme?.light ?? 0xffe2bb);
-
-      box(group, 0, 1.9, 1.45, 1.8, 0.065, 0.065, theme?.primary ?? 0xf7d6ad);
-      box(group, 0.4, 0.94, 0.35, 1.35, 0.09, 0.7, 0xf1c89b);
-      for (const x of [-0.15, 0.95])
-        box(group, x, 0.6, 0.35, 0.07, 0.7, 0.45, 0x4c5550);
-      box(group, 0.35, 1.19, 0.2, 0.54, 0.34, 0.07, 0x2d4144);
-      box(group, 0.35, 1.19, 0.245, 0.47, 0.26, 0.01, glow);
-      box(group, -1.05, 1.05, -0.6, 0.55, 1.6, 0.5, 0xb29064);
-      for (let i = 0; i < 12; i++)
-        box(
-          group,
-          -1.23 + (i % 4) * 0.12,
-          0.58 + Math.floor(i / 4) * 0.43,
-          -0.31,
-          0.08,
-          0.27,
-          0.14,
-          [0x8b5642, 0xc3b782, 0x496568][i % 3],
-        );
-      cylinder(group, -0.5, 2.45, 0.25, 0.12, 0.34, 0.25, 0xd0a86e);
-      sphere(group, -0.5, 2.29, 0.25, 0.12, glow);
-      if (!theme) text(group, building.name, 0, 2.45, 1.64, 2, "#f0dfbd", "#65597f");
-      text(group, "< / >", 0.35, 1.19, 0.29, 0.45, "#c4edc5");
-      pot(group, -1.45, 1.3, 0.7);
-    } else if (building.model === "gallery") {
-      // A circular gallery with a scalloped roof, brass ribs and an open entrance.
-      const r = 1.66;
-      cylinder(group, 0, 0.15, 0, r + 0.22, r + 0.3, 0.3, theme?.primary ?? 0xb9b6a2, 64);
-      cylinder(group, 0, 0.34, 0, r, r, 0.16, theme?.surface ?? 0xffead2, 64);
-      mesh(
-        new THREE.CylinderGeometry(r, r, 2, 64, 1, true, 0.5, Math.PI * 2 - 1),
-        theme ? material(theme.primary) : darkGlass,
-        group,
-        0,
-        1.4,
-        0,
-      );
-      for (let i = 0; i < 26; i++) {
-        const a = 0.5 + (i / 25) * (Math.PI * 2 - 1);
-        const x = Math.sin(a) * (r + 0.03),
-          z = Math.cos(a) * (r + 0.03);
-        cylinder(group, x, 1.4, z, 0.045, 0.045, 2.2, theme?.light ?? 0xffc58e, 8);
-        if (i % 4 === 0) {
-          const panel = box(
-            group,
-            Math.sin(a) * (r + 0.045),
-            1.44,
-            Math.cos(a) * (r + 0.045),
-            0.28,
-            0.74,
-            0.035,
-            glow,
-          );
-          panel.rotation.y = a;
-        }
+    const architecture = createHallArchitecture(building, text);
+    group.add(architecture);
+    architecture.traverse(object => {
+      if (!(object instanceof THREE.Mesh)) return;
+      geometries.add(object.geometry);
+      for (const value of Array.isArray(object.material) ? object.material : [object.material]) {
+        materials.add(value);
+        if (value instanceof THREE.MeshStandardMaterial && value.map) textures.add(value.map);
       }
-      cylinder(group, 0, 2.53, 0, r + 0.3, r + 0.3, 0.17, theme?.surface ?? 0xffe8d1, 64);
-      cylinder(group, 0, 2.67, 0, 1.35, 1.95, 0.17, theme?.primary ?? 0xf0ad88, 64);
-      cylinder(group, 0, 2.79, 0, 0.72, 1.35, 0.13, theme?.light ?? 0xffd2a8, 64);
-      cylinder(group, 0, 2.87, 0, 0.65, 0.65, 0.07, theme ? material(theme.primary) : darkGlass, 48);
-      for (const x of [-0.64, 0.64])
-        box(group, x, 1.35, 1.66, 0.07, 2.1, 0.08, theme?.light ?? 0xffe3bb);
-      if (!theme) text(group, building.name, 0, 2.2, 1.86, 2, "#f3dfb7", "#65597f");
-      cylinder(group, 0, 0.65, 0.5, 0.36, 0.36, 0.6, theme?.surface ?? 0xc8bea4);
-      const sculpture = mesh(
-        new THREE.TorusKnotGeometry(0.23, 0.065, 48, 8),
-        material(theme?.light ?? 0xd7ae70),
-        group,
-        0,
-        1.18,
-        0.5,
-      );
-      sculpture.rotation.x = 0.4;
-      ["上宮高校", "神戸電子", "DMM・内定"].forEach((label, i) => {
-        const x = (i - 1) * 0.92;
-        box(group, x, 0.9, -0.35, 0.68, 1, 0.09, theme?.surface ?? 0xe3c799, 0.03);
-        text(group, label, x, 1.08, -0.29, 0.62, `#${(theme?.primary ?? 0x385a55).toString(16).padStart(6, "0")}`);
-      });
-    } else if (building.model === "music") {
-      // A brick barrel-vault studio, with curved copper seams and a record sign.
-      box(group, 0, 0.13, 0, w + 0.25, 0.26, d + 0.5, 0xb9aa8d, 0.08);
-      const studioShell = arch(w, 1.1);
-      studioShell.holes.push(
-        new THREE.Path(
-          arch(2.5, 0.9)
-            .getPoints()
-            .map((p) => new THREE.Vector2(p.x, p.y + 0.12)),
-        ),
-      );
-      extrude(group, studioShell, d, theme?.primary ?? 0xd97667, 0, 0.21, -d / 2, 0.07);
-      box(group, 0, 0.29, 0, 2.5, 0.12, d, 0xa8865f);
-      box(group, 0, 1, -1.12, 2.4, 1.4, 0.12, 0x6e4d3e);
-      for (const x of [-0.75, 0, 0.75]) {
-        box(group, x, 1.24, -1.02, 0.5, 1, 0.06, 0x283f3e);
-        box(group, x, 1.85, -1.01, 0.34, 0.07, 0.07, glow);
-      }
-      box(group, 0.35, 0.93, 0.24, 1.1, 0.1, 0.55, 0xb9a27d);
-      box(group, 0.35, 0.88, 0.25, 0.7, 0.9, 0.35, 0x46615b);
-      for (let i = 0; i < 6; i++)
-        box(group, 0.04 + i * 0.12, 1, 0.24, 0.04, 0.015, 0.18, 0x343e37);
-      cylinder(group, -0.7, 0.81, 0.15, 0.022, 0.022, 1.1, 0x303c38, 8);
-      sphere(group, -0.7, 1.37, 0.15, 0.075, 0x48504a).scale.y *= 1.5;
-      cylinder(group, -0.7, 0.31, 0.15, 0.18, 0.18, 0.04, 0x303c38, 16);
-      const roof = new THREE.Shape();
-      roof.absarc(0, 1.1, w / 2 + 0.16, 0, Math.PI, false);
-      roof.absarc(0, 1.1, w / 2 + 0.04, Math.PI, 0, true);
-      roof.closePath();
-      extrude(group, roof, d + 0.3, theme?.primary ?? 0xc86d85, 0, 0.21, -d / 2 - 0.15, 0.02);
-      for (let i = 0; i < 9; i++) {
-        const z = -d / 2 - 0.15 + (i * (d + 0.3)) / 8;
-        tube(
-          group,
-          Array.from({ length: 25 }, (_, j) => {
-            const a = (j / 24) * Math.PI;
-            return new THREE.Vector3(
-              Math.cos(a) * (w / 2 + 0.18),
-              1.31 + Math.sin(a) * (w / 2 + 0.18),
-              z,
-            );
-          }),
-          0.027,
-          theme?.surface ?? 0xefa3af,
-        );
-      }
-      const windowFrame = arch(2.46, 0.87);
-      windowFrame.holes.push(
-        new THREE.Path(
-          arch(2.18, 0.82)
-            .getPoints()
-            .map((p) => new THREE.Vector2(p.x, p.y + 0.04)),
-        ),
-      );
-      extrude(group, windowFrame, 0.035, theme?.light ?? 0xdbc4a0, 0, 0.26, d / 2 + 0.07, 0.02);
-      mesh(
-        new THREE.ShapeGeometry(
-          (() => {
-            const shape = arch(2.18, 0.82);
-            const hole = new THREE.Path();
-            hole.moveTo(-0.56, 0);
-            hole.lineTo(0.56, 0);
-            hole.lineTo(0.56, 1.5);
-            hole.lineTo(-0.56, 1.5);
-            hole.closePath();
-            shape.holes.push(hole);
-            return shape;
-          })(),
-        ),
-        glass,
-        group,
-        0,
-        0.3,
-        d / 2 + 0.12,
-      );
-      for (const x of [-0.68, 0.68])
-        box(group, x, 1.02, d / 2 + 0.18, 0.06, 1.42, 0.05, theme?.primary ?? 0x77597d);
-      box(group, 0, 1.87, d / 2 + 0.19, 2.1, 0.06, 0.05, theme?.primary ?? 0x77597d);
-      for (const x of [-0.72, 0.72])
-        box(group, x, 0.85, d / 2 + 0.16, 0.51, 0.8, 0.02, glow);
-      for (let row = 0; row < 5; row++)
-        for (const side of [-1, 1])
-          for (let col = 0; col < 3; col++)
-            box(
-              group,
-              side * (1.24 + col * 0.1),
-              0.35 + row * 0.17,
-              d / 2 + 0.04,
-              0.09,
-              0.014,
-              0.016,
-              0xb77c5d,
-              0.002,
-            );
-      const record = cylinder(
-        group,
-        -1.55,
-        2.05,
-        1.45,
-        0.44,
-        0.44,
-        0.09,
-        0x283e3d,
-        48,
-      );
-      record.rotation.x = Math.PI / 2;
-      const recordRing = mesh(
-        new THREE.TorusGeometry(0.3, 0.012, 4, 48),
-        material(0x74817a),
-        group,
-        -1.55,
-        2.05,
-        1.51,
-      );
-      recordRing.rotation.z = 0.2;
-      const label = cylinder(
-        group,
-        -1.55,
-        2.05,
-        1.51,
-        0.12,
-        0.12,
-        0.02,
-        0xe9bb76,
-      );
-      label.rotation.x = Math.PI / 2;
-      beam(group, [-1.45, 2.4, 1.2], [-1.55, 2.4, 1.5], 0.04, 0x333f37);
-      if (!theme) text(group, building.name, 0, 2.18, 1.41, 1.55);
-      pot(group, 1.38, 1.4, 0.78);
-    } else if (building.model === "workshop" || building.model === "bookshop") {
-      const bookshop = building.model === "bookshop";
-      const accent = theme?.primary ?? (bookshop ? 0x6c9dc1 : 0x64a897);
-      box(group, 0, 0.15, 0, w + 0.3, 0.3, d + 0.35, 0xb7b59b, 0.06);
-      box(group, 0, 0.33, 0, w, 0.06, d, 0xe7c99f);
-      box(group, 0, 1.5, -d / 2, w, 2.3, 0.15, theme?.surface ?? 0xffe7c6);
-      for (const side of [-1, 1]) {
-        box(group, side * w / 2, 1.5, 0, 0.15, 2.3, d, accent);
-        box(group, side * (w / 4 + 0.28), 1.42, d / 2, w / 2 - 0.56, 2.1, 0.035, glass);
-        box(group, side * 0.59, 1.4, d / 2 + 0.04, 0.07, 2.15, 0.08, theme?.primary ?? 0xf6d4ac);
-      }
-      box(group, 0, 2.72, 0, w + 0.4, 0.22, d + 0.35, theme?.surface ?? accent, 0.06);
-      box(group, 0, 2.86, 0, w - 0.25, 0.09, d - 0.2, theme?.light ?? (bookshop ? 0xe9dcc1 : 0xb8d2ba));
-      if (!theme) text(group, building.name, 0, 2.35, d / 2 + 0.15, w - 0.3, "#355454", "#f7e8c9");
-      else box(group, 0, 2.35, d / 2 + 0.1, w - 0.15, 0.6, 0.1, theme.surface, 0.025);
-      if (bookshop) {
-        for (const x of [-1.08, 0, 1.08]) {
-          box(group, x, 1.25, -d / 2 + 0.25, 0.85, 1.8, 0.35, 0xac875f);
-          for (let row = 0; row < 3; row++) {
-            box(group, x, 0.55 + row * 0.5, -d / 2 + 0.45, 0.86, 0.055, 0.45, 0xf0c99d);
-            for (let i = 0; i < 5; i++) box(group, x - 0.3 + i * 0.14, 0.75 + row * 0.5, -d / 2 + 0.48,
-              0.1, 0.32, 0.19, [accent, theme?.light ?? 0xe7c894, theme?.surface ?? 0x92b9a9][(row + i) % 3]);
-          }
-        }
-        box(group, 0, 0.68, 0.4, 1.9, 0.65, 0.65, 0xc4986f, 0.04);
-        ["学び", "記録", "技術"].forEach((title, i) => {
-          const x = (i - 1) * 0.56;
-          box(group, x, 1.14, 0.5, 0.46, 0.58, 0.075, i === 1 ? (theme?.light ?? 0xf1dfbd) : accent, 0.025);
-          text(group, title, x, 1.18, 0.55, 0.38, "#294b63");
-        });
-      } else {
-        box(group, 0, 0.94, -0.15, 2.25, 0.12, 1.05, 0xd1ad7d, 0.06);
-        for (const x of [-0.85, 0.85]) {
-          for (const z of [-0.45, 0.2]) cylinder(group, x, 0.62, z, 0.045, 0.045, 0.65, 0x557d72, 8);
-          for (const z of [-0.95, 0.7]) {
-            box(group, x, 0.6, z, 0.5, 0.12, 0.48, accent, 0.04);
-            box(group, x, 0.92, z + (z > 0 ? 0.2 : -0.2), 0.5, 0.6, 0.09, accent, 0.04);
-          }
-        }
-        box(group, 0, 1.75, -d / 2 + 0.13, 2.9, 1.1, 0.09, 0x507769, 0.04);
-        text(group, "Sky / We部", 0, 1.9, -d / 2 + 0.2, 2.5, "#f6efd4");
-        text(group, "実務と、コミュニティ", 0, 1.53, -d / 2 + 0.2, 2.3, "#d6dfbf");
-        box(group, -0.4, 1.03, -0.2, 0.45, 0.035, 0.3, 0x355651);
-        box(group, 0.45, 1.03, -0.1, 0.42, 0.035, 0.32, 0xf7ebd3);
-      }
-      if (bookshop) pot(group, w / 2 - 0.35, 0.55, d / 2 + 0.16);
-      else pot(group, w / 2 - 0.3, d / 2 + 0.25, 0.65);
-    } else {
-      // A rounded pavilion: pill-shaped walls, wraparound glazing and a bubble mobile.
-      box(group, 0, 0.14, 0, w + 0.45, 0.28, d + 0.45, 0xa8ad94, 0.14);
-      for (const side of [-1, 1])
-        box(
-          group,
-          side * (w / 2 - 0.15),
-          1.17,
-          0,
-          0.3,
-          1.95,
-          d,
-          theme?.surface ?? 0xffd4ca,
-          0.12,
-        );
-      box(group, 0, 1.17, -d / 2 + 0.12, w, 1.95, 0.25, theme?.surface ?? 0xffd4ca, 0.12);
-      for (const side of [-1, 1])
-        box(group, side * 1.02, 1.17, d / 2, 0.9, 1.95, 0.25, theme?.surface ?? 0xffd4ca, 0.12);
-      for (const side of [-1, 1])
-        box(
-          group,
-          side * 0.97,
-          1.25,
-          d / 2 + 0.08,
-          0.6,
-          1.35,
-          0.07,
-          darkGlass,
-          0.05,
-        );
-      for (const x of [-0.7, 0.7])
-        box(group, x, 1.25, 1.37, 0.045, 1.2, 0.05, 0xe3d8b9);
-
-      box(group, 0, 2.19, 0, w + 0.18, 0.25, d + 0.16, 0xffeddb, 0.12);
-      box(group, 0, 2.34, 0, w - 0.3, 0.14, d - 0.3, 0x73bfc4, 0.06);
-      for (const [x, y, r] of [
-        [-0.68, 2.84, 0.48],
-        [0.43, 2.67, 0.31],
-        [0.1, 3.25, 0.25],
-      ]) {
-        sphere(group, x, y, 0, r, theme?.light ?? 0xffe7c5);
-        beam(group, [x, 2.4, 0], [x, y, 0], 0.025, 0xb6bd9c);
-      }
-      if (!theme) text(group, building.name, 0, 1.98, 1.43, 2.7, "#304d49");
-      pot(group, -1.35, 1.35, 0.75);
-    }
+    });
     if (theme) {
-      const y = building.model === "atelier" ? 2.3 : building.model === "bubble" ? 1.9 : 2.15;
+      const y = building.model === "atelier" ? 2.3 : building.model === "bubble" ? 2.16 : 2.15;
       const width = building.id === 'x' ? 1 : building.model === "music" ? 2.1 : building.model === "bubble" ? 2.6 : building.model === "workshop" ? 3.55 : 3.15;
       const height = building.id === 'x' ? .85 : building.model === "bubble" ? 0.55 : 0.62;
       const railWidth = building.id === 'x' ? 1.2 : building.model === "music" ? 2.15 : building.model === "bubble" ? 2.8 : building.model === "workshop" ? 3.7 : 3.3;
@@ -1657,8 +1297,6 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     glow.emissiveIntensity = 0.08 + lighting.lamps * 1.8;
     haloMaterial.opacity = 0.08 + lighting.lamps * 0.92;
     poolMaterial.opacity = lighting.lamps * 0.55;
-    darkGlass.emissive.setHex(0xffb65c);
-    darkGlass.emissiveIntensity = lighting.lamps * 0.75;
     glass.emissive.setHex(0xffc78d);
     glass.emissiveIntensity = lighting.lamps * 0.2;
     windowLights.forEach(light => { light.intensity = lighting.lamps * 7; });

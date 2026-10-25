@@ -64,18 +64,14 @@ async(page)=>{
    await p.locator('.worldSurface').focus();await p.keyboard.press('0');
    await p.locator('.worldSurface').focus();const still=await metrics();await p.keyboard.down('ArrowUp');await p.waitForTimeout(500);await p.keyboard.up('ArrowUp');
    const moved=await metrics(),distance=Math.hypot(moved.position[0]-still.position[0],moved.position[2]-still.position[2]);
-   if(distance<1.2||distance>2.2)throw Error('walking pace '+distance);
+   if(distance<2.1||distance>3.2)throw Error('fixed movement pace '+distance);
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');const stopped=await metrics();await p.waitForTimeout(200);
    if(JSON.stringify((await metrics()).position)!==JSON.stringify(stopped.position))throw Error('stop failed');
    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:'Yoin館へ歩く',exact:true}).click();await p.waitForTimeout(250);
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');const cancelled=await metrics();await p.waitForTimeout(250);
    if(JSON.stringify((await metrics()).position)!==JSON.stringify(cancelled.position)||await p.getByRole('dialog').isVisible())throw Error('cannot cancel tap travel');
    await p.screenshot({path:`output/playwright/ux-after-explore-${width}.png`});
-   const groups=await p.evaluate(()=>{
-    const a=document.querySelector('.worldCameraControls').getBoundingClientRect(),b=document.querySelector('.worldControlButtons').getBoundingClientRect();
-    return {overlap:a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top};
-   });
-   if(groups.overlap)throw Error('camera controls overlap movement controls at '+width);
+   if(await p.locator('.worldControlButtons').count())throw Error('left movement controls remain at '+width);
    const obscured=await p.evaluate(()=>{
     const controls=document.querySelector('.worldCameraControls').getBoundingClientRect();
     return [...document.querySelectorAll('.buildingLabel:not([hidden]),.entryLabel:not([hidden])')].filter(b=>{const r=b.getBoundingClientRect();return r.left<controls.right&&r.right>controls.left&&r.top<controls.bottom&&r.bottom>controls.top;}).map(b=>b.textContent);

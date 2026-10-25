@@ -1,21 +1,28 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { lstat, readdir, readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export async function secureStaticExport(directory) {
+async function inspectPublishableFiles(directory) {
   const pages = [];
+  if ((await lstat(directory)).isSymbolicLink()) throw new Error(`Refusing to publish symbolic link: ${directory}`);
   async function inspect(dir) {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);
-      if (/^\.env(?:\.|$)|^\.git$|\.(?:map|key|pem|p12|pfx)$/i.test(basename(path))) {
+      if (/^\.env|^\.(?:git|npmrc|netrc|vercel)$|\.(?:map|key|pem|p12|pfx)$/i.test(entry.name)) {
         throw new Error(`Refusing to publish sensitive file: ${path}`);
       }
+      if (entry.isSymbolicLink()) throw new Error(`Refusing to publish symbolic link: ${path}`);
       if (entry.isDirectory()) await inspect(path);
       else if (entry.name.endsWith('.html')) pages.push(path);
     }
   }
   await inspect(directory);
+  return pages;
+}
+
+export async function secureStaticExport(directory) {
+  const pages = await inspectPublishableFiles(directory);
   if (!pages.length) throw new Error('No exported HTML pages found. Run next build first.');
   for (const path of pages) {
     const html = (await readFile(path, 'utf8')).replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*"\s*\/>/g, '');
@@ -50,6 +57,11 @@ export async function secureStaticExport(directory) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const count = await secureStaticExport(resolve('out'));
-  console.log(`Security policy added to ${count} static HTML pages.`);
+  if (process.argv[2] === '--check-public') {
+    await inspectPublishableFiles(resolve('public'));
+    console.log('Public assets passed security inspection.');
+  } else {
+    const count = await secureStaticExport(resolve('out'));
+    console.log(`Security policy added to ${count} static HTML pages.`);
+  }
 }

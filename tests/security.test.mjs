@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { secureStaticExport } from '../scripts/secure-static-export.mjs';
 
@@ -58,6 +59,50 @@ test('the export hardening step fails for missing HTML or accidentally published
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
+test('publishing rejects credential configuration and linked files or directories', async t => {
+  for (const name of ['.envrc', '.npmrc', '.netrc', '.vercel/project.json', 'linked.json', 'linked-directory']) {
+    await t.test(name, async () => {
+      const dir = await mkdtemp(join(tmpdir(), 'portfolio-security-'));
+      try {
+        const out = join(dir, 'out');
+        await mkdir(out);
+        await writeFile(join(out, 'index.html'), '<html><head></head></html>');
+        if (name.startsWith('linked')) {
+          await mkdir(join(dir, 'private'));
+          await writeFile(join(dir, 'private/config.json'), 'test fixture');
+          await symlink(join(dir, name === 'linked.json' ? 'private/config.json' : 'private'), join(out, name));
+        } else {
+          if (name.includes('/')) await mkdir(join(out, '.vercel'));
+          await writeFile(join(out, name), 'test fixture');
+        }
+        await assert.rejects(secureStaticExport(out), /sensitive|symbolic/i);
+        assert.equal(await readFile(join(out, 'index.html'), 'utf8'), '<html><head></head></html>', 'reject the entire tree before modifying HTML');
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    });
+  }
+});
+
+test('public assets are inspected before the framework can copy linked private files', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'portfolio-security-'));
+  const script = fileURLToPath(new URL('../scripts/secure-static-export.mjs', import.meta.url));
+  try {
+    await mkdir(join(dir, 'public'));
+    await mkdir(join(dir, 'out'));
+    await writeFile(join(dir, 'out/index.html'), '<html><head></head></html>');
+    await writeFile(join(dir, 'private.json'), 'test fixture');
+    await symlink(join(dir, 'private.json'), join(dir, 'public/innocent.json'));
+    assert.throws(() => execFileSync(process.execPath, [script, '--check-public'], { cwd: dir, stdio: 'pipe' }), /symbolic/i);
+    await rm(join(dir, 'public/innocent.json'));
+    await writeFile(join(dir, 'public/image.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    assert.doesNotThrow(() => execFileSync(process.execPath, [script, '--check-public'], { cwd: dir, stdio: 'pipe' }), 'public assets need not contain HTML');
+    assert.equal(await readFile(join(dir, 'out/index.html'), 'utf8'), '<html><head></head></html>');
+    await rm(join(dir, 'public'), { recursive: true });
+    await mkdir(join(dir, 'linked-assets'));
+    await symlink(join(dir, 'linked-assets'), join(dir, 'public'));
+    assert.throws(() => execFileSync(process.execPath, [script, '--check-public'], { cwd: dir, stdio: 'pipe' }), /symbolic/i);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
 test('static hosting headers prevent embedding, MIME sniffing, referrer leaks and unused device access', async () => {
   const headers = await readFile(new URL('../public/_headers', import.meta.url), 'utf8');
   assert.match(headers, /^\/\*/m);
@@ -70,6 +115,6 @@ test('static hosting headers prevent embedding, MIME sniffing, referrer leaks an
 });
 
 test('local environment files and private keys are excluded from version control', () => {
-  const result = execFileSync('git', ['check-ignore', '--no-index', '.env', '.env.local', '.env.production', 'private.key', 'certificate.pem'], { encoding: 'utf8' });
-  assert.equal(result.trim().split('\n').length, 5);
+  const result = execFileSync('git', ['check-ignore', '--no-index', '.env', '.env.local', '.env.production', 'private.key', 'certificate.pem', '.npmrc', '.netrc', '.vercel/project.json'], { encoding: 'utf8' });
+  assert.equal(result.trim().split('\n').length, 8);
 });

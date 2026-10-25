@@ -14,6 +14,7 @@ async (page) => {
       await route.fulfill({ response, headers: { ...response.headers(), ...headers } });
     });
     const p = await context.newPage();
+    await p.bringToFront();
     p.on('pageerror', error => errors.push(error.message));
     await p.addInitScript(() => {
       if (!sessionStorage.getItem('portfolio-position-v5')) sessionStorage.setItem('portfolio-position-v5', JSON.stringify({ version: 5, x: 16.15, z: 25 }));
@@ -39,12 +40,12 @@ async (page) => {
     await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
     const defaults = await p.evaluate(() => ({ quality: document.querySelector('#world-quality').value, bgm: document.querySelector('.bgmToggle').getAttribute('aria-pressed') }));
     if (defaults.quality !== 'quality' || defaults.bgm !== 'true') throw Error('Initial settings changed');
+    await p.getByRole('button', { name: '自由に探索する', exact: true }).tap();
     await p.getByLabel('画質・BGM設定').tap();
     await p.waitForFunction(() => !document.querySelector('audio').paused);
     await p.getByLabel('画質モード', { exact: true }).selectOption('low');
     await p.getByLabel('画質モード', { exact: true }).selectOption('quality');
     await p.getByLabel('画質・BGM設定').tap();
-    await p.getByRole('button', { name: '自由に探索する', exact: true }).tap();
     await p.getByRole('button', { name: '自転車に乗る', exact: true }).tap();
     await p.getByRole('button', { name: '自転車を降りる', exact: true }).waitFor({ timeout: 60000 });
     if ((await p.evaluate(() => window.__securityViolations)).length) throw Error('CSP blocked a legitimate world feature');

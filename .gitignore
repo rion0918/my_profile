@@ -5,6 +5,9 @@ node_modules/
 .DS_Store
 *.log
 .env*
+.npmrc
+.netrc
+.vercel/
 *.key
 *.pem
 *.p12

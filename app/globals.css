@@ -1266,36 +1266,6 @@ a {
   top: 104px;
 }
 
-.entryLabel {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 44px;
-  min-width: 44px;
-  padding: 0 10px;
-  border: 1px solid #f3dfaf99;
-  border-radius: 50px;
-  color: #fff2d5;
-  background: #534068ed;
-  box-shadow: 0 3px 12px #48335433;
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.entryLabel[hidden] { display: none; }
-.entryLabel:hover { background: #735b83; }
-.entryLabel:focus-visible { outline: 3px solid #ffdf9b; outline-offset: 3px; }
-
-.worldControls .sprintButton[aria-pressed="true"] {
-  color: #483354;
-  background: #ffcf9b;
-}
-.worldControls .sprintButton[aria-pressed="true"] span { color: inherit; }
 @media (max-width: 760px) {
   .worldControlButtons { gap: 6px; flex-wrap: wrap; justify-content: center; }
   .worldControls button { padding-inline: 10px; font-size: 11px; }
@@ -1563,9 +1533,8 @@ a {
   width: min(380px, 100%); max-height: calc(100dvh - var(--world-hud-top) - 54px - max(16px, env(safe-area-inset-bottom)));
 }
 .worldToolbar .worldGuidePanel { position: absolute; }
-.worldControls { left: max(24px, env(safe-area-inset-left)); right: max(24px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.worldControls { left: max(24px, env(safe-area-inset-left)); right: max(24px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 12px; }
 .worldControlButtons { flex-wrap: nowrap; gap: 2px; padding: 4px; }
-.worldControls .sprintButton span { display: inline; margin-left: 6px; padding-left: 0; border: 0; letter-spacing: 0; font-size: 10px; }
 .worldCameraControls { position: static; flex-direction: column; gap: 2px; }
 .worldCameraControls button, .worldCameraControls button:last-child { font-size: 22px; }
 @media (max-width: 760px) {
@@ -1938,10 +1907,10 @@ a {
 }
 .worldControlButtons, .worldCameraControls { padding: 0; gap: 8px; border: 0; background: transparent; box-shadow: none; }
 .worldControls .worldControlButtons button { padding-inline: 12px; }
-.worldControls .worldControlButtons button:not(.sprintButton) { min-width: 108px; }
+.worldControls .worldControlButtons button { min-width: 108px; }
 .worldControls .worldCameraControls button { font-size: 22px; font-weight: 400; }
-.worldToolbar .bgmToggle span,
-.worldControls .sprintButton span {
+.worldControls .worldCameraControls .worldOverviewButton { font-size: 12px; font-weight: 550; }
+.worldToolbar .bgmToggle span {
   display: inline-block;
   min-width: 30px;
   padding: 2px 5px;
@@ -1956,21 +1925,19 @@ a {
   text-align: center;
 }
 .worldToolbar .bgmToggle[aria-pressed="true"],
-.worldControls .worldControlButtons button[aria-pressed="true"],
+.worldControls .worldCameraControls button[aria-pressed="true"],
 .worldToolbar :is(.bgmSettings, .worldGuide)[open] > summary {
   border-color: #62856c;
   background: var(--control-selected);
   color: #214b36;
 }
-.worldToolbar .bgmToggle[aria-pressed="true"] span,
-.worldControls .sprintButton[aria-pressed="true"] span { background: var(--control-primary); color: #fffdf5; }
+.worldToolbar .bgmToggle[aria-pressed="true"] span { background: var(--control-primary); color: #fffdf5; }
 .worldToolbar .qualityValue { color: #294f42; font-size: inherit; font-weight: 650; }
 .worldToolbar .bgmSettings > summary { min-width: 126px; }
 .worldToolbar .worldGuide summary > span { transition: transform 140ms ease; }
 .bgmPanel input { min-height: 44px; }
 .bgmPanel select { border-radius: 10px; }
 .bgmPanel :is(input, select):focus-visible { outline: 3px solid var(--control-focus); outline-offset: 3px; }
-.buildingLabels .entryLabel { background: var(--control-primary); color: #fffdf5; border-color: #fffaf3b3; }
 .guideDestination > button, .guideOnsen button {
   border: 1px solid var(--control-line);
   background: var(--control-paper);
@@ -2022,7 +1989,7 @@ a {
     color: var(--control-ink);
   }
   .worldToolbar .bgmToggle[aria-pressed="true"]:hover,
-  .worldControls .worldControlButtons button[aria-pressed="true"]:hover,
+  .worldControls .worldCameraControls button[aria-pressed="true"]:hover,
   .worldToolbar :is(.bgmSettings, .worldGuide)[open] > summary:hover { background: #d5e5d1; border-color: #52705b; }
   .worldPage .guideTour:not(:disabled):hover, .worldPage :is(.hallAction, .hallLinkDoor):hover,
   .worldPage .tourFooter .tourNext:not(:disabled):hover, .worldEntry .welcomeActions .welcomeTour:not(:disabled):hover { background: #1c3d31; border-color: #1c3d31; }
@@ -2041,7 +2008,7 @@ a {
   .worldToolbar .bgmSettings > summary { min-width: 110px; }
   .worldToolbar .bgmToggle span { min-width: 26px; padding-inline: 3px; }
   .worldControls .worldControlButtons button { padding-inline: 8px; font-size: 12px; }
-  .worldControls .worldControlButtons button:not(.sprintButton) { min-width: 98px; }
+  .worldControls .worldControlButtons button { min-width: 98px; }
   .worldControlButtons, .worldCameraControls { gap: 6px; }
   .hallDialog .hallDialogHeader { gap: 8px; padding-inline: 12px; }
   .hallDialog .hallDialogHeader > :is(a, button) { font-size: 12px; padding-inline: 8px; }

@@ -35,8 +35,8 @@ export function getGroundHeight(point: Point) {
 export function getWalkingHeight(point: Point) {
   return getHarborDeckHeight(point) ?? getGroundHeight(point);
 }
-export function getMoveSpeed(sprinting: boolean, shoreDistance: number, onDeck = false) {
-  return shoreDistance > 0 && !onDeck ? 1.1 : sprinting ? 5 : 3.2;
+export function getMoveSpeed(shoreDistance: number, onDeck = false) {
+  return shoreDistance > 0 && !onDeck ? 1.1 : 5;
 }
 export function isWalkable(p: Point, obstacles: Obstacle[]) {
   return (

@@ -82,14 +82,12 @@ test("the coast admits a short wade and rejects deeper water, including tapped r
     assert.deepEqual(findPath(inland, deep, []), []);
   }
 });
-test("dash is faster on land, slows in water, and cannot tunnel through walls or the coast", async () => {
+test("movement uses the fixed running speed, slows in water, and cannot tunnel through walls or the coast", async () => {
   const { getMoveSpeed, moveCharacter, coastPoint } =
     await import("../lib/world-navigation.ts");
-  assert.equal(getMoveSpeed(false, -4), 3.2);
-  assert.equal(getMoveSpeed(true, -4), 5);
-  assert.ok(getMoveSpeed(true, -4) > getMoveSpeed(false, -4));
-  assert.equal(getMoveSpeed(false, 1), 1.1);
-  assert.ok(getMoveSpeed(true, 1) < getMoveSpeed(false, -4));
+  assert.equal(getMoveSpeed(-4), 5);
+  assert.equal(getMoveSpeed(1), 1.1);
+  assert.ok(getMoveSpeed(1) < getMoveSpeed(-4));
   const moved = moveCharacter({ x: -3, z: 0 }, { x: 10, z: 0 }, wall);
   assert.ok(moved.x < -1.8);
   const beach = coastPoint(0, -1);

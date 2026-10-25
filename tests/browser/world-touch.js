@@ -16,15 +16,15 @@ async page=>{
    const planarDistance=(a,b)=>Math.hypot(a[0]-b[0],a[2]-b[2]);
    const before=await position();await touch('touchStart',[{...start,id:1}]);await touch('touchMove',[{x:start.x,y:start.y-65,id:1}]);await p.waitForTimeout(550);
    const moving=await position(),distance=Math.hypot(moving[0]-before[0],moving[2]-before[2]);
-   if(distance<1.3||moving[0]>=before[0]||moving[2]>=before[2])throw Error('one-finger flick does not move forward '+JSON.stringify({width,distance,before,moving}));
+   if(distance<2.35||distance>3.5||moving[0]>=before[0]||moving[2]>=before[2])throw Error('one-finger flick does not use the fixed speed '+JSON.stringify({width,distance,before,moving}));
    if(await p.getByRole('dialog').isVisible())throw Error('drag selected a hall');
    await touch('touchEnd',[]);const released=await position();await p.waitForTimeout(250);
    if(planarDistance(await position(),released)>.01)throw Error('keeps walking after release');
    if(!await p.locator('.worldTouchPad').evaluate(el=>el.hidden))throw Error('touch feedback remains after release');
-   const dash=p.getByRole('button',{name:/^常ダッシュ (ON|OFF)$/});await dash.click();const dashStart=await position();
+   const dashStart=await position();
    await touch('touchStart',[{...start,id:1}]);await touch('touchMove',[{x:start.x,y:start.y+65,id:1}]);await p.waitForTimeout(450);
    const dashDistance=planarDistance(await position(),dashStart);if(dashDistance<1.9||dashDistance>3)throw Error('touch ignores always dash '+dashDistance);
-   await touch('touchEnd',[]);await dash.click();
+   await touch('touchEnd',[]);
    await p.screenshot({path:`output/playwright/touch-after-${width}.png`});
    results.push({width,height,quality,reducedMotion,distance,dashDistance,releaseStops:true});
   }finally{await c.close();}

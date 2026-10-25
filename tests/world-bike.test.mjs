@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bikeStation, createBikeController, cyclingObstacles, getCyclingSpeed } from '../lib/world-bike.ts';
 import { obstacles, buildings, trees, isOnRoad } from '../lib/world-layout.ts';
-import { findPath, moveCharacter, isWalkable } from '../lib/world-navigation.ts';
+import { findPath, moveCharacter, isWalkable, getMoveSpeed } from '../lib/world-navigation.ts';
 
 test('the bicycle is reachable from the plaza and mounts only nearby on the ground', () => {
   const bike = createBikeController();
@@ -12,10 +12,10 @@ test('the bicycle is reachable from the plaza and mounts only nearby on the grou
   assert.equal(bike.mount(bike.position, true), true);
   assert.equal(bike.riding, true);
   assert.equal(bike.mount(bike.position, true), false);
-  assert.ok(getCyclingSpeed(-2, false) > 4.6);
-  assert.ok(getCyclingSpeed(-2, false) <= 6.5);
+  assert.ok(getCyclingSpeed(-2, false) >= getMoveSpeed(-2) * 1.7);
+  assert.equal(getCyclingSpeed(-2, false), 9);
   assert.equal(getCyclingSpeed(1, false), 1.1);
-  assert.equal(getCyclingSpeed(10, true), 6);
+  assert.equal(getCyclingSpeed(10, true), getCyclingSpeed(-2, false));
 });
 
 test('dismount finds a clear standing spot, keeps the bicycle there and allows remounting', () => {

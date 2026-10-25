@@ -77,7 +77,7 @@ async(page)=>{
   await p.locator('.worldGuide > summary').click();await p.locator('.guideTour').click();await p.getByRole('dialog').waitFor({state:'visible'});await p.locator('.tourNext').click();await p.goBack();await p.waitForTimeout(800);
   if(await p.getByRole('dialog').isVisible())throw Error('back during focus failed');await p.goForward();await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('.tourFooter').count())throw Error('forward retained stale tour');await p.keyboard.press('Escape');
   for(const id of ['about','career','social','tech',...stops.map(s=>s[0]),'github','zenn','x']){
-   await p.goto(origin+'/?detail='+id);await p.getByRole('dialog').waitFor({state:'visible'});if(!await p.locator('#detail-title').innerText())throw Error('direct detail missing '+id);
+   await p.goto(origin+'/?detail='+id);await p.getByRole('dialog').waitFor({state:'visible'});await p.locator('#detail-title').filter({hasText:/\S/}).waitFor({state:'visible'});
   }
   for(const url of ['/about','/tech','/profile','/projects/yoin','/projects/pop-reminder','/career#experience','/career#history','/social#github','/social#zenn','/social#x']){
    const response=await p.goto(origin+url);if(response&&response.status()!==200)throw Error('article unavailable '+url);if(url.includes('#')&&!await p.locator('#'+url.split('#')[1]).count())throw Error('missing article anchor '+url);

@@ -54,7 +54,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
   const onsenRef = useRef<(destination: 'outdoor' | 'indoor' | 'pots') => void>(() => {});
   const pcRef = useRef<() => void>(() => {});
   const pastaRef = useRef<() => void>(() => {});
-  const entryLabels = useRef<(HTMLButtonElement | null)[]>([]);
   const resumeRef = useRef<() => void>(() => {});
   const entryRef = useRef<(id: string) => void>(() => {});
   const pausedRef = useRef(paused);
@@ -63,14 +62,12 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
   const recenterRef = useRef<() => void>(() => {});
   const [zoom, setZoom] = useState(1);
   const viewRef = useRef<(overview: boolean) => void>(() => {});
-  const dashRef = useRef(false);
   const bikeLabel = useRef<HTMLButtonElement>(null);
   const bikeRef = useRef<() => void>(() => {});
   const petRef = useRef<(index:number)=>void>(()=>{});
   const [riding, setRiding] = useState(false);
   const [bikeUnavailable, setBikeUnavailable] = useState(false);
   const jumpRef = useRef<() => void>(() => {});
-  const [dashing, setDashing] = useState(false);
   const [overview, setOverview] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [notice, setNotice] = useState(
@@ -229,7 +226,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
     };
     positionCamera();
     const keys = new Set<string>();
-    let shiftHeld = false;
     const directions: Record<string, [number, number]> = {
       w: [-0.5145, -0.8575],
       arrowup: [-0.5145, -0.8575],
@@ -290,11 +286,11 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       world.reflectWater(renderer, camera);
       renderer.render(world.scene, camera);
       const cameraBounds=cameraTools.current?.getBoundingClientRect(), surfaceBounds=element.getBoundingClientRect();
-      const coveredByCamera=(x:number,y:number,halfWidth:number,centered=false)=>{
+      const coveredByCamera=(x:number,y:number,halfWidth:number)=>{
         if(!cameraBounds)return false;
         const left=cameraBounds.left-surfaceBounds.left-4,right=cameraBounds.right-surfaceBounds.left+4;
         const top=cameraBounds.top-surfaceBounds.top-4,bottom=cameraBounds.bottom-surfaceBounds.top+4;
-        return x+halfWidth>left&&x-halfWidth<right&&y+(centered?22:0)>top&&y-(centered?22:48)<bottom;
+        return x+halfWidth>left&&x-halfWidth<right&&y>top&&y-48<bottom;
       };
       const cycleLabel = bikeLabel.current;
       if (cycleLabel) {
@@ -319,24 +315,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         bathLabel.style.transform = `translate(-50%,-100%) translate(${x}px,${y}px)`;
       }
       buildings.forEach((building, index) => {
-        const entryLabel = entryLabels.current[index];
-        if (entryLabel) {
-          const p = new THREE.Vector3(
-            building.x,
-            0.9,
-            building.entry.z + 0.4,
-          ).project(camera);
-          const x = ((p.x + 1) * viewportWidth) / 2,
-            y = ((1 - p.y) * viewportHeight) / 2;
-          entryLabel.hidden =
-            isOverview || coveredByCamera(x,y,40,true) ||
-            x < 28 ||
-            x > viewportWidth - 28 ||
-            y < 88 ||
-            y > viewportHeight - 120;
-          entryLabel.style.transform = `translate(-50%,-50%) translate(${x}px,${y}px)`;
-        }
-
         const point = new THREE.Vector3(
           building.x,
           building.height + 0.3,
@@ -364,7 +342,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       touchMove = null;
       if (touchPad.current) touchPad.current.hidden = true;
       keys.clear();
-      shiftHeld = false;
       path = [];
       mounting = false;
       cyclingEntry = null;
@@ -490,7 +467,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         const held = (a: string, b: string) => keys.has(a) || keys.has(b) ? 1 : 0;
         const ridePath = touchMove && !keys.size && (dx || dz)
           ? [{ x: person.position.x + dx * 3, z: person.position.z + dz * 3 }] : path;
-        const next = ridePath.length && !keys.size ? physicsModule.followBikePath(physics, ridePath, delta) : physics.update(delta, {
+        const next = ridePath.length && !keys.size ? physicsModule.followBikePath(physics, ridePath, delta, touchMove === null) : physics.update(delta, {
           throttle: held("w", "arrowup") - held("s", "arrowdown"),
           steer: held("a", "arrowleft") - held("d", "arrowright"),
           brake: touchMove !== null && !keys.size,
@@ -505,7 +482,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       } else {
         let speed =
           getMoveSpeed(
-            shiftHeld || dashRef.current,
             distanceToShore(world.person.position),
             getHarborDeckHeight(world.person.position) !== null,
           ) * delta;
@@ -732,7 +708,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       resize();
       path = findPath(world.person.position, harbor.destination, navigationObstacles());
       if (!path.length) { setNotice("港への道を選び直してください。"); return; }
-      setNotice(bike.riding ? "自転車で港の桟橋へ向かっています。" : "港の桟橋へ歩いています。Shift／ダッシュで速く進めます。");
+      setNotice("港の桟橋へ向かっています。");
       world.destination.position.set(harbor.destination.x, 0.51, harbor.destination.z);
       element.focus({ preventScroll: true });
       start();
@@ -1001,12 +977,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         if (!event.repeat) jumpRef.current();
         return;
       }
-      if (event.key === "Shift") {
-        event.preventDefault();
-        shiftHeld = true;
-        start();
-        return;
-      }
       const key = event.key.toLowerCase();
       if (directions[key]) {
         beginExploring();
@@ -1016,7 +986,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       }
     };
     const keyup = (event: KeyboardEvent) => {
-      if (event.key === "Shift") shiftHeld = false;
       keys.delete(event.key.toLowerCase());
       if (!keys.size) save();
     };
@@ -1184,19 +1153,6 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
           <button ref={onsenLabel} className="buildingLabel onsenLabel" aria-label="木もれびの湯の露天風呂へ歩く" onClick={() => onsenRef.current('outdoor')}>
             <span aria-hidden="true">♨</span> 木もれびの湯<span aria-hidden="true">↥</span>
           </button>
-          {buildings.map((b, i) => (
-            <button
-              key={`entry-${b.id}`}
-              ref={(e) => {
-                entryLabels.current[i] = e;
-              }}
-              className="entryLabel"
-              aria-label={`${b.name}に入る（入口へ歩く）`}
-              onClick={() => entryRef.current(b.id)}
-            >
-              ↥<span>入る</span>
-            </button>
-          ))}
           {buildings.map((building, index) => (
             <button
               key={building.id}
@@ -1214,24 +1170,14 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         </div>
       </div>
       <div className="worldControls">
-        <div className="worldControlButtons" role="group" aria-label="移動と視点">
-          <button className="sprintButton" disabled={!sceneReady} aria-label={`常ダッシュ ${dashing ? "ON" : "OFF"}`} aria-pressed={dashing}
-            onPointerDown={event=>event.preventDefault()}
-            onClick={()=>{
-              const next=!dashRef.current;dashRef.current=next;setDashing(next);
-              surface.current?.focus({preventScroll:true});
-            }}>
-            常ダッシュ <span>{dashing ? "ON" : "OFF"}</span>
-          </button>
-          <button disabled={!sceneReady} aria-pressed={overview} onClick={()=>viewRef.current(!overview)}>
-            {overview ? "人物に戻る" : "街全体を見る"}
-          </button>
-        </div>
         <div className="worldCameraControls" ref={cameraTools} role="group" aria-label="カメラ操作">
+          <button className="worldOverviewButton" disabled={!sceneReady} aria-pressed={overview} aria-label={overview ? "人物に戻る" : "街全体を見る"} title={overview ? "人物に戻る" : "街全体を見る"} onClick={()=>viewRef.current(!overview)}>
+            {overview ? "戻る" : "全体"}
+          </button>
           <button disabled={!sceneReady || zoom>=1.6} aria-label="景色を拡大" title="景色を拡大（+）" onClick={()=>zoomRef.current(1.2)}>＋</button>
           <button disabled={!sceneReady || zoom<=.65} aria-label="景色を縮小" title="景色を縮小（−）" onClick={()=>zoomRef.current(1/1.2)}>−</button>
         </div>
-        <p className="worldScreenReaderOnly" id="world-instructions">スマホは1本指でフリックして移動、指を離すと停止。2本指で見渡し・拡大。マウスは地面を選んで移動、ドラッグで見渡せます。WASD・矢印キーで徒歩移動、Shiftでダッシュ、Spaceでジャンプ、Escapeで停止、0で人物に戻ります。</p>
+        <p className="worldScreenReaderOnly" id="world-instructions">スマホは1本指でフリックして移動、指を離すと停止。2本指で見渡し・拡大。マウスは地面を選んで移動、ドラッグで見渡せます。WASD・矢印キーで移動、Spaceでジャンプ、Escapeで停止、0で人物に戻ります。</p>
         <p className="worldScreenReaderOnly" role="status">{notice}</p>
       </div>
     </>

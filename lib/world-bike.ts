@@ -3,6 +3,7 @@ import { isWalkable, moveCharacter, type Point, type Obstacle } from './world-na
 export const bikeStation = { x: 15, z: 25, width: 3.8, depth: 3.1 };
 export const bikeStart = { x: 16.15, z: 25 };
 export const bikeRadius = 0.95;
+export const cyclingSpeed = 9;
 export const bikeGeometry = {
   wheelRadius: 0.33,
   crank: { y: 0.4, z: -0.02 },
@@ -20,7 +21,7 @@ export function cyclingObstacles(obstacles: Obstacle[]) {
   return obstacles.map(o => ({ ...o, width: o.width + (bikeRadius - 0.32) * 2, depth: o.depth + (bikeRadius - 0.32) * 2 }));
 }
 export function getCyclingSpeed(shoreDistance: number, onDeck: boolean) {
-  return shoreDistance > 0 && !onDeck ? 1.1 : 6;
+  return shoreDistance > 0 && !onDeck ? 1.1 : cyclingSpeed;
 }
 export function getBikeStandingPosition(actor: Point, heading: number, obstacles: Obstacle[]) {
   for (const angle of [Math.PI / 2, -Math.PI / 2, Math.PI, 0]) {
