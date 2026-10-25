@@ -31,6 +31,8 @@ test('visibility preserves foliage animation, shares the live focus and keeps di
   assert.equal(shader.uniforms.natureTime.value,7);
   assert.equal(shader.uniforms.characterFocus.value,visibility.focus);
   assert.ok(shader.vertexShader.includes('// foliage sway'));
+  assert.ok(!shader.fragmentShader.includes('gl_FragCoord'), 'moving the camera must not crawl screen-space grain across walls');
+  assert.ok(!shader.fragmentShader.includes('float grain'), 'the torso opening has a continuous boundary without noisy wall fragments');
   assert.ok(material.customProgramCacheKey().startsWith(previousKey));
   assert.notEqual(material.customProgramCacheKey(),previousKey);
   assert.equal(material.transparent,false, 'retain opaque depth rendering');

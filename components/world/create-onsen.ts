@@ -85,18 +85,18 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   path([[-16,-22],[-17.1,-24],[-18.4,-26.1],[-19.9,-27.2],[-19.9,-28.2]],1.5);
   path([[-16.8,-24.4],[-13,-25.8],[-11.5,-28.6],[-13.4,-31.8],[-15,-31.9]],1.15);
   const waterMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:true,
-    uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),time,waterLight},
+    uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),time,waterLight,waterOpacity:{value:.68}},
     vertexShader:`varying vec3 bathPosition; varying vec2 bathUv; #include <fog_pars_vertex>
       void main(){bathUv=uv;bathPosition=(modelMatrix*vec4(position,1.)).xyz;vec4 mvPosition=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mvPosition;
       #include <fog_vertex>
       }`,
-    fragmentShader:`varying vec3 bathPosition;varying vec2 bathUv;uniform float time;uniform float waterLight;
+    fragmentShader:`varying vec3 bathPosition;varying vec2 bathUv;uniform float time;uniform float waterLight;uniform float waterOpacity;
       #include <fog_pars_fragment>
       void main(){vec2 p=bathPosition.xz;float wave=sin(p.x*5.+p.y*3.-time*.65)*sin(p.y*7.-time*.4);
       float ripple=pow(max(0.,sin(length(p-vec2(-27.7,-25.05))*15.-time*2.)),20.)*exp(-length(p-vec2(-27.7,-25.05))*.55);
       float caustic=pow(max(0.,sin(p.x*8.+p.y*4.+time*.3)*sin(p.y*9.-p.x*3.+time*.2)),8.);
       vec3 color=mix(vec3(.16,.39,.29),vec3(.43,.64,.48),.66+wave*.08)+vec3(.12,.16,.13)*ripple+vec3(.045)*caustic;
-      gl_FragColor=vec4(color*waterLight,.95);
+      gl_FragColor=vec4(color*waterLight,waterOpacity);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
       #include <fog_fragment>
@@ -173,9 +173,10 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   box(house,h.x,1.42,back,h.width,2.75,.18,plaster);
   box(house,left,1.42,h.z,.18,2.75,h.depth,plaster);
   // Only the foreground upper walls lift with the roof; the physical doorway and columns stay readable.
-  box(cutaway,right,1.42,h.z,.16,2.75,h.depth,plaster);
-  box(cutaway,-23.65,1.42,front,4.7,2.75,.16,plaster);
-  box(cutaway,-18.35,1.42,front,.7,2.75,.16,plaster);
+  const upperWallBottom=.46,upperWallTop=2.795,upperWallCenter=(upperWallTop+upperWallBottom)/2,upperWallHeight=upperWallTop-upperWallBottom;
+  box(cutaway,right,upperWallCenter,h.z,.16,upperWallHeight,h.depth,plaster);
+  box(cutaway,-23.65,upperWallCenter,front,4.7,upperWallHeight,.16,plaster);
+  box(cutaway,-18.35,upperWallCenter,front,.7,upperWallHeight,.16,plaster);
   box(house,right,.24,h.z,.16,.44,h.depth,cedar);
   box(house,-23.65,.24,front,4.7,.44,.16,plaster);
   box(house,-18.35,.24,front,.7,.44,.16,plaster);

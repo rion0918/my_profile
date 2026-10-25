@@ -25,12 +25,10 @@ export function createCharacterVisibility(person: THREE.Object3D) {
           `#include <alphatest_fragment>
           vec3 characterView = (viewMatrix * vec4(characterFocus, 1.)).xyz;
           vec2 offset = (occluderView.xy - characterView.xy) / vec2(.85, 1.25);
-          float opening = 1. - smoothstep(.65, 1., length(offset));
-          float grain = fract(dot(gl_FragCoord.xy, vec2(.754877666, .569840296)));
-          if (occluderView.z > characterView.z + .2 && grain < opening) discard;`,
+          if (occluderView.z > characterView.z + .2 && length(offset) < .825) discard;`,
         );
       };
-      material.customProgramCacheKey = () => programKey + "|character-visibility-v1";
+      material.customProgramCacheKey = () => programKey + "|character-visibility-v2";
     },
   };
 }

@@ -77,6 +77,20 @@ test('the bathhouse has a real roof, reveals its interior on entry, rests in low
     assert.ok(roof && roof.children.length > 0);
     for(const name of ['onsen-waterfall','onsen-pot-baths','onsen-bamboo','onsen-ferns','onsen-entry'])assert.ok(scene.getObjectByName(name)?.children.length,'real geometry for '+name);
     scene.updateMatrixWorld(true);
+    const walls=[scene.getObjectByName('onsen-bathhouse'),scene.getObjectByName('onsen-cutaway')];
+    const h=onsen.bathhouse;
+    for(const y of [.35,.6,1.25])for(const [origin,direction] of [
+      [new THREE.Vector3(-24.2,y,h.z+h.depth/2+1),new THREE.Vector3(0,0,-1)],
+      [new THREE.Vector3(h.x+h.width/2+1,y,h.z-.7),new THREE.Vector3(-1,0,0)],
+    ]){
+      const hits=new THREE.Raycaster(origin,direction,0,1.3).intersectObjects(walls,true);
+      assert.ok(hits.length,'the exterior wall still encloses the bathhouse');
+      for(let i=1;i<hits.length;i++)assert.ok(hits[i].distance-hits[i-1].distance>.001,'exterior walls have no coplanar faces that fight for depth during movement');
+    }
+    const bathWater=[];
+    scene.traverse(o=>{if(o.isMesh&&o.material.uniforms?.waterLight&&!o.name)bathWater.push(o.material);});
+    assert.equal(bathWater.length,5,'the outdoor, indoor and three pottery baths share clear water');
+    for(const m of bathWater){assert.ok(m.transparent&&!m.depthWrite);assert.ok(m.uniforms.waterOpacity?.value>=.5&&m.uniforms.waterOpacity.value<=.75,'bath water reveals the basin beneath it while retaining its color');}
     const falls=scene.getObjectByName('onsen-waterfall'),sheets=falls.children.filter(o=>o.name==='onsen-cascade'),rocks=falls.children.filter(o=>o.isMesh&&!o.material.transparent),direction=new THREE.Vector3(12,12.4,20).normalize();
     assert.equal(sheets.length,3,'three actual cascade surfaces descend into the outdoor bath');
     for(const sheet of sheets)for(const row of [3,8,13,18,23]){
