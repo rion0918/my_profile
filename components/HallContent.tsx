@@ -53,6 +53,9 @@ export function HallContent({ id }: { id: HallId }) {
         <p className="hallActivityPeriod">{entry.period}</p>
         <p className="hallActivityDescription">{entry.description}</p>
         <div className="hallActivityTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+        {'links' in entry && entry.links && <div className="careerLinks">
+          {entry.links.map(link => <a className="textLink" key={link.href} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}
+        </div>}
       </article>)}
     </div>
   </div>;

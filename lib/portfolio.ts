@@ -21,8 +21,8 @@ export const profile = [
   ["Age", "22"],
   ["School", "神戸電子専門学校"],
   ["High School", "上宮高等学校"],
-  ["Offer", "合同会社DMM.com / 27卒"],
-  ["Internship", "Sky株式会社 / 2025年3月 - 現在"],
+  ["Offer", "合同会社DMM.com / 27卒 Webエンジニア内定"],
+  ["Internship", "Sky株式会社 / 2025年3月 - 2026年8月"],
 ];
 
 export const techGroups = [
@@ -63,7 +63,7 @@ export const career = [
   {
     period: "2027卒",
     title: "合同会社DMM.com",
-    description: "27卒 Webフロントエンドエンジニアとして内定。",
+    description: "27卒 Webエンジニアとして内定。",
     tags: ["Offer"],
   },
   {
@@ -73,15 +73,19 @@ export const career = [
     suffix: "",
     description: "実務インターン合格をサポートするコミュニティを立ち上げ。",
     tags: ["Community", "Internship Support"],
+    links: [
+      { label: "We部の公式サイト", href: "https://join.web-u.dev/" },
+      { label: "神戸電子の紹介記事", href: "https://www.kobedenshi.ac.jp/media/article/career_advice/746/" },
+    ],
   },
   {
-    period: "2025.03 - 現在",
+    period: "2025.03 - 2026.08",
     title: "Sky株式会社",
     description: "社内システム部 労務管理チームに配属。",
     tags: ["長期インターン", "Next.js", "BFF", "NestJS"],
   },
   {
-    period: "在学中",
+    period: "2023 - 2027（在学中）",
     title: "神戸電子専門学校",
     prefix: "",
     suffix: "ITエキスパート学科",
@@ -93,7 +97,7 @@ export const career = [
 export const careerGroups = [
   { id: 'experience', title: '実務経験・活動', items: [career[2], career[1]] },
   { id: 'history', title: '学歴・社歴', items: [
-    { period: '高校', title: profile.find(([label]) => label === 'High School')![1],
+    { period: '2019 - 2022', title: profile.find(([label]) => label === 'High School')![1],
       description: '出身高校。', tags: ['High School'] },
     career[3], career[0],
   ] },

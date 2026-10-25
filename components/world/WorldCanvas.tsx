@@ -86,7 +86,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
   useEffect(() => {
     setSceneReady(false);
     const element = surface.current!;
-    const mobile = window.matchMedia("(max-width: 760px)");
+    const mobile = window.matchMedia("(max-width: 760px), (pointer: coarse)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let settings = worldQualitySettings[qualityRef.current];
     let renderer: THREE.WebGLRenderer;
@@ -101,7 +101,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       return;
     }
     renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, mobile.matches ? Math.min(1, settings.pixelRatio) : settings.pixelRatio),
+      Math.min(window.devicePixelRatio, mobile.matches ? settings.mobilePixelRatio : settings.pixelRatio),
     );
     renderer.shadowMap.enabled = settings.shadows;
     renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -637,7 +637,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
         positionCamera();
       }
       renderer.setPixelRatio(
-        Math.min(window.devicePixelRatio, mobile.matches ? Math.min(1, settings.pixelRatio) : settings.pixelRatio),
+        Math.min(window.devicePixelRatio, mobile.matches ? settings.mobilePixelRatio : settings.pixelRatio),
       );
       if (renderer.shadowMap.enabled !== settings.shadows) {
         renderer.shadowMap.enabled = settings.shadows;

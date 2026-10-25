@@ -41,6 +41,9 @@ export function CareerContent({ group }: { group?: 'experience' | 'history' }) {
             <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
             <p>{entry.description}</p>
             <div className="miniTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+            {'links' in entry && entry.links && <div className="careerLinks">
+              {entry.links.map(link => <a className="textLink" key={link.href} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}
+            </div>}
           </div>
         </article>)}
       </div>
