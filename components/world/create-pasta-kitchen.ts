@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Font } from 'three/addons/loaders/FontLoader.js';
 import { createHallWordGeometry, createHallWordMaterials } from './create-hall-word.ts';
 import { pastaKitchen } from '../../lib/world-pasta.ts';
@@ -23,8 +23,9 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   const stone = standard(0xe5d9c3, .67), walnut = standard(0x805338, .48), endgrain = standard(0xa37550, .59);
   const steel = standard(0xbccbd0, .22, .86), copper = standard(0xb47a4c, .28, .75), brass = standard(0xc3a577, .28, .7);
   const charcoal = standard(0x233637, .48, .2), fat = standard(0xe6c49a, .47), crust = standard(0x93472c, .53), cheese = standard(0xf5e3ad, .65);
-  const pasta = [physical(0xe8c783, .29, .7), physical(0xf0d291, .3, .7), physical(0xdcb572, .34, .6)];
-  const sauce = physical(0xe9c47b, .2, .9), pepper = standard(0x3a2d24, .82), eggshell = standard(0xe9d8b4, .62);
+  const pasta = [physical(0xd8aa60, .31, .65), physical(0xe2b773, .32, .6), physical(0xcfa05b, .35, .6)];
+  pasta.forEach(m => { m.emissiveIntensity = .025; m.vertexColors = true; });
+  const sauce = physical(0xddb46a, .24, .8), pepper = standard(0x3a2d24, .82), eggshell = standard(0xe9d8b4, .62);
   const yolk = physical(0xeea931, .2, .85), linen = standard(0xe4e5d5, .9), olive = physical(0x405d3b, .24, .7);
   const light = new THREE.MeshBasicMaterial({ color: 0xffdfa3, toneMapped: false }); materials.add(light); applyVisibility(light);
   const grain = new Uint8Array(64 * 64 * 4);
@@ -34,6 +35,35 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   }
   const stoneTexture = new THREE.DataTexture(grain, 64, 64); stoneTexture.wrapS = stoneTexture.wrapT = THREE.RepeatWrapping; stoneTexture.repeat.set(5, 5); stoneTexture.needsUpdate = true;
   textures.add(stoneTexture); stone.map = stoneTexture;
+  const relief = (size: number, grainScale: number) => {
+    const data = new Uint8Array(size * size * 4);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const noise = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+      const v = 142 + (noise - Math.floor(noise) - .5) * grainScale + 12 * Math.sin(x * .18 + Math.sin(y * .07));
+      const i = (y * size + x) * 4; data[i] = data[i + 1] = data[i + 2] = v; data[i + 3] = 255;
+    }
+    const texture = new THREE.DataTexture(data, size, size); texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.LinearFilter; texture.minFilter = THREE.LinearMipmapLinearFilter; texture.generateMipmaps = true; texture.needsUpdate = true;
+    textures.add(texture); return texture;
+  };
+  const sauceRelief = relief(128, 44), glazeRelief = relief(128, 18), woodRelief = relief(128, 37), searRelief = relief(64, 110);
+  sauceRelief.repeat.set(7, 1); woodRelief.repeat.set(2, 8); searRelief.repeat.set(2, 2);
+  for (const m of [...pasta, sauce]) { m.bumpMap = sauceRelief; m.bumpScale = .009; m.emissiveIntensity = .025; }
+  ceramic.bumpMap = glazeRelief; ceramic.bumpScale = .005;
+  walnut.bumpMap = endgrain.bumpMap = woodRelief; walnut.bumpScale = endgrain.bumpScale = .018;
+  crust.bumpMap = fat.bumpMap = searRelief; crust.bumpScale = .025; fat.bumpScale = .009; fat.roughness = .27;
+  // Local studio reflections keep the glaze, sauce and polished cutlery legible without changing the world's lighting.
+  const envWidth = 256, envHeight = 128, envData = new Uint8Array(envWidth * envHeight * 4);
+  for (let y = 0; y < envHeight; y++) for (let x = 0; x < envWidth; x++) {
+    const u = x / envWidth, v = y / envHeight;
+    const softbox = Math.exp(-(((u - .28) / .085) ** 2) - ((v - .32) / .11) ** 2) * 164 + Math.exp(-(((u - .76) / .045) ** 2) - ((v - .4) / .19) ** 2) * 112;
+    const sky = 34 + 48 * Math.max(0, Math.cos(v * Math.PI)); const i = (y * envWidth + x) * 4;
+    envData[i] = sky + softbox; envData[i + 1] = sky * .94 + softbox * .97; envData[i + 2] = sky * .83 + softbox * .9; envData[i + 3] = 255;
+  }
+  const reflections = new THREE.DataTexture(envData, envWidth, envHeight); reflections.mapping = THREE.EquirectangularReflectionMapping;
+  reflections.colorSpace = THREE.SRGBColorSpace; reflections.needsUpdate = true; textures.add(reflections);
+  for (const m of [...pasta, sauce, ceramic, steel, copper, brass, fat, yolk]) { m.envMap = reflections; m.envMapIntensity = m === steel ? 1.65 : .65; }
+
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) => {
     geometries.add(g); const object = new THREE.Mesh(g, m); object.position.set(x, y, z);
     object.castShadow = !Array.isArray(m) && !m.transparent && !(m instanceof THREE.MeshBasicMaterial); object.receiveShadow = true; parent.add(object); return object;
@@ -93,57 +123,148 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   }
   cylinder(island, 0, 1.17, 0, 2.69, .14, stone); ring(island, 0, 1.105, 0, 2.61, .018, light);
   const plate = part('plate'); plate.position.set(-.6, 1.25, .8);
-  lathe(plate, [[0,.18],[.8,.18],[1.2,.22],[1.5,.29],[1.8,.42],[2.15,.55],[2.43,.59],[2.5,.57],[2.52,.52],[2.47,.47],[2.15,.45],[1.78,.32],[1.42,.14],[1.1,.065],[.8,.045],[0,.045]].reverse(), ceramic);
-  ring(plate, 0, .575, 0, 2.435, .012, rim); ring(plate, 0, .065, 0, 1.05, .04, ceramic);
-  sphere(plate, 0, .27, 0, 1, sauce, 1.62, .055, 1.4);
-  const noodles = part('noodles', plate), samples: {p:THREE.Vector3;layer:number}[] = [];
-  for (let strand = 0; strand < 96; strand++) {
-    const layer = Math.floor(strand / 12), phase = random() * Math.PI * 2, turns = .7 + random() * .9;
-    const radial = 1.4 - layer * .105 + random() * .24, points: THREE.Vector3[] = [];
-    for (let j = 0; j <= 32; j++) {
-      const t = j / 32, a = phase + t * Math.PI * 2 * turns;
-      const r = radial + .18 * Math.sin(a * 2.3 + phase) + .09 * Math.sin(a * 5 + strand);
-      const x = Math.cos(a) * r, z = Math.sin(a) * r * (.83 + .08 * Math.sin(phase));
-      const y = .22 + .25 * (r / 1.7) ** 2 + layer * .072 + .035 * Math.sin(a * 3 + phase) ** 2;
-      const point = new THREE.Vector3(x, y, z); points.push(point); if (j > 1 && j < 31) samples.push({p:point,layer});
+  lathe(plate, [[0,.16],[.7,.16],[1.1,.20],[1.5,.29],[1.75,.40],[1.96,.51],[2.2,.58],[2.42,.60],[2.49,.585],[2.52,.55],[2.51,.515],[2.46,.48],[2.17,.45],[1.8,.32],[1.42,.14],[1.1,.065],[.8,.045],[0,.045]].reverse(), ceramic);
+  ring(plate, 0, .582, 0, 2.46, .009, rim); ring(plate, 0, .065, 0, 1.05, .04, ceramic);
+  const noodles = part('noodles', plate), foodSurface = new Map<string, number>();
+  const cell = .035;
+  const recordSurface = (p: THREE.Vector3, radius: number) => {
+    const ix = Math.round(p.x / cell), iz = Math.round(p.z / cell);
+    for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) {
+      const d2 = ((ix + x) * cell - p.x) ** 2 + ((iz + z) * cell - p.z) ** 2;
+      if (d2 > radius * radius) continue;
+      const key = `${ix + x},${iz + z}`, y = p.y + Math.sqrt(radius * radius - d2);
+      foodSurface.set(key, Math.max(foodSurface.get(key) ?? 0, y));
     }
-    tube(noodles, points, .033 + random() * .008, pasta[strand % 3], 72);
-  }
-  for (let i = 0; i < 4; i++) {
-    const a = -.7 + i * 1.4, points = [];
-    for (let j = 0; j < 28; j++) { const t = j / 27, r = 1.7 + Math.sin(t * Math.PI) * .28, angle = a + t * 1.3; points.push(new THREE.Vector3(Math.cos(angle) * r, .47 + .06 * Math.sin(t * Math.PI), Math.sin(angle) * r * .86)); }
-    tube(noodles, points, .034, pasta[i % 3]);
-  }
-  for (let i = 0; i < 22; i++) {
-    const angle = random() * Math.PI * 2, phase = random() * Math.PI * 2, length = .65 + random() * .5, points = [];
-    for (let j = 0; j <= 32; j++) {
-      const t = j / 32, u = (t * 2 - 1) * length, v = .15 * Math.sin(t * Math.PI * 4 + phase) + .08 * Math.sin(t * Math.PI * 7 + i);
-      const point = new THREE.Vector3(u * Math.cos(angle) - v * Math.sin(angle), .73 + .13 * Math.sin(t * Math.PI) + .025 * Math.sin(t * 10 + phase), u * Math.sin(angle) + v * Math.cos(angle));
-      points.push(point); samples.push({p:point,layer:8});
+  };
+  const surfaceAt = (x: number, z: number) => foodSurface.get(`${Math.round(x / cell)},${Math.round(z / cell)}`);
+  const strand = (parent: THREE.Object3D, points: THREE.Vector3[], radius: number, material: THREE.Material, segments = 112, onPlate = false) => {
+    const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal'), g = new THREE.TubeGeometry(curve, segments, radius, 8, false);
+    const positions = g.getAttribute('position'), colors = [], center = new THREE.Vector3();
+    for (let j = 0; j <= segments; j++) {
+      curve.getPointAt(j / segments, center);
+      const taper = .92 + .055 * Math.sin(j * .23) + .025 * Math.cos(j * .71);
+      if (onPlate) recordSurface(center, radius * taper);
+      for (let k = 0; k <= 8; k++) {
+        const i = j * 9 + k;
+        positions.setXYZ(i, center.x + (positions.getX(i) - center.x) * taper, center.y + (positions.getY(i) - center.y) * taper, center.z + (positions.getZ(i) - center.z) * taper);
+        const warmth = .94 + .06 * Math.sin(j / segments * Math.PI * 2 + points[0].x) ** 2;
+        colors.push(warmth, warmth * .99, warmth * .94);
+      }
     }
-    tube(noodles, points, .034 + random() * .006, pasta[i % 3], 64);
+    const indices = Array.from(g.getIndex()!.array);
+    for (let k = 1; k < 7; k++) { const last = segments * 9; indices.push(0, k + 1, k, last, last + k, last + k + 1); }
+    g.setIndex(indices); g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); g.computeVertexNormals();
+    return mesh(parent, g, material);
+  };
+  // A broad, asymmetric nest: each strand climbs and falls across the mound rather than occupying a horizontal ring.
+  for (let i = 0; i < 112; i++) {
+    const phase = random() * Math.PI * 2, base = .32 + Math.sqrt(random()) * 1.17, turns = .8 + random() * .8, points = [];
+    const offsetX = (random() - .5) * .12, offsetZ = (random() - .5) * .13;
+    for (let j = 0; j <= 48; j++) {
+      const t = j / 48, a = phase + t * Math.PI * 2 * turns;
+      const r = base + .17 * Math.sin(a * 2 + phase) + .11 * Math.sin(a * 3.7 + i) + .16 * Math.sin(t * Math.PI * 2);
+      const x = Math.cos(a) * r * 1.04 + offsetX, z = Math.sin(a) * r * .86 + offsetZ;
+      const height = .31 + 1.06 * Math.max(0, 1 - (Math.hypot(x, z / .9) / 1.9) ** 1.5);
+      points.push(new THREE.Vector3(x, height + .065 * Math.sin(a * 2.5 + phase) + (random() - .5) * .01, z));
+    }
+    strand(noodles, points, .043 + random() * .006, pasta[i % 3], 112, true);
   }
-  const guanciale = part('guanciale', plate), baconGeometry = new RoundedBoxGeometry(.15, .09, .11, 2, .018);
-  const bacon = instances(guanciale, baconGeometry, crust, 68), streaks = instances(guanciale, new THREE.BoxGeometry(.145, .026, .108), fat, 68);
-  for (let i = 0; i < 68; i++) {
-    const sample = samples[Math.floor(random() * samples.length)]; dummy.position.copy(sample.p).add(new THREE.Vector3(0, .065, 0)); dummy.rotation.set(random() * .3, random() * Math.PI, random() * .3); dummy.scale.set(.7 + random(), .7 + random() * .6, .7 + random()); dummy.updateMatrix(); bacon.setMatrixAt(i, dummy.matrix);
-    dummy.position.y += .026; dummy.updateMatrix(); streaks.setMatrixAt(i, dummy.matrix); bacon.setColorAt(i, new THREE.Color().setHSL(.045 + random() * .025, .43 + random() * .2, .29 + random() * .12));
-  }
-  const pepperPart = part('pepper', plate), pepperBits = instances(pepperPart, new THREE.DodecahedronGeometry(.016, 0), pepper, 700);
-  const cheesePart = part('cheese', plate), shavings = instances(cheesePart, new THREE.BoxGeometry(.028,.012,.074), cheese, 520);
-  for (const [value,count,lift] of [[pepperBits,700,.044],[shavings,520,.051]] as const) for (let i = 0; i < count; i++) {
-    const point = samples[Math.floor(random() * samples.length)].p; dummy.position.copy(point); dummy.position.y += lift; dummy.rotation.set(random() * .6, random() * Math.PI, random() * .5); dummy.scale.setScalar(.5 + random() * 1.1); dummy.updateMatrix(); value.setMatrixAt(i,dummy.matrix);
-  }
-  const fork = part('fork'); fork.position.set(.3, 2.14, .9); fork.rotation.set(0, -.12, -.42);
-  box(fork, 0, 1.49, 0, .145, 1.53, .09, steel, .035);
-  sphere(fork, 0, 2.25, 0, .08, steel, 1, 1.1, .58);
-  box(fork, 0, .73, 0, .74, .3, .085, steel, .055);
-  for (const x of [-.285, -.095, .095, .285]) tube(fork, [new THREE.Vector3(x,.66,0),new THREE.Vector3(x,.39,.025),new THREE.Vector3(x,.06,.085)], .032, steel, 24);
   for (let i = 0; i < 8; i++) {
-    const points = []; for (let j = 0; j <= 55; j++) { const t = j / 55, a = i * .84 + t * Math.PI * 2 * 2.3, r = .22 + .028 * Math.sin(a * 3); points.push(new THREE.Vector3(Math.cos(a)*r,.25+t*.67,Math.sin(a)*r)); }
-    tube(fork, points, .031, pasta[i % 3], 72);
+    const a = i * .83, points = [];
+    for (let j = 0; j <= 28; j++) {
+      const t = j / 28, angle = a + t * 1.5, r = 1.65 + .28 * Math.sin(t * Math.PI);
+      points.push(new THREE.Vector3(Math.cos(angle) * r, .43 + .1 * Math.sin(t * Math.PI) + .03 * Math.cos(t * 8 + i), Math.sin(angle) * r * .86));
+    }
+    strand(noodles, points, .043, pasta[i % 3], 64, true);
   }
-  tube(root,[new THREE.Vector3(.45,2.6,1.05),new THREE.Vector3(.69,2.24,1.21),new THREE.Vector3(.51,1.96,1.13),new THREE.Vector3(.3,1.86,1.0)], .034, pasta[0]);
+  const saucePart = part('sauce', plate);
+  const plateHeight = (r: number) => {
+    const profile = [[0,.16],[.7,.16],[1.1,.20],[1.5,.29],[1.75,.40],[1.96,.51],[2.2,.58],[2.42,.60],[2.49,.585]];
+    for (let i = 1; i < profile.length; i++) if (r <= profile[i][0]) {
+      const [r0, y0] = profile[i - 1], [r1, y1] = profile[i]; return y0 + (y1 - y0) * (r - r0) / (r1 - r0);
+    }
+    return .585;
+  };
+  const sauceVertices = [], sauceUvs = [], sauceIndices = [];
+  for (let ringIndex = 0; ringIndex <= 12; ringIndex++) for (let i = 0; i <= 96; i++) {
+    const a = i / 96 * Math.PI * 2, r = ringIndex / 12 * (1.82 + .065 * Math.sin(a * 5) + .04 * Math.cos(a * 9));
+    const x = Math.cos(a) * r, z = Math.sin(a) * r * .85;
+    sauceVertices.push(x, plateHeight(Math.hypot(x, z)) + .014, z); sauceUvs.push(x * .5, z * .5);
+    if (ringIndex < 12 && i < 96) { const k = ringIndex * 97 + i; sauceIndices.push(k, k + 97, k + 1, k + 1, k + 97, k + 98); }
+  }
+  const sauceGeometry = new THREE.BufferGeometry(); sauceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(sauceVertices, 3));
+  sauceGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(sauceUvs, 2)); sauceGeometry.setIndex(sauceIndices); sauceGeometry.computeVertexNormals(); mesh(saucePart, sauceGeometry, sauce);
+  const garnishPoint = (radius = 1.65) => {
+    let x = 0, z = 0, y: number | undefined;
+    do { const a = random() * Math.PI * 2, r = Math.sqrt(random()) * radius; x = Math.cos(a) * r; z = Math.sin(a) * r * .85; y = surfaceAt(x, z); } while (y === undefined);
+    return new THREE.Vector3(x, y, z);
+  };
+  const guanciale = part('guanciale', plate);
+  const seared = new THREE.MeshPhysicalMaterial({ color: 0x8b4b2e, roughness: .4, clearcoat: .32, clearcoatRoughness: .25, bumpMap: searRelief, bumpScale: .025, envMap: reflections, envMapIntensity: .55 });
+  const renderedFat = new THREE.MeshPhysicalMaterial({ color: 0xe5bd7e, roughness: .29, clearcoat: .7, clearcoatRoughness: .2, bumpMap: searRelief, bumpScale: .01, envMap: reflections, envMapIntensity: .7 });
+  for (const m of [seared, renderedFat]) { materials.add(m); applyVisibility(m); }
+  const morselGeometry = new RoundedBoxGeometry(.245, .10, .115, 3, .032), morselPositions = morselGeometry.getAttribute('position');
+  for (let i = 0; i < morselPositions.count; i++) {
+    const x = morselPositions.getX(i), y = morselPositions.getY(i), z = morselPositions.getZ(i);
+    morselPositions.setXYZ(i, x * (1 + .14 * Math.sin(y * 61 + z * 39)), y + .009 * Math.sin(x * 40 + z * 52), z + .015 * Math.sin(x * 33));
+  }
+  morselGeometry.computeVertexNormals();
+  const bacon = instances(guanciale, morselGeometry, seared, 38), streaks = instances(guanciale, new RoundedBoxGeometry(.16, .026, .048, 3, .012), renderedFat, 38);
+  const char = standard(0x4b2d20, .64);
+  const charred = instances(guanciale, new THREE.DodecahedronGeometry(.019, 0), char, 114);
+  for (let i = 0; i < 38; i++) {
+    const point = garnishPoint(i % 4 ? 1.4 : 1.7); dummy.position.copy(point); dummy.position.y += .065;
+    dummy.rotation.set((random() - .5) * .6, random() * Math.PI, (random() - .5) * .35); dummy.scale.set(.7 + random() * .7, .75 + random() * .5, .8 + random() * .4); dummy.updateMatrix(); bacon.setMatrixAt(i, dummy.matrix);
+    const browned = .72 + random() * .28; bacon.setColorAt(i, new THREE.Color().setRGB(browned, browned * (.93 + random() * .07), browned * .85));
+    const base = dummy.position.clone(), rotation = dummy.rotation.clone(), scale = dummy.scale.clone();
+    dummy.position.add(new THREE.Vector3(.012, .045, -.018).applyEuler(rotation)); dummy.rotation.y += .16; dummy.updateMatrix(); streaks.setMatrixAt(i, dummy.matrix);
+    for (let j = 0; j < 3; j++) {
+      dummy.position.copy(base).add(new THREE.Vector3((random() - .5) * .18, .06, (random() - .5) * .07).multiply(scale).applyEuler(rotation)); dummy.scale.set(.5 + random(), .2 + random() * .3, .4 + random()); dummy.updateMatrix(); charred.setMatrixAt(i * 3 + j, dummy.matrix);
+    }
+  }
+  const pepperPart = part('pepper', plate), pepperBits = instances(pepperPart, new THREE.DodecahedronGeometry(.016, 0), pepper, 540);
+  const cheesePart = part('cheese', plate), shavings = instances(cheesePart, new THREE.BoxGeometry(.01, .007, .043), cheese, 940);
+  for (const [value, count, lift] of [[pepperBits, 540, .012], [shavings, 940, .014]] as const) for (let i = 0; i < count; i++) {
+    const point = garnishPoint(1.77); dummy.position.copy(point); dummy.position.y += lift;
+    dummy.rotation.set((random() - .5) * 1.5, random() * Math.PI, (random() - .5) * .7); dummy.scale.setScalar(.5 + random()); dummy.updateMatrix(); value.setMatrixAt(i, dummy.matrix);
+    if (value === pepperBits) value.setColorAt(i, new THREE.Color().setHSL(.08, .12, .35 + random() * .35));
+  }
+  const shavingVertices = [], shavingIndices = [];
+  for (let i = 0; i <= 8; i++) {
+    const t = i / 8, w = .023 * Math.sin(t * Math.PI * .85 + .3);
+    shavingVertices.push(-w, .016 * Math.sin(t * Math.PI), t * .12 - .06, w, .016 * Math.sin(t * Math.PI) + .003, t * .12 - .06);
+    if (i < 8) { const k = i * 2; shavingIndices.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
+  }
+  const shavingGeometry = new THREE.BufferGeometry(); shavingGeometry.setAttribute('position', new THREE.Float32BufferAttribute(shavingVertices, 3)); shavingGeometry.setIndex(shavingIndices); shavingGeometry.computeVertexNormals();
+  const curls = instances(cheesePart, shavingGeometry, cheese, 36);
+  for (let i = 0; i < 36; i++) {
+    dummy.position.copy(garnishPoint()); dummy.position.y += .022; dummy.rotation.set((random() - .5) * .5, random() * Math.PI, (random() - .5) * .4); dummy.scale.set(.6 + random(), 1, .65 + random() * .7); dummy.updateMatrix(); curls.setMatrixAt(i, dummy.matrix);
+  }
+  const rimPepper = instances(pepperPart, new THREE.DodecahedronGeometry(.01, 0), pepper, 38);
+  for (let i = 0; i < 38; i++) {
+    const a = .3 + random() * 2, r = 1.95 + random() * .3; dummy.position.set(Math.cos(a) * r, plateHeight(r) + .012, Math.sin(a) * r);
+    dummy.rotation.set(random(), random(), random()); dummy.scale.setScalar(.6 + random()); dummy.updateMatrix(); rimPepper.setMatrixAt(i, dummy.matrix);
+  }
+  for (const detail of [pepperBits, shavings, curls, rimPepper, charred]) detail.castShadow = false;
+  const fork = part('fork', plate); fork.position.set(.85, 1.9, .25); fork.rotation.set(.08, .22, -.3);
+  const handleShape = new THREE.Shape(); handleShape.moveTo(-.048, .22); handleShape.bezierCurveTo(-.06,.65,-.15,1.1,-.12,1.39); handleShape.bezierCurveTo(-.11,1.52,.11,1.52,.12,1.39); handleShape.bezierCurveTo(.15,1.1,.06,.65,.048,.22); handleShape.closePath();
+  const forkHandle = mesh(fork, new THREE.ExtrudeGeometry(handleShape, { depth: .045, bevelEnabled: true, bevelSegments: 3, bevelSize: .02, bevelThickness: .015, curveSegments: 20 }), steel); forkHandle.scale.y = .88;
+  const shoulders = new THREE.Shape(); shoulders.moveTo(-.05,.29); shoulders.bezierCurveTo(-.09,.17,-.32,.16,-.32,0); shoulders.lineTo(.32,0); shoulders.bezierCurveTo(.32,.16,.09,.17,.05,.29); shoulders.closePath();
+  mesh(fork, new THREE.ExtrudeGeometry(shoulders, { depth: .04, bevelEnabled: true, bevelSegments: 3, bevelSize: .012, bevelThickness: .009, curveSegments: 12 }), steel);
+  for (const x of [-.255, -.085, .085, .255]) tube(fork, [new THREE.Vector3(x,-.025,.035), new THREE.Vector3(x,-.36,.08),new THREE.Vector3(x * .9,-.77,.19)], .03, steel, 32);
+  fork.updateMatrix();
+  const lifted = part('lifted-noodles', plate);
+  for (let i = 0; i < 7; i++) {
+    const points = [], phase = i * .83, turns = 1.15 + i * .045;
+    for (let j = 0; j <= 56; j++) {
+      const t = j / 56, a = phase + t * Math.PI * 2 * turns, r = .265 + .035 * Math.sin(a * 2.2 + i);
+      points.push(new THREE.Vector3(Math.cos(a) * r, -.3 + t * .51 + .025 * Math.sin(a * 3), Math.sin(a) * r + .05));
+    }
+    strand(fork, points, .043, pasta[i % 3], 80);
+    const start = points[0].clone().applyMatrix4(fork.matrix), angle = -.9 + i * .47;
+    const end = new THREE.Vector3(Math.cos(angle) * (.8 + i * .06), 0, Math.sin(angle) * .78 + .25); end.y = surfaceAt(end.x, end.z) ?? .85;
+    strand(lifted, [start, start.clone().add(new THREE.Vector3(.04, -.18, .06)), new THREE.Vector3(start.x * .7 + end.x * .3, Math.max(end.y + .12, start.y - .47), start.z * .6 + end.z * .4 + .16), end], .043, pasta[i % 3], 72);
+  }
 
   const stove = part('stove');
   box(stove, 2.35, 1.405, -2.47, 2.26, .045, 1.18, charcoal, .055);
@@ -168,6 +289,23 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   const whiskHandle=box(mixing,.21,.73,.07,.065,.38,.07,walnut,.02);whiskHandle.rotation.z=-.22;
   box(ingredients,-.76,1.44,-2.57,.65,.075,.47,eggshell,.04);
   for(let i=0;i<3;i++)sphere(ingredients,-.95+i*.19,1.61,-2.57,.11,eggshell,1,1.4,.95);
+  const brokenEggs = part('eggshells', ingredients), shellMaterial = standard(0xe9d0a5, .78); shellMaterial.side = THREE.DoubleSide;
+  for (let i = 0; i < 2; i++) {
+    const shellGeometry = new THREE.SphereGeometry(.12, 32, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), positions = shellGeometry.getAttribute('position');
+    for (let j = 0; j < positions.count; j++) {
+      const y = positions.getY(j), edge = Math.max(0, 1 + y / .025), angle = Math.atan2(positions.getZ(j), positions.getX(j));
+      positions.setY(j, y * 1.15 + edge * (.006 * Math.sin(angle * 13) + .004 * Math.cos(angle * 19)));
+    }
+    shellGeometry.computeVertexNormals(); const shell = mesh(brokenEggs, shellGeometry, shellMaterial, -.39 + i * .27, 1.54, -2.07 + i * .03); shell.rotation.set(.08, i, .15 - i * .25);
+  }
+  const cheeseRind = standard(0xb49258, .78), cheeseCrumb = standard(0xe1ca8d, .76);
+  mesh(ingredients, new THREE.CylinderGeometry(.405,.405,.287,48,1,true,0,Math.PI*.54), cheeseRind, -2.97,1.62,-2.45);
+  const crumbs = instances(ingredients, new THREE.DodecahedronGeometry(.012, 0), cheeseCrumb, 45);
+  crumbs.castShadow = false;
+  for (let i = 0; i < 45; i++) {
+    dummy.position.set(-2.9 + random() * .58, 1.488, -2.55 + random() * .45); dummy.rotation.set(random(),random(),random()); dummy.scale.setScalar(.4 + random()); dummy.updateMatrix(); crumbs.setMatrixAt(i,dummy.matrix);
+  }
+
   const mill=part('pepper-mill',ingredients);mill.position.set(-1.36,1.39,-2.75);
   lathe(mill,[[0,0],[.17,0],[.19,.05],[.16,.12],[.11,.2],[.1,.4],[.17,.53],[.18,.61],[.1,.68],[0,.69]],walnut);
   cylinder(mill,0,.71,0,.032,.05,steel);ring(mill,0,.16,0,.13,.012,brass);
@@ -186,6 +324,7 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     const hanging=part('hanging-pan',ingredients);hanging.position.set(x,y,-2.89);hanging.rotation.x=Math.PI/2;
     lathe(hanging,[[0,0],[.21,0],[.29,.06],[.3,.11],[.28,.13],[.24,.07],[0,.025]],copper);
     box(hanging,0,.05,-.58,.085,.07,.62,walnut,.02);ring(hanging,0,.05,-.89,.065,.012,brass);
+    tube(ingredients,[new THREE.Vector3(x,3.74,-2.91),new THREE.Vector3(x,3.59,-2.86),new THREE.Vector3(x,3.35,-2.84),new THREE.Vector3(x,3.26,-2.91)],.016,brass,24);
   }
 
   const steamMaterial = new THREE.ShaderMaterial({ transparent:true,depthWrite:false,side:THREE.DoubleSide,
@@ -196,7 +335,7 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     const positions:number[]=[],uvs:number[]=[],indices:number[]=[];
     for(let j=0;j<=20;j++){const t=j/20,x=Math.sin(t*8+i)*.1;for(const side of [-1,1]){positions.push(x+side*(.035+.07*t),t*.9,Math.sin(t*4+i)*.03);uvs.push(side===-1?0:1,t);}if(j<20){const k=j*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);
-    const vapor=mesh(root,g,steamMaterial,-.8+i*.45,2.12,.65+i*.17);vapor.name='pasta-steam';vapor.castShadow=false;steams.push(vapor);
+    const vapor=mesh(root,g,steamMaterial,-.8+i*.45,2.8,.65+i*.17);vapor.name='pasta-steam';vapor.castShadow=false;steams.push(vapor);
   }
   const lamp=new THREE.PointLight(0xffe4af,18,11,2);lamp.position.set(-.3,4.1,1.7);lamp.castShadow=false;root.add(lamp);
   root.updateMatrixWorld(true);
@@ -207,12 +346,17 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
       object.updateMatrix();const g=object.geometry.index?object.geometry.toNonIndexed():object.geometry.clone();g.applyMatrix4(object.matrix);
       const items=buckets.get(object.material)??[];items.push(g);buckets.set(object.material,items);object.removeFromParent();
     }
-    for(const [material,parts] of buckets){const merged=mergeGeometries(parts);parts.forEach(g=>g.dispose());if(merged)mesh(group,merged,material);}
+    for(const [material,parts] of buckets){
+      const merged=mergeGeometries(parts);parts.forEach(g=>g.dispose());
+      if(merged){const indexed=mergeVertices(merged);merged.dispose();mesh(group,indexed,material);}
+    }
   }
+  const liveGeometry=new Set<THREE.BufferGeometry>();root.traverse(o=>{if(o instanceof THREE.Mesh)liveGeometry.add(o.geometry);});
+  for(const g of geometries)if(!liveGeometry.has(g)){g.dispose();geometries.delete(g);}
   const instanced:THREE.InstancedMesh[]=[];root.traverse(o=>{if(o instanceof THREE.InstancedMesh)instanced.push(o);});
   return {
-    update(time:number,reduced:boolean){steams.forEach((s,i)=>{s.visible=!reduced;s.position.y=2.12+((time*.18+i/3)%1)*.35;});lamp.visible=!reduced;},
-    updateTime(night:number){lamp.intensity=2+night*14;},
+    update(time:number,reduced:boolean){steams.forEach((s,i)=>{s.visible=!reduced;s.position.y=2.8+((time*.18+i/3)%1)*.35;});lamp.visible=!reduced;},
+    updateTime(night:number){lamp.intensity=2+night*14;for(const m of pasta)m.emissiveIntensity=.025+night*.1;sauce.emissiveIntensity=.025+night*.08;},
     dispose(){root.removeFromParent();instanced.forEach(o=>o.dispose());geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());},
   };
 }

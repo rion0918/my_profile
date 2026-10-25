@@ -41,7 +41,20 @@ test('the kitchen contains detailed three-dimensional carbonara, cooking tools a
     }
     const noodles=root.getObjectByName('pasta-noodles');let noodleVertices=0;noodles.traverse(o=>{if(o.isMesh)noodleVertices+=o.geometry.getAttribute('position').count;});
     assert.ok(noodleVertices>30000,'the strands have actual depth and overlapping curves');
+    const moundSize=new THREE.Box3().setFromObject(noodles).getSize(new THREE.Vector3());
+    assert.ok(moundSize.y>1,'the serving has a raised, irregular nest silhouette rather than flat concentric layers');
+    const lifted=root.getObjectByName('pasta-lifted-noodles');assert.ok(lifted,'separate strands connect the forkful back to the serving');
+    assert.ok(new THREE.Box3().setFromObject(lifted).getSize(new THREE.Vector3()).y>.5,'the lifted strands drape down from the fork');
+    const noodleMaterial=noodles.children.find(o=>o.isMesh).material;
+    assert.ok(noodleMaterial.bumpMap&&noodleMaterial.envMap,'the sauce has surface relief and soft reflections, including in low mode');
     root.updateMatrixWorld(true);
+    const toppings=root.getObjectByName('pasta-guanciale').children.find(o=>o.isInstancedMesh),matrix=new THREE.Matrix4();let supported=0;
+    for(let i=0;i<toppings.count;i++){
+      toppings.getMatrixAt(i,matrix);const point=new THREE.Vector3().setFromMatrixPosition(matrix).applyMatrix4(toppings.matrixWorld);
+      const ray=new THREE.Raycaster(new THREE.Vector3(point.x,10,point.z),new THREE.Vector3(0,-1,0)),hit=ray.intersectObject(noodles,true)[0];
+      if(hit&&point.y-hit.point.y>-.015&&point.y-hit.point.y<.16)supported++;
+    }
+    assert.ok(supported>=toppings.count*.9,'the browned toppings rest on the visible serving instead of floating or disappearing into lower layers');
     const plate=root.getObjectByName('pasta-plate'),center=plate.getWorldPosition(new THREE.Vector3());
     const plateRay=new THREE.Raycaster(new THREE.Vector3(center.x+2.1,10,center.z),new THREE.Vector3(0,-1,0));
     const rimHits=plateRay.intersectObjects(plate.children.filter(o=>o.isMesh),false);
@@ -61,7 +74,7 @@ test('the kitchen contains detailed three-dimensional carbonara, cooking tools a
     const after=[];root.traverse(o=>{if(o.isMesh)after.push(o.geometry);if(o.isLight){assert.equal(o.castShadow,false);assert.equal(o.visible,false);}});
     assert.deepEqual(after,geometry,'both quality modes keep the same detailed kitchen');
     kitchen.update(3,false);kitchen.updateTime(1);assert.ok(steams.every(o=>o.visible));
-    const resources=new Set();root.traverse(o=>{if(o.geometry)resources.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[]){resources.add(m);if(m.map)resources.add(m.map);}});
+    const resources=new Set();root.traverse(o=>{if(o.geometry)resources.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[]){resources.add(m);for(const value of Object.values(m))if(value?.isTexture)resources.add(value);}});
     let disposed=0;for(const resource of resources)resource.addEventListener('dispose',()=>disposed++);
     kitchen.dispose();assert.equal(scene.children.length,0);assert.equal(disposed,resources.size,'all display resources are released');
   }finally{delete globalThis.document;}
