@@ -39,7 +39,11 @@ test("all streets join a dry coastal promenade and retain open building approach
   assert.ok(coast >= 0);
   for (let i = 0; i < roadCurves.length; i++)
     for (const p of roadCurves[i].getPoints(200)) {
-      assert.ok(distanceToShore(p) < -5, "no road ends in the water");
+      assert.ok(distanceToShore(p) < -3 - roads[i].width / 2, "the full road width remains on dry ground");
+      for(let a=0;a<8;a++)assert.equal(getGroundHeight({
+        x:p.x+Math.cos(a*Math.PI/4)*roads[i].width/2,
+        z:p.z+Math.sin(a*Math.PI/4)*roads[i].width/2,
+      }),0,'the rerouted promenade stays above the beach slope across its full width');
       assert.equal(containsStreetPoint(network.surface, p.x, p.z), true);
       assert.equal(containsStreetPoint(network.curb, p.x, p.z), false);
     }

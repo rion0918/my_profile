@@ -46,5 +46,5 @@ test("grass clearance includes the full width of every curved street and approac
       }
     }
   }
-  assert.equal(isOnRoad({ x: -36, z: -28 }, 0.35), false);
+  assert.equal(isOnRoad({ x: -34, z: -23 }, 0.35), false);
 });

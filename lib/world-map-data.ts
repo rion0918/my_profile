@@ -5,7 +5,7 @@ import { coastPoint } from './world-navigation.ts';
 import { harborDecks } from './world-harbor.ts';
 import { mapPoint } from './world-map.ts';
 import { buildStreetNetwork } from "./street-network.ts";
-import { onsen } from './world-onsen.ts';
+import { onsen, onsenBoundary } from './world-onsen.ts';
 import { gamingPC } from './world-gaming-pc.ts';
 import { pastaKitchen } from './world-pasta.ts';
 
@@ -20,7 +20,7 @@ export function createWorldMapData() {
     boundary: mapPoint({x:0,z:zoneBoundary}).y,
     entrance: mapPoint(southEntrance),
     plaza: mapPoint(centralPlaza),
-    onsen: { ...mapPoint(onsen), width: onsen.width / 96 * 100, height: onsen.depth / 94 * 100 },
+    onsen: { ...mapPoint(onsen), width: onsen.width / 96 * 100, height: onsen.depth / 94 * 100, outline: path(onsenBoundary)+' Z' },
     gamingPC: { ...mapPoint(gamingPC), width: gamingPC.width / 96 * 100, height: gamingPC.depth / 94 * 100 },
     pastaKitchen: { ...mapPoint(pastaKitchen), width: pastaKitchen.width / 96 * 100, height: pastaKitchen.depth / 94 * 100 },
     coast: path(Array.from({length:97},(_,i)=>coastPoint(i/96*Math.PI*2)))+' Z',

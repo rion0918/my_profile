@@ -13,7 +13,7 @@ import { positionStorageKey, positionVersion, centralPlaza } from "../../lib/wor
 import { tourFork, hallMarker } from "../../lib/world-tour";
 import { loadCharacter } from "./load-character";
 import { harbor, getHarborDeckHeight } from "../../lib/world-harbor";
-import { onsen } from "../../lib/world-onsen";
+import { onsen, isOnsenClearing } from "../../lib/world-onsen";
 import { gamingPC } from "../../lib/world-gaming-pc";
 import { pastaKitchen } from "../../lib/world-pasta";
 import { createBikeController, cyclingObstacles, getBikeStandingPosition } from "../../lib/world-bike";
@@ -51,7 +51,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
   const harborLabel = useRef<HTMLButtonElement>(null);
   const harborRef = useRef<() => void>(() => {});
   const onsenLabel = useRef<HTMLButtonElement>(null);
-  const onsenRef = useRef<(indoor: boolean) => void>(() => {});
+  const onsenRef = useRef<(destination: 'outdoor' | 'indoor' | 'pots') => void>(() => {});
   const pcRef = useRef<() => void>(() => {});
   const pastaRef = useRef<() => void>(() => {});
   const entryLabels = useRef<(HTMLButtonElement | null)[]>([]);
@@ -312,7 +312,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       if (bathLabel) {
         const p = new THREE.Vector3(onsen.entry.x, 3.8, onsen.entry.z).project(camera);
         const x = (p.x + 1) * viewportWidth / 2, y = (1 - p.y) * viewportHeight / 2;
-        bathLabel.hidden = coveredByCamera(x,y,100) || x < 90 || x > viewportWidth - 90 || y < 112 || y > viewportHeight - 130;
+        bathLabel.hidden = isOnsenClearing(person.position, 1.2) || coveredByCamera(x,y,100) || x < 90 || x > viewportWidth - 90 || y < 112 || y > viewportHeight - 130;
         bathLabel.style.transform = `translate(-50%,-100%) translate(${x}px,${y}px)`;
       }
       buildings.forEach((building, index) => {
@@ -765,18 +765,20 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       setNotice("パスタキッチンへ。よく作るカルボナーラを、大きな一皿と調理道具で紹介しています。");
       element.focus({ preventScroll: true }); start();
     };
-    onsenRef.current = (indoor) => {
+    onsenRef.current = (destination) => {
       if (pausedRef.current || !compiled) return;
       beginExploring();
       stop();
       if (bike.riding && !dismount()) return;
       isOverview = false; setOverview(false); manuallyPanned = false;
-      cameraTarget.copy(followTarget()); positionCamera(); resize();
-      const target = indoor ? onsen.indoor : onsen.outdoor;
+      cameraTarget.copy(followTarget());
+      viewZoom = destination === 'indoor' ? 1.05 : destination === 'pots' ? .95 : .78; setZoom(viewZoom);
+      positionCamera(); resize();
+      const target = destination === 'indoor' ? onsen.indoor : destination === 'pots' ? onsen.pots : onsen.outdoor;
       path = findPath(person.position, target, obstacles);
       if (!path.length) { setNotice("温泉への道を選び直してください。"); return; }
       world.destination.position.set(target.x, .08, target.z);
-      setNotice(indoor ? "木もれびの湯の内湯へ。中に入ると屋根が外れ、室内を見渡せます。" : "街の奥、木もれびの湯の露天風呂へ歩いています。");
+      setNotice(destination === 'indoor' ? '奥の暖簾から内湯へ。入口に近づくと屋根と手前の壁が外れ、室内を見渡せます。' : destination === 'pots' ? '竹の庭の壺湯へ。三つの陶器風呂と、石の小径を巡れます。' : '木もれびの湯へ。手前の岩風呂から、岩滝と竹の庭を眺められます。');
       element.focus({ preventScroll: true }); start();
     };
     // Keep real time in sync even while reduced motion or a detail panel stops rAF.
@@ -1057,7 +1059,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
             if(id==='harbor')harborRef.current();
             else if(id==='gaming-pc')pcRef.current();
             else if(id==='pasta-kitchen')pastaRef.current();
-            else if(id==='onsen-outdoor'||id==='onsen-indoor')onsenRef.current(id==='onsen-indoor');
+            else if(id==='onsen-outdoor'||id==='onsen-indoor'||id==='onsen-pots')onsenRef.current(id==='onsen-indoor'?'indoor':id==='onsen-pots'?'pots':'outdoor');
             else entryRef.current(id);
             element.focus({preventScroll:true});
           },
@@ -1175,7 +1177,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
           <button ref={harborLabel} className="buildingLabel" aria-label="港の桟橋へ歩く" onClick={() => harborRef.current()}>
             港の桟橋へ歩く<span aria-hidden="true">↥</span>
           </button>
-          <button ref={onsenLabel} className="buildingLabel onsenLabel" aria-label="木もれびの湯の露天風呂へ歩く" onClick={() => onsenRef.current(false)}>
+          <button ref={onsenLabel} className="buildingLabel onsenLabel" aria-label="木もれびの湯の露天風呂へ歩く" onClick={() => onsenRef.current('outdoor')}>
             <span aria-hidden="true">♨</span> 木もれびの湯<span aria-hidden="true">↥</span>
           </button>
           {buildings.map((b, i) => (

@@ -101,12 +101,19 @@ export const roads: Road[] = [
     width: 2.2,
   })),
 ];
+// The northwestern promenade follows the shore behind the expanded thermal garden.
+const promenadeInset = (angle: number) => {
+  const a = (angle + Math.PI * 2) % (Math.PI * 2), smooth = (lo: number, hi: number) => {
+    const t = Math.max(0, Math.min(1, (a - lo) / (hi - lo))); return t * t * (3 - 2 * t);
+  };
+  return -7 + 2.7 * smooth(3.45, 3.85) * (1 - smooth(4.35, 4.61));
+};
 // Main streets meet a continuous promenade on dry ground, before the beach slope.
 for (const road of roads.slice(0, 5))
   for (const index of [0, road.points.length - 1]) {
     const [x, z] = road.points[index];
     if (distanceToShore({ x, z }) > -7) {
-      const p = coastPoint(Math.atan2(z, x), -7.8);
+      const angle = Math.atan2(z, x), p = coastPoint(angle, promenadeInset(angle) - .8);
       road.points[index] = [p.x, p.z];
     }
   }
@@ -114,7 +121,7 @@ roads.push({
   width: 2.2,
   closed: true,
   points: Array.from({ length: 64 }, (_, i) => {
-    const p = coastPoint(i / 64 * Math.PI * 2, -7);
+    const angle = i / 64 * Math.PI * 2, p = coastPoint(angle, promenadeInset(angle));
     return [p.x, p.z];
   }),
 });
@@ -306,7 +313,10 @@ export const benches = [
 ].map((p) => roadsideSite(p, 0.65, 1.6));
 export const streetlights: StreetProp[] = [...entranceLamps];
 for (const index of [0, 1, 2, 3, 4, roads.length - 1]) {
-  const curve = roadCurves[index], count = Math.floor(curve.getLength() / 13);
+  const curve = index === roads.length - 1
+    ? new CatmullRomCurve3(Array.from({ length: 64 }, (_, i) => { const p = coastPoint(i / 64 * Math.PI * 2, -7); return new Vector3(p.x, 0, p.z); }), true)
+    : roadCurves[index];
+  const count = Math.floor(curve.getLength() / 13);
   for (let i = 0; i < count; i++) {
     const p = curve.getPointAt((i + 0.4) / count), tangent = curve.getTangentAt((i + 0.4) / count);
     const side = i % 2 ? 1 : -1, offset = roads[index].width / 2 + 0.65;

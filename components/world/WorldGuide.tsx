@@ -41,7 +41,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
         {map.ponds.map((p,i)=><ellipse key={i} cx={p.x} cy={p.y} rx={p.width/2} ry={p.height/2} fill="#84bdb6" />)}
         {map.decks.map((d,i)=><rect key={i} x={d.x-d.width/2} y={d.y-d.height/2} width={d.width} height={d.height} fill="#dfb38b"/>)}
         <g>
-          <rect x={map.onsen.x-map.onsen.width/2} y={map.onsen.y-map.onsen.height/2} width={map.onsen.width} height={map.onsen.height} rx="1" fill="#9caa87" stroke="#ece0c1" strokeWidth=".5"/>
+          <path d={map.onsen.outline} fill="#9caa87" stroke="#ece0c1" strokeWidth=".5"/>
           <text x={map.onsen.x} y={map.onsen.y+1.5} textAnchor="middle" fontSize="5" fill="#614f3d">♨</text>
         </g>
         <g>
@@ -82,10 +82,11 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
         })}
       </nav>
       <div className="guideOnsen">
-        <p><span aria-hidden="true">♨</span> 木もれびの湯<small>街の奥にある、和風の温泉。内湯は中まで歩けます。</small></p>
+        <p><span aria-hidden="true">♨</span> 木もれびの湯<small>岩滝を望む露天風呂と、竹の庭の壺湯。奥の暖簾から内湯へ。</small></p>
         <div>
           <button disabled={!navigation} onClick={()=>walk('onsen-outdoor')}>露天風呂へ歩く ↗</button>
           <button disabled={!navigation} onClick={()=>walk('onsen-indoor')}>内湯へ歩く ↗</button>
+          <button disabled={!navigation} onClick={()=>walk('onsen-pots')}>壺湯の庭へ歩く ↗</button>
         </div>
       </div>
       <button className="guideHarbor" disabled={!navigation} onClick={()=>walk('harbor')}>海風を感じる寄り道 <span>港の桟橋へ歩く ↗</span></button>
