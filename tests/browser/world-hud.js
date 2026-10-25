@@ -24,19 +24,25 @@ async page=>{
     const r=rects[i];if(r.x<0||r.y<0||r.right>width+.5||r.bottom>height+.5||r.width<44||r.height<44)throw Error('HUD target out of bounds '+JSON.stringify({width,r}));
     for(let j=0;j<i;j++){const b=rects[j];if(r.x<b.right&&r.right>b.x&&r.y<b.bottom&&r.bottom>b.y)throw Error('HUD overlaps '+JSON.stringify({width,r,b}));}
    }
-   const bgm=p.locator('.bgmToggle');await bgm.click();if(await bgm.getAttribute('aria-pressed')!=='false')throw Error('BGM cannot switch off');await bgm.click();if(await bgm.getAttribute('aria-pressed')!=='true')throw Error('BGM cannot switch on');
+   const zoom=p.getByRole('button',{name:'景色を拡大',exact:true});await zoom.hover();await p.mouse.down();const press=await zoom.evaluate(e=>({transform:getComputedStyle(e).transform,transition:getComputedStyle(e).transitionDuration}));await p.mouse.move(width/2,height/2);await p.mouse.up();if(press.transform!=='none'||press.transition.split(',').some(t=>parseFloat(t)>0))throw Error('reduced motion still animates button presses');
+   const bgm=p.locator('.bgmToggle'),bgmWidth=(await bgm.boundingBox()).width;await bgm.click();if(await bgm.getAttribute('aria-pressed')!=='false')throw Error('BGM cannot switch off');if(Math.abs((await bgm.boundingBox()).width-bgmWidth)>.5)throw Error('BGM button shifts when toggled');await bgm.click();if(await bgm.getAttribute('aria-pressed')!=='true')throw Error('BGM cannot switch on');
    const dash=p.getByRole('button',{name:/^常ダッシュ (ON|OFF)$/});await dash.click();if(await dash.getAttribute('aria-pressed')!=='true')throw Error('dash did not latch');
    const position=()=>p.evaluate(()=>window.__hud.scene.children.find(o=>o.getObjectByName('Hips')).position.toArray());
    const before=await position();await p.keyboard.down('ArrowUp');await p.waitForTimeout(500);await p.keyboard.up('ArrowUp');
    const after=await position(),distance=Math.hypot(after[0]-before[0],after[2]-before[2]);if(distance<2.1||distance>3.2)throw Error('always sprint speed '+distance);
    await dash.click();if(await dash.getAttribute('aria-pressed')!=='false')throw Error('dash cannot switch off');
-   await p.getByRole('button',{name:'街全体を見る',exact:true}).click();await p.getByRole('button',{name:'人物に戻る',exact:true}).click();
+   const view=p.getByRole('button',{name:'街全体を見る',exact:true}),viewWidth=(await view.boundingBox()).width;await view.click();const returning=p.getByRole('button',{name:'人物に戻る',exact:true});if(Math.abs((await returning.boundingBox()).width-viewWidth)>.5)throw Error('view button shifts when toggled');await returning.click();
    await p.getByRole('button',{name:'景色を拡大',exact:true}).click();await p.getByRole('button',{name:'景色を縮小',exact:true}).click();
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');
    const panel=await p.locator('.bgmPanel').boundingBox();if(panel.x<0||panel.x+panel.width>width+.5||panel.y+panel.height>height)throw Error('quality panel clipped');
-   await p.keyboard.press('Escape');await p.locator('.worldGuide>summary').click();
+   const stopped=await position();await p.locator('.worldSurface canvas').click({position:{x:width>1000?width/2:4,y:height/2}});
+   if(await p.locator('.bgmSettings').evaluate(e=>e.open))throw Error('quality button does not dismiss on outside click');
+   await p.waitForTimeout(150);const dismissed=await position();if(Math.hypot(dismissed[0]-stopped[0],dismissed[2]-stopped[2])>.02)throw Error('dismissing settings also moved the character');
+   if(!await p.locator('.worldSurface').evaluate(e=>e===document.activeElement))throw Error('outside dismissal lost exploration focus');
+   await p.locator('.worldGuide>summary').click();
    const guide=await p.locator('.worldGuidePanel').boundingBox();if(guide.x<0||guide.x+guide.width>width+.5||guide.y+guide.height>height)throw Error('guide clipped');
-   await p.keyboard.press('Escape');
+   const wasPlaying=await bgm.getAttribute('aria-pressed');await bgm.click();if(await p.locator('.worldGuide').evaluate(e=>e.open)||await bgm.getAttribute('aria-pressed')===wasPlaying)throw Error('outside toolbar action was blocked');
+   await p.locator('.worldGuide>summary').click();await p.keyboard.press('Escape');if(!await p.locator('.worldGuide>summary').evaluate(e=>e===document.activeElement))throw Error('menu Escape did not restore focus');
    await p.screenshot({path:`output/playwright/hud-after-${width}.png`});
    if(await p.locator('.worldToolbar .modeSwitch a').getAttribute('href')!=='/profile')throw Error('normal view link lost');
    results.push({width,height,controls:rects.length,onsenClear:true,dashDistance:distance,panels:true});

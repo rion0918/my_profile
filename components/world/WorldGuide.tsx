@@ -6,9 +6,11 @@ import { sections } from '../../lib/sections';
 import { mapPoint, type WorldNavigation } from '../../lib/world-map';
 import type { WorldMapData } from '../../lib/world-map-data';
 import { gamingPCSpecs } from '../../lib/world-gaming-pc';
+import { useWorldToolDismissal } from './useWorldToolDismissal';
 
 export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExplore}:{map:WorldMapData;navigation:WorldNavigation|null;onSelect:(id:string)=>void;onTour:()=>void;canTour:boolean;onExplore:()=>void}) {
   const details=useRef<HTMLDetailsElement>(null),marker=useRef<SVGCircleElement>(null);
+  useWorldToolDismissal(details);
   const [open,setOpen]=useState(false);
   useEffect(()=>{
     if(!open||!navigation)return;

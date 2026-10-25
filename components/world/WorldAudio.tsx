@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { createWorldAudio, type AudioState } from "../../lib/world-audio";
 import type { WorldQuality } from "../../lib/world-quality";
+import { useWorldToolDismissal } from './useWorldToolDismissal';
 
 export default function WorldAudio({ quality, onQualityChange }: {
   quality: WorldQuality;
   onQualityChange: (quality: WorldQuality) => void;
 }) {
   const audio = useRef<HTMLAudioElement>(null);
+  const settings = useRef<HTMLDetailsElement>(null);
+  useWorldToolDismissal(settings);
   const controller = useRef<ReturnType<typeof createWorldAudio> | null>(null);
   const [state, setState] = useState<AudioState>("waiting");
   const [ready, setReady] = useState(false);
@@ -74,7 +77,7 @@ export default function WorldAudio({ quality, onQualityChange }: {
         </svg>
         BGM <span>{state === "loading" ? "…" : enabled ? "ON" : "OFF"}</span>
       </button>
-      <details className="bgmSettings" name="world-tools" onKeyDown={event => {
+      <details className="bgmSettings" ref={settings} name="world-tools" onKeyDown={event => {
         if (event.key === "Escape") {
           event.currentTarget.open = false;
           event.currentTarget.querySelector("summary")?.focus();

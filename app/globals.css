@@ -1891,3 +1891,174 @@ a {
   .worldEntry .welcomeActions > :is(a, button) { padding-inline: 12px; font-size: 14px; }
   .worldEntry .welcomeActions .welcomeTour { font-size: 19px; }
 }
+
+/* Consistent action sizes and feedback across the town and its exhibitions. */
+:root {
+  --control-ink: #294b3e;
+  --control-paper: #fffaf3;
+  --control-line: #bbc9bb;
+  --control-hover: #edf3e9;
+  --control-selected: #e2eddf;
+  --control-primary: #294f42;
+  --control-focus: #34716c;
+}
+.modeSwitch a,
+.worldPage :is(button, summary, .modeSwitch a, .hallDialogHeader > a, .hallAction, .hallLinkDoor, .welcomeActions > a),
+.hallImageViewer button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  touch-action: manipulation;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+.modeSwitch a:focus-visible,
+.worldPage :is(button, summary, .modeSwitch a, .hallDialogHeader > a, .hallAction, .hallLinkDoor, .welcomeActions > a):focus-visible {
+  outline: 3px solid var(--control-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--control-paper);
+}
+.worldPage button:disabled { box-shadow: none; opacity: .5; cursor: not-allowed; transform: none; }
+.worldPage :is(.welcomeTour, .guideTour, .bgmToggle):disabled { cursor: progress; }
+.modeBar:not(.modeBarDark) .modeSwitch { gap: 4px; border-radius: 12px; background: #e8ede4; }
+.modeBar:not(.modeBarDark) .modeSwitch a { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; color: var(--control-ink); font-size: 13px; }
+.modeBar:not(.modeBarDark) .modeSwitch a[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
+.worldToolbar .modeSwitch { border: 0; background: transparent; box-shadow: none; }
+.worldToolbar .modeSwitch a,
+.worldToolbar .worldAudio > .bgmToggle,
+.worldToolbar .bgmSettings > summary,
+.worldToolbar .worldGuide > summary,
+.worldControls .worldControlButtons button,
+.worldControls .worldCameraControls button {
+  border: 1px solid var(--control-line);
+  background: var(--control-paper);
+  color: var(--control-ink);
+  box-shadow: 0 3px 12px #163c2420;
+  font-size: 13px;
+  font-weight: 550;
+}
+.worldControlButtons, .worldCameraControls { padding: 0; gap: 8px; border: 0; background: transparent; box-shadow: none; }
+.worldControls .worldControlButtons button { padding-inline: 12px; }
+.worldControls .worldControlButtons button:not(.sprintButton) { min-width: 108px; }
+.worldControls .worldCameraControls button { font-size: 22px; font-weight: 400; }
+.worldToolbar .bgmToggle span,
+.worldControls .sprintButton span {
+  display: inline-block;
+  min-width: 30px;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: #eef0e8;
+  color: #526356;
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-weight: 650;
+  text-align: center;
+}
+.worldToolbar .bgmToggle[aria-pressed="true"],
+.worldControls .worldControlButtons button[aria-pressed="true"],
+.worldToolbar :is(.bgmSettings, .worldGuide)[open] > summary {
+  border-color: #62856c;
+  background: var(--control-selected);
+  color: #214b36;
+}
+.worldToolbar .bgmToggle[aria-pressed="true"] span,
+.worldControls .sprintButton[aria-pressed="true"] span { background: var(--control-primary); color: #fffdf5; }
+.worldToolbar .qualityValue { color: #294f42; font-weight: 650; }
+.worldToolbar .worldGuide summary > span { transition: transform 140ms ease; }
+.bgmPanel input { min-height: 44px; }
+.bgmPanel select { border-radius: 10px; }
+.bgmPanel :is(input, select):focus-visible { outline: 3px solid var(--control-focus); outline-offset: 3px; }
+.buildingLabels .entryLabel { background: var(--control-primary); color: #fffdf5; border-color: #fffaf3b3; }
+.guideDestination > button, .guideOnsen button {
+  border: 1px solid var(--control-line);
+  background: var(--control-paper);
+  color: var(--control-ink);
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.guideDestination > button { flex-shrink: 0; }
+.guideDestination > a { padding-inline: 6px; border-radius: 8px; }
+.guideOnsen > div { display: grid; grid-template-columns: 1fr; }
+.worldPage .guideTour, .worldPage .hallAction, .worldPage .hallLinkDoor,
+.worldPage .tourFooter .tourNext, .worldEntry .welcomeActions .welcomeTour {
+  border-color: var(--control-primary);
+  background: var(--control-primary);
+  color: #fffdf5;
+}
+.hallDialog .hallDialogHeader { gap: 16px; }
+.hallDialog .hallDialogHeader > :is(a, button), .detailDialog .dialogToolbar button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--control-line);
+  background: var(--control-paper);
+  color: var(--control-ink);
+  font-size: 13px;
+  text-decoration: none;
+}
+.hallDialog .hallDialogHeader > a { background: #f0f3eb; border-color: transparent; }
+.hallDialog .tourFooter button { font-size: 14px; padding-inline: 18px; }
+.hallDialog .tourFooter button:disabled { background: #f0f2eb; border-color: #dce1d6; color: #7b877b; opacity: 1; }
+.hallChapterNav { gap: 8px; min-height: 64px; padding-block: 8px; justify-content: flex-start; }
+.hallChapterNav button { padding: 8px 14px; border: 1px solid #d7dfd2; background: #f2f5ee; color: var(--control-ink); font-size: 13px; font-weight: 550; }
+.hallChapterNav button:hover { text-decoration: none; }
+.hallExhibitSection > h3, .hallProductHero { scroll-margin-top: 80px; }
+.tourTravel button { padding-inline: 14px; border: 1px solid var(--control-line); background: var(--control-paper); }
+.hallImageViewer button { border-color: #92a498; border-radius: 10px; font-size: 13px; }
+.hallImageFooter button { font-size: 20px; }
+.hallImageViewer button:focus-visible { outline: 3px solid #c3e2d1; outline-offset: 2px; box-shadow: 0 0 0 1px #15221e; }
+@media (hover: hover) and (pointer: fine) {
+  .modeBar:not(.modeBarDark) .modeSwitch a:not([aria-current="page"]):hover { background: var(--control-hover); }
+  .worldToolbar .modeSwitch a:hover,
+  .worldToolbar .bgmToggle:not(:disabled):hover,
+  .worldToolbar :is(.bgmSettings, .worldGuide) > summary:hover,
+  .worldControls :is(.worldControlButtons, .worldCameraControls) button:not(:disabled):hover,
+  .hallDialog .hallDialogHeader > :is(a, button):hover,
+  .hallChapterNav button:hover, .guideDestination > button:not(:disabled):hover,
+  .guideOnsen button:not(:disabled):hover, .tourTravel button:hover,
+  .hallDialog .tourFooter button:not(.tourNext):not(:disabled):hover {
+    border-color: #738d78;
+    background: var(--control-hover);
+    color: var(--control-ink);
+  }
+  .worldToolbar .bgmToggle[aria-pressed="true"]:hover,
+  .worldControls .worldControlButtons button[aria-pressed="true"]:hover,
+  .worldToolbar :is(.bgmSettings, .worldGuide)[open] > summary:hover { background: #d5e5d1; border-color: #52705b; }
+  .worldPage .guideTour:not(:disabled):hover, .worldPage :is(.hallAction, .hallLinkDoor):hover,
+  .worldPage .tourFooter .tourNext:not(:disabled):hover, .worldEntry .welcomeActions .welcomeTour:not(:disabled):hover { background: #1c3d31; border-color: #1c3d31; }
+  .guideDestination > a:hover { background: var(--control-hover); }
+  .hallGalleryThumbnails button:not([aria-pressed="true"]):hover { border-color: #738d78; background: #f0f3eb; }
+  .hallImageViewer button:hover { background: #344c3e; border-color: #c3d6c8; }
+}
+.modeBar:not(.modeBarDark) .modeSwitch a:active,
+.worldPage :is(.worldToolbar, .worldControlButtons, .worldCameraControls, .hallDialogHeader, .hallChapterNav, .hallGalleryThumbnails, .tourFooter, .welcomeActions, .tourTravel) :is(button:not(:disabled), summary, a):active,
+.worldPage :is(.hallAction, .hallLinkDoor):active,
+.hallImageViewer button:active { transform: translateY(1px); filter: brightness(.94); }
+@media (max-width: 760px) {
+  .worldToolbar .modeSwitch a, .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 12px; }
+  .worldToolbar .bgmToggle span { min-width: 26px; padding-inline: 3px; }
+  .worldControls .worldControlButtons button { padding-inline: 8px; font-size: 12px; }
+  .worldControls .worldControlButtons button:not(.sprintButton) { min-width: 98px; }
+  .worldControlButtons, .worldCameraControls { gap: 6px; }
+  .hallDialog .hallDialogHeader { gap: 8px; padding-inline: 12px; }
+  .hallDialog .hallDialogHeader > :is(a, button) { font-size: 12px; padding-inline: 8px; }
+  .hallDialog .tourFooter button { font-size: 12px; padding-inline: 12px; }
+  .hallChapterNav button { padding-inline: 12px; font-size: 12px; }
+  .hallImageViewer button { font-size: 12px; }
+  .hallImageFooter button { font-size: 20px; }
+}
+@media (max-width: 360px) {
+  .worldToolbar .modeSwitch a, .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 11px; }
+}
+.worldEntry .welcomeActions .welcomeTour:disabled:hover { background: var(--control-primary); border-color: var(--control-primary); }
+.worldControls :is(.worldControlButtons, .worldCameraControls) button:disabled:hover { background: var(--control-paper); border-color: var(--control-line); color: var(--control-ink); }
+@media (hover: none) {
+  .worldEntry .welcomeActions > :is(a, button):hover { border-color: #cbd4c8; background: transparent; }
+  .worldEntry .welcomeActions .welcomeTour:hover { background: var(--control-primary); border-color: var(--control-primary); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modeSwitch a, .worldPage :is(button, summary, a), .worldToolbar .worldGuide summary > span, .hallImageViewer button { transition: none; }
+  .modeBar:not(.modeBarDark) .modeSwitch a:active,
+  .worldPage :is(.worldToolbar, .worldControlButtons, .worldCameraControls, .hallDialogHeader, .hallChapterNav, .hallGalleryThumbnails, .tourFooter, .welcomeActions, .tourTravel) :is(button:not(:disabled), summary, a):active,
+  .worldPage :is(.hallAction, .hallLinkDoor):active, .hallImageViewer button:active { transform: none; }
+}

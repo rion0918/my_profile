@@ -17,6 +17,7 @@ async page=>{
    await p.screenshot({path:`output/playwright/hall-exhibit-career-${width}.png`});
    for(const [id,name,featureCount] of [['yoin','Yoin',2],['pop-reminder','ふわっと。',3]]){
     await p.goto(origin+'/?detail='+id);const hall=p.getByRole('dialog',{name:name+'館',exact:true});await hall.waitFor({state:'visible'});
+    const controls=await hall.locator('.hallChapterNav button,.hallDialogHeader a,.hallDialogHeader button').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {name:e.textContent,width:r.width,height:r.height};}));if(controls.some(r=>r.width<44||r.height<44))throw Error('hall button target smaller than 44px '+JSON.stringify(controls));
     const history=await p.evaluate(()=>window.history.length),url=p.url(),gallery=p.getByRole('region',{name:name+'の実画面',exact:true});
     await p.waitForFunction(()=>document.querySelector('.hallGalleryMain img')?.complete&&document.querySelector('.hallGalleryMain img').naturalWidth>300);
     const firstAlt=await gallery.locator('.hallGalleryMain img').getAttribute('alt');
@@ -57,7 +58,8 @@ async page=>{
     else {const a=hall.getByRole('link',{name:id==='github'?'GitHubへ':'Zennへ',exact:true});if(await a.getAttribute('target')!=='_blank'||!await a.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe profile link');if(await hall.locator('.hallSocialMark img').count()!==1)throw Error('official icon missing');}
     await p.screenshot({path:`output/playwright/hall-exhibit-${id}-${width}.png`});
    }
-   results.push({width,height,firstScreen:true,allScreens:true,viewer:true,chapters:true,externalState:true});
+   await p.goto(origin+'/profile');const modes=await p.locator('.modeSwitch a').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height,right:r.right};}));if(modes.some(r=>r.width<44||r.height<44||r.right>width)||await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('normal mode buttons are too small or clipped');
+   results.push({width,height,firstScreen:true,allScreens:true,viewer:true,chapters:true,externalState:true,normalModeButtons:true});
   }finally{await c.close();}
  }
  const c=await browser.newContext({viewport:{width:390,height:844}});
