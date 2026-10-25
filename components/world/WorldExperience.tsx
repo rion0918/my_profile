@@ -358,9 +358,9 @@ export default function WorldExperience({
             {current && <a className="textLink" href={current.href}>
               この詳細のURLを開く ↗
             </a>}
-            <button onClick={close} aria-label={complete ? "自由に街を歩く" : guided ? "案内を離れて探索" : "詳細を閉じる"}>
-              {complete ? '自由に街を歩く' : guided ? '案内を離れて探索' : '閉じる'} <span aria-hidden="true">×</span>
-            </button>
+            {!complete && <button onClick={close} aria-label={guided ? "案内を離れて探索" : "詳細を閉じる"}>
+              {guided ? '案内を離れて探索' : '閉じる'} <span aria-hidden="true">×</span>
+            </button>}
           </div>}
           {guided && !currentHall && <nav className="tourProgress" aria-label="案内の順番">
             {tourStops.map((stop, index) => <span key={stop.id} aria-current={index === step ? 'step' : undefined}>

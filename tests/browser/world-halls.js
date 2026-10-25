@@ -56,6 +56,7 @@ async(page)=>{
   }
   await p.getByRole('button',{name:'案内のまとめへ →',exact:true}).click();await p.waitForFunction(()=>document.querySelector('.worldPage').dataset.tourPhase==='complete');
   if(await p.locator('#detail-title').innerText()!=='採用向けの案内はここまで'||new URL(p.url()).searchParams.has('detail'))throw Error('completion missing or has private URL');
+  if(await p.getByRole('button',{name:'自由に街を歩く'}).count()!==1)throw Error('duplicate free-walk action on completion');
   const finish=await position(p);if(Math.hypot(finish[0],finish[2])>.01)throw Error('not at central plaza '+finish);
   await p.keyboard.down('w');await p.waitForTimeout(120);await p.keyboard.up('w');if(JSON.stringify(finish)!==JSON.stringify(await position(p)))throw Error('completion did not pause actor');
   for(const id of ['github','zenn']){
