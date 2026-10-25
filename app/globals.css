@@ -1920,12 +1920,9 @@ a {
 }
 .worldPage button:disabled { box-shadow: none; opacity: .5; cursor: not-allowed; transform: none; }
 .worldPage :is(.welcomeTour, .guideTour, .bgmToggle):disabled { cursor: progress; }
-.modeBar:not(.modeBarDark) .modeSwitch { gap: 4px; border-radius: 12px; background: #e8ede4; }
-.modeBar:not(.modeBarDark) .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; color: var(--control-ink); font-size: 13px; }
-.modeBar:not(.modeBarDark) .modeSwitch > :is(a, span)[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
-.worldToolbar .modeSwitch { gap: 2px; padding: 4px; border: 1px solid var(--control-line); border-radius: 12px; background: var(--control-paper); box-shadow: 0 3px 12px #163c2420; }
-.worldToolbar .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border-radius: 8px; background: transparent; color: var(--control-ink); font-size: 13px; }
-.worldToolbar .modeSwitch > :is(a, span)[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
+.modeBar .modeSwitch { gap: 8px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.modeBar .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--control-paper); color: var(--control-ink); box-shadow: 0 3px 12px #163c2420; font-size: 13px; font-weight: 550; }
+.modeBar .modeSwitch > :is(a, span)[aria-current="page"] { border-color: #62856c; background: var(--control-selected); color: #214b36; }
 .worldToolbar .modeSwitch a,
 .worldToolbar .worldAudio > .bgmToggle,
 .worldToolbar .bgmSettings > summary,
@@ -1967,7 +1964,8 @@ a {
 }
 .worldToolbar .bgmToggle[aria-pressed="true"] span,
 .worldControls .sprintButton[aria-pressed="true"] span { background: var(--control-primary); color: #fffdf5; }
-.worldToolbar .qualityValue { color: #294f42; font-weight: 650; }
+.worldToolbar .qualityValue { color: #294f42; font-size: inherit; font-weight: 650; }
+.worldToolbar .bgmSettings > summary { min-width: 126px; }
 .worldToolbar .worldGuide summary > span { transition: transform 140ms ease; }
 .bgmPanel input { min-height: 44px; }
 .bgmPanel select { border-radius: 10px; }
@@ -2011,8 +2009,7 @@ a {
 .hallImageFooter button { font-size: 20px; }
 .hallImageViewer button:focus-visible { outline: 3px solid #c3e2d1; outline-offset: 2px; box-shadow: 0 0 0 1px #15221e; }
 @media (hover: hover) and (pointer: fine) {
-  .modeBar:not(.modeBarDark) .modeSwitch a:not([aria-current="page"]):hover { background: var(--control-hover); }
-  .worldToolbar .modeSwitch a:hover,
+  .modeBar .modeSwitch a:hover,
   .worldToolbar .bgmToggle:not(:disabled):hover,
   .worldToolbar :is(.bgmSettings, .worldGuide) > summary:hover,
   .worldControls :is(.worldControlButtons, .worldCameraControls) button:not(:disabled):hover,
@@ -2038,7 +2035,10 @@ a {
 .worldPage :is(.hallAction, .hallLinkDoor):active,
 .hallImageViewer button:active { transform: translateY(1px); filter: brightness(.94); }
 @media (max-width: 760px) {
-  .worldToolbar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 12px; }
+  .modeBar .modeSwitch { gap: 6px; }
+  .modeBar .modeSwitch > :is(a, span) { padding-inline: 8px; }
+  .modeBar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 12px; }
+  .worldToolbar .bgmSettings > summary { min-width: 110px; }
   .worldToolbar .bgmToggle span { min-width: 26px; padding-inline: 3px; }
   .worldControls .worldControlButtons button { padding-inline: 8px; font-size: 12px; }
   .worldControls .worldControlButtons button:not(.sprintButton) { min-width: 98px; }
@@ -2051,7 +2051,8 @@ a {
   .hallImageFooter button { font-size: 20px; }
 }
 @media (max-width: 360px) {
-  .worldToolbar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 11px; }
+  .modeBar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 11px; }
+  .worldToolbar .bgmSettings > summary { min-width: 104px; }
 }
 .worldEntry .welcomeActions .welcomeTour:disabled:hover { background: var(--control-primary); border-color: var(--control-primary); }
 .worldControls :is(.worldControlButtons, .worldCameraControls) button:disabled:hover { background: var(--control-paper); border-color: var(--control-line); color: var(--control-ink); }

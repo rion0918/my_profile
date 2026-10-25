@@ -14,6 +14,13 @@ async page=>{
    const sculptures=await p.evaluate(()=>window.__hud.scene.children.filter(o=>o.userData.detail==='tech'&&o.position.z===-20).length);
    if(sculptures)throw Error('onsen entrance still has '+sculptures+' sculptures');
    await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   const chrome=await p.locator('.worldToolbar').evaluate(toolbar=>{
+    const read=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {height:r.height,radius:s.borderRadius,border:s.borderTopWidth,shadow:s.boxShadow,font:s.fontSize,weight:s.fontWeight};};
+    return {mode:[...toolbar.querySelectorAll('.modeSwitch>*')].map(read),group:read(toolbar.querySelector('.modeSwitch')),reference:read(toolbar.querySelector('.bgmToggle'))};
+   });
+   if(chrome.group.height!==44||chrome.mode.some(m=>JSON.stringify(m)!==JSON.stringify(chrome.reference)))throw Error('mode buttons do not match the other HUD controls '+JSON.stringify(chrome));
+   const quality=p.locator('.bgmSettings > summary'),qualityWidth=(await quality.boundingBox()).width;
+   if(await p.locator('.qualityValue').innerText()!=='クオリティ')throw Error('quality label is inconsistent with the setting');
    await p.locator('.worldToolbar .modeSwitch a').focus();await p.keyboard.press('Tab');
    if(!await p.locator('.bgmToggle').evaluate(el=>el===document.activeElement))throw Error('toolbar keyboard order skips BGM');
    await p.keyboard.press('Tab');if(!await p.locator('.bgmSettings>summary').evaluate(el=>el===document.activeElement))throw Error('toolbar keyboard order skips quality');
@@ -36,6 +43,7 @@ async page=>{
    const view=p.getByRole('button',{name:'街全体を見る',exact:true}),viewWidth=(await view.boundingBox()).width;await view.click();const returning=p.getByRole('button',{name:'人物に戻る',exact:true});if(Math.abs((await returning.boundingBox()).width-viewWidth)>.5)throw Error('view button shifts when toggled');await returning.click();
    await p.getByRole('button',{name:'景色を拡大',exact:true}).click();await p.getByRole('button',{name:'景色を縮小',exact:true}).click();
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');
+   if(await p.locator('.qualityValue').innerText()!=='低設定'||await p.getByLabel('画質モード',{exact:true}).locator('option:checked').innerText()!=='低設定'||Math.abs((await quality.boundingBox()).width-qualityWidth)>.5)throw Error('quality mode labels or control width changed inconsistently');
    const panel=await p.locator('.bgmPanel').boundingBox();if(panel.x<0||panel.x+panel.width>width+.5||panel.y+panel.height>height)throw Error('quality panel clipped');
    const stopped=await position();await p.locator('.worldSurface canvas').click({position:{x:width>1000?width/2:4,y:height/2}});
    if(await p.locator('.bgmSettings').evaluate(e=>e.open))throw Error('quality button does not dismiss on outside click');

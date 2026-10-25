@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createWorldAudio, type AudioState } from "../../lib/world-audio";
-import type { WorldQuality } from "../../lib/world-quality";
+import { worldQualityLabels, type WorldQuality } from "../../lib/world-quality";
 import { useWorldToolDismissal } from './useWorldToolDismissal';
 
 export default function WorldAudio({ quality, onQualityChange }: {
@@ -83,14 +83,14 @@ export default function WorldAudio({ quality, onQualityChange }: {
           event.currentTarget.querySelector("summary")?.focus();
         }
       }}>
-        <summary aria-label={`画質 ${quality === "quality" ? "高" : "低"}：画質・BGM設定`} title="画質・BGM設定">
-          画質 <span className="qualityValue">{quality === "quality" ? "高" : "低"}</span>
+        <summary aria-label={`画質 ${worldQualityLabels[quality]}：画質・BGM設定`} title="画質・BGM設定">
+          画質 <span className="qualityValue">{worldQualityLabels[quality]}</span>
         </summary>
         <div className="bgmPanel">
           <label htmlFor="world-quality">画質モード</label>
           <select id="world-quality" value={quality} onChange={event => onQualityChange(event.currentTarget.value as WorldQuality)} aria-describedby="world-quality-description">
-            <option value="quality">クオリティモード</option>
-            <option value="low">低設定モード</option>
+            <option value="quality">{worldQualityLabels.quality}</option>
+            <option value="low">{worldQualityLabels.low}</option>
           </select>
           <p id="world-quality-description" className="qualityDescription">{quality === "quality" ? "影・水面の反射・動物の動きを楽しめます。" : "影・水面の反射を省き、動物の動きと描画負荷を抑えます。"}マップや移動できる場所は変わりません。</p>
           <p className="bgmEyebrow">街のBGM</p>
