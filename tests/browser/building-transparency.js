@@ -30,6 +30,12 @@ async page=>{
    if(JSON.stringify(geometry)!==JSON.stringify(await p.evaluate(()=>{const result=[];window.__fadeQA.hall.traverse(o=>{if(o.isMesh)result.push(o.geometry.uuid)});return result;})))throw Error('quality mode changes building geometry');
    if(!await p.evaluate(()=>window.__fadeQA.solid.every(m=>Math.abs(m.opacity-.38)<.005)))throw Error('low mode lost translucency');
    await p.screenshot({path:`output/playwright/translucent-${id}-low-${width}.png`});
+   if(id==='experience'&&width===1440){
+    await p.clock.setFixedTime(new Date('2026-10-25T21:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
+    await p.waitForFunction(()=>document.querySelector('.worldSurface').dataset.night==='true');
+    await p.waitForFunction(()=>{const glass=[];window.__fadeQA.hall.traverse(o=>{if(o.isMesh&&!Array.isArray(o.material)&&o.material.color?.getHex()===0xb8ece4)glass.push(o.material);});return glass.length&&glass.every(m=>m.emissiveIntensity>.1);},null,{timeout:3000});
+    await p.screenshot({path:'output/playwright/translucent-experience-night-1440.png'});
+   }
    await p.evaluate(()=>{const q=window.__fadeQA,person=q.scene.children.find(o=>o.getObjectByName('Hips'));person.position.set(0,.08,31);});
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
    await p.waitForFunction(()=>window.__fadeQA.solid.every(m=>m.opacity===1&&!m.transparent),null,{timeout:3000});

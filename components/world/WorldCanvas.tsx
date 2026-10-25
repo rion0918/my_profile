@@ -279,14 +279,14 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       if (disposed || document.hidden || !compiled) return;
       const viewportWidth=element.clientWidth,viewportHeight=element.clientHeight;
       const visibilityTime = performance.now();
-      const fading = world.updateVisibility(camera, Math.min((visibilityTime - lastVisibilityFrame) / 1000, .04), reduced.matches);
-      lastVisibilityFrame = visibilityTime;
       const now = Date.now();
       if (Math.abs(now - lastTimeSync) >= 30_000) {
         const lighting = world.updateTime(new Date(now));
         element.dataset.night = String(lighting.lamps > 0.75);
         lastTimeSync = now;
       }
+      const fading = world.updateVisibility(camera, Math.min((visibilityTime - lastVisibilityFrame) / 1000, .04), reduced.matches);
+      lastVisibilityFrame = visibilityTime;
       world.reflectWater(renderer, camera);
       renderer.render(world.scene, camera);
       const cameraBounds=cameraTools.current?.getBoundingClientRect(), surfaceBounds=element.getBoundingClientRect();
