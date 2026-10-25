@@ -7,10 +7,12 @@ async page=>{
    await c.route(/^https:\/\/(github.com|zenn.dev|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
    await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'キャリア',exact:true}).waitFor({state:'visible'});
+   await p.getByRole('heading',{name:'学歴・社歴',exact:true}).waitFor({state:'visible',timeout:2500});
+   if((await p.getByRole('dialog',{name:'キャリア',exact:true}).innerText()).includes('上宮高校から神戸電子'))throw Error('redundant career introduction remains');
    const current=p.getByRole('region',{name:'現在の立場',exact:true});await current.waitFor({state:'visible',timeout:2500});
    const facts=await current.innerText();if(!facts.includes('神戸電子専門学校')||!facts.includes('DMM.com')||!facts.includes('27卒')||!facts.includes('内定'))throw Error('current position is incomplete');
    const cb=await current.boundingBox();if(cb.y<0||cb.y+cb.height>height)throw Error('current position not visible on entry '+JSON.stringify({width,height,cb}));
-   const timeline=await p.getByRole('list',{name:'これまでの歩み',exact:true}).locator('li').allTextContents();
+   const timeline=await p.getByRole('list',{name:'経歴',exact:true}).locator('li').allTextContents();
    if(timeline.length!==3||!timeline[0].includes('上宮')||!timeline[1].includes('神戸電子')||!timeline[2].includes('内定'))throw Error('career timeline lost existing facts');
    await p.screenshot({path:`output/playwright/hall-exhibit-career-${width}.png`});
    for(const [id,name,featureCount] of [['yoin','Yoin',2],['pop-reminder','ふわっと。',3]]){
@@ -50,6 +52,7 @@ async page=>{
    }
    for(const [id,name] of [['experience','経験館'],['github','GitHub館'],['zenn','Zenn館']]){
     await p.goto(origin+'/?detail='+id);const hall=p.getByRole('dialog',{name,exact:true});await hall.waitFor({state:'visible'});
+    if(!await hall.getByRole('heading',{name:id==='experience'?'実務経験・活動':id==='github'?'GitHub':'Zenn',exact:true}).isVisible())throw Error('hall heading does not describe its content');
     if(id==='experience'){const t=await hall.innerText();if(!t.includes('Sky株式会社')||!t.includes('We部')||!t.includes('労務管理チーム'))throw Error('experience facts missing');}
     else {const a=hall.getByRole('link',{name:id==='github'?'GitHubへ':'Zennへ',exact:true});if(await a.getAttribute('target')!=='_blank'||!await a.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe profile link');if(await hall.locator('.hallSocialMark img').count()!==1)throw Error('official icon missing');}
     await p.screenshot({path:`output/playwright/hall-exhibit-${id}-${width}.png`});

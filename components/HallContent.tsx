@@ -14,8 +14,7 @@ export function HallContent({ id }: { id: HallId }) {
     return <div className="hallContent hall-history">
       <div className="hallCareerHero">
         <div className="hallIntroduction">
-          <h3>学びの先へ、<br />次の現場へ。</h3>
-          <p>{hall.tagline}</p>
+          <h3>学歴・社歴</h3>
         </div>
         <section className="hallCurrent" aria-label="現在の立場">
           <p className="hallCurrentLabel">現在の立場</p>
@@ -28,8 +27,8 @@ export function HallContent({ id }: { id: HallId }) {
         </section>
       </div>
       <section className="hallHistoryExhibit" aria-labelledby="hall-history-heading">
-        <h3 id="hall-history-heading">これまでの歩み</h3>
-        <ol className="hallTimeline" aria-label="これまでの歩み">
+        <h3 id="hall-history-heading">経歴</h3>
+        <ol className="hallTimeline" aria-label="経歴">
           {entries.map(entry => <li key={entry.title}>
             <article className="hallCareerCard">
               <p className="hallTimelinePeriod">{entry.period}</p>
@@ -44,7 +43,7 @@ export function HallContent({ id }: { id: HallId }) {
 
   if (id === 'experience') return <div className="hallContent hall-experience">
     <div className="hallIntroduction hallExperienceIntro">
-      <h3>現場で学び、<br />仲間とつくる。</h3>
+      <h3>実務経験・活動</h3>
       <p>{hall.tagline}</p>
     </div>
     <div className="hallActivities">
@@ -64,7 +63,7 @@ export function HallContent({ id }: { id: HallId }) {
     <div className="hallSocialHero">
       <div className="hallSocialMark"><img src={github ? '/images/brands/github-invertocat-white.png' : '/images/brands/zenn-mark.png'} alt={`${account.label}の公式アイコン`} width="180" height="180" /></div>
       <div className="hallIntroduction">
-        <h3>{github ? <>コードから、<br />取り組みを知る。</> : <>学びを、<br />言葉に残す。</>}</h3>
+        <h3>{account.label}</h3>
         <p>{hall.tagline}</p>
         <p className="hallAccount">{account.display}</p>
         <a className="hallAction" href={hall.external!.href} target="_blank" rel="noopener noreferrer">{hall.external!.label} <span aria-hidden="true">↗</span></a>
