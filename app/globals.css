@@ -567,7 +567,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 6px;
 }
-.modeSwitch a {
+.modeSwitch > :is(a, span) {
   border: 0;
   border-radius: 3px;
   background: transparent;
@@ -575,7 +575,7 @@ a {
   font-size: 12px;
   white-space: nowrap;
 }
-.modeSwitch a[aria-current="page"] {
+.modeSwitch > :is(a, span)[aria-current="page"] {
   background: var(--ink);
   color: var(--bg);
 }
@@ -743,8 +743,8 @@ a {
 .modeBarDark .modeSwitch {
   pointer-events: auto;
 }
-.modeBarDark .wordmark, .modeBarDark .modeSwitch a { min-height: 44px; }
-.modeBarDark .modeSwitch a { display: inline-flex; align-items: center; }
+.modeBarDark .wordmark, .modeBarDark .modeSwitch > :is(a, span) { min-height: 44px; }
+.modeBarDark .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; }
 .modeBarDark .wordmark {
   color: #4c3557;
   text-shadow: 0 1px 3px #fff7;
@@ -755,11 +755,11 @@ a {
   box-shadow: 0 3px 16px #55493812;
   border-radius: 12px;
 }
-.modeBarDark .modeSwitch a {
+.modeBarDark .modeSwitch > :is(a, span) {
   color: #596159;
   border-radius: 8px;
 }
-.modeBarDark .modeSwitch a[aria-current="page"] {
+.modeBarDark .modeSwitch > :is(a, span)[aria-current="page"] {
   background: #347d78;
   color: #fff7e8;
 }
@@ -1161,7 +1161,7 @@ a {
   .wordmark > span {
     display: none;
   }
-  .modeSwitch a {
+  .modeSwitch > :is(a, span) {
     padding: 9px 12px;
   }
   .modeBarDark {
@@ -1903,6 +1903,7 @@ a {
   --control-focus: #34716c;
 }
 .modeSwitch a,
+.modeSwitch > span[aria-current="page"],
 .worldPage :is(button, summary, .modeSwitch a, .hallDialogHeader > a, .hallAction, .hallLinkDoor, .welcomeActions > a),
 .hallImageViewer button {
   min-width: 44px;
@@ -1920,9 +1921,11 @@ a {
 .worldPage button:disabled { box-shadow: none; opacity: .5; cursor: not-allowed; transform: none; }
 .worldPage :is(.welcomeTour, .guideTour, .bgmToggle):disabled { cursor: progress; }
 .modeBar:not(.modeBarDark) .modeSwitch { gap: 4px; border-radius: 12px; background: #e8ede4; }
-.modeBar:not(.modeBarDark) .modeSwitch a { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; color: var(--control-ink); font-size: 13px; }
-.modeBar:not(.modeBarDark) .modeSwitch a[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
-.worldToolbar .modeSwitch { border: 0; background: transparent; box-shadow: none; }
+.modeBar:not(.modeBarDark) .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; color: var(--control-ink); font-size: 13px; }
+.modeBar:not(.modeBarDark) .modeSwitch > :is(a, span)[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
+.worldToolbar .modeSwitch { gap: 2px; padding: 4px; border: 1px solid var(--control-line); border-radius: 12px; background: var(--control-paper); box-shadow: 0 3px 12px #163c2420; }
+.worldToolbar .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border-radius: 8px; background: transparent; color: var(--control-ink); font-size: 13px; }
+.worldToolbar .modeSwitch > :is(a, span)[aria-current="page"] { background: var(--control-primary); color: #fffdf5; }
 .worldToolbar .modeSwitch a,
 .worldToolbar .worldAudio > .bgmToggle,
 .worldToolbar .bgmSettings > summary,
@@ -2035,7 +2038,7 @@ a {
 .worldPage :is(.hallAction, .hallLinkDoor):active,
 .hallImageViewer button:active { transform: translateY(1px); filter: brightness(.94); }
 @media (max-width: 760px) {
-  .worldToolbar .modeSwitch a, .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 12px; }
+  .worldToolbar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 12px; }
   .worldToolbar .bgmToggle span { min-width: 26px; padding-inline: 3px; }
   .worldControls .worldControlButtons button { padding-inline: 8px; font-size: 12px; }
   .worldControls .worldControlButtons button:not(.sprintButton) { min-width: 98px; }
@@ -2048,7 +2051,7 @@ a {
   .hallImageFooter button { font-size: 20px; }
 }
 @media (max-width: 360px) {
-  .worldToolbar .modeSwitch a, .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 11px; }
+  .worldToolbar .modeSwitch > :is(a, span), .worldToolbar .worldAudio > .bgmToggle, .worldToolbar :is(.bgmSettings, .worldGuide) > summary { font-size: 11px; }
 }
 .worldEntry .welcomeActions .welcomeTour:disabled:hover { background: var(--control-primary); border-color: var(--control-primary); }
 .worldControls :is(.worldControlButtons, .worldCameraControls) button:disabled:hover { background: var(--control-paper); border-color: var(--control-line); color: var(--control-ink); }
@@ -2061,4 +2064,13 @@ a {
   .modeBar:not(.modeBarDark) .modeSwitch a:active,
   .worldPage :is(.worldToolbar, .worldControlButtons, .worldCameraControls, .hallDialogHeader, .hallChapterNav, .hallGalleryThumbnails, .tourFooter, .welcomeActions, .tourTravel) :is(button:not(:disabled), summary, a):active,
   .worldPage :is(.hallAction, .hallLinkDoor):active, .hallImageViewer button:active { transform: none; }
+}
+
+/* Keep the shared mode control grouped with the 3D tools. */
+.worldToolbar .modeBarDark { flex: 0 0 auto; margin-left: auto; }
+@media (max-width: 760px) and (orientation: portrait) {
+  .worldToolbar { flex-wrap: wrap; row-gap: 6px; }
+  .worldToolbar .worldGuide { margin-left: auto; }
+  .worldToolbar .worldGuidePanel, .worldToolbar .bgmPanel, .worldToolbar .bgmError { max-height: calc(100dvh - var(--world-hud-top) - 106px - max(16px, env(safe-area-inset-bottom))); }
+  .worldIdentity { top: calc(var(--world-hud-top) + 100px); }
 }

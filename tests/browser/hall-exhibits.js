@@ -58,7 +58,7 @@ async page=>{
     else {const a=hall.getByRole('link',{name:id==='github'?'GitHubへ':'Zennへ',exact:true});if(await a.getAttribute('target')!=='_blank'||!await a.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe profile link');if(await hall.locator('.hallSocialMark img').count()!==1)throw Error('official icon missing');}
     await p.screenshot({path:`output/playwright/hall-exhibit-${id}-${width}.png`});
    }
-   await p.goto(origin+'/profile');const modes=await p.locator('.modeSwitch a').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height,right:r.right};}));if(modes.some(r=>r.width<44||r.height<44||r.right>width)||await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('normal mode buttons are too small or clipped');
+   await p.goto(origin+'/profile');const modes=await p.locator('.modeSwitch > *').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {label:e.textContent.trim(),active:e.getAttribute('aria-current')==='page',width:r.width,height:r.height,right:r.right};}));if(modes.map(m=>m.label).join('|')!=='3Dワールド|通常表示'||modes.filter(m=>m.active).map(m=>m.label)[0]!=='通常表示'||modes.some(r=>r.width<44||r.height<44||r.right>width)||await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('normal mode switch is inconsistent, too small or clipped '+JSON.stringify(modes));
    results.push({width,height,firstScreen:true,allScreens:true,viewer:true,chapters:true,externalState:true,normalModeButtons:true});
   }finally{await c.close();}
  }

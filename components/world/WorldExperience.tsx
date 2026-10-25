@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   Component,
   useCallback,
@@ -16,7 +17,7 @@ import WorldAudio from "./WorldAudio";
 import WorldGuide from "./WorldGuide";
 import type { WorldMapData } from "../../lib/world-map-data";
 import type { WorldNavigation } from "../../lib/world-map";
-import { ModeBar } from "../ModeBar";
+import { ModeBar, rememberWorldModeChoice } from "../ModeBar";
 import { sections } from "../../lib/sections";
 import { tourStops, type TourPhase } from "../../lib/world-tour";
 import type { WorldQuality } from "../../lib/world-quality";
@@ -36,9 +37,9 @@ function Fallback() {
       <span>
         プロフィール・経歴・作品は、「街の案内」からそのまま読めます。
       </span>
-      <a className="fallbackLink" href="/profile">
+      <Link className="fallbackLink" href="/profile" onNavigate={rememberWorldModeChoice}>
         通常表示で読む ↗
-      </a>
+      </Link>
     </div>
   );
 }
@@ -287,7 +288,7 @@ export default function WorldExperience({
         </div>
         {phase === 'focusing' && <section className="tourTravel" aria-label="展示へ移動中">
           <p role="status">{finishing ? '案内のまとめへ · 中央広場へ移動中' : `${String(step + 1).padStart(2, '0')} / ${tourStops.length} · ${tourStops[step].title}へ`}</p>
-          <a href="/profile">通常表示で読む</a>
+          <Link href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む</Link>
           <button onClick={close}>案内を離れて探索</button>
         </section>}
 
@@ -312,7 +313,7 @@ export default function WorldExperience({
             <button className="welcomeTour" disabled={!navigation && !failed} aria-label="案内を見る" aria-describedby="welcome-tour-help" onClick={() => void goToStop(0, true)}>
               <span><strong>案内を見る</strong><small id="welcome-tour-help">{!navigation && !failed ? '3Dを準備中' : '操作なし・4館'}</small></span><span aria-hidden="true">→</span>
             </button>
-            <a href="/profile" aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></a>
+            <Link href="/profile" onNavigate={rememberWorldModeChoice} aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></Link>
             <button aria-label="自由に探索する" onClick={() => { entryExplore.current = true; dismissWelcome(); }}><span><strong>自由に探索</strong><small>自分で操作</small></span><span aria-hidden="true">→</span></button>
           </div>
         </section>
@@ -349,15 +350,15 @@ export default function WorldExperience({
       >
         {currentHall && <header className="hallDialogHeader">
           <h2 id="detail-title" tabIndex={-1}>{currentHall.name}</h2>
-          <a href={currentHall.href} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></a>
+          <Link href={currentHall.href} onNavigate={rememberWorldModeChoice} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></Link>
           <button onClick={close} aria-label={guided ? '案内を離れて探索' : '詳細を閉じる'}>街へ戻る <span aria-hidden="true">×</span></button>
         </header>}
         <div className={`dialogInner${currentHall ? ' hallDialogBody' : ''}`} key={selected ?? 'complete'}>
           {!currentHall && <div className="dialogToolbar">
-            {(guided || complete) && <a className="textLink" href="/profile">通常表示で読む ↗</a>}
-            {current && <a className="textLink" href={current.href}>
+            {(guided || complete) && <Link className="textLink" href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む ↗</Link>}
+            {current && <Link className="textLink" href={current.href} onNavigate={rememberWorldModeChoice}>
               この詳細のURLを開く ↗
-            </a>}
+            </Link>}
             {!complete && <button onClick={close} aria-label={guided ? "案内を離れて探索" : "詳細を閉じる"}>
               {guided ? '案内を離れて探索' : '閉じる'} <span aria-hidden="true">×</span>
             </button>}
@@ -374,7 +375,7 @@ export default function WorldExperience({
             <div className="tourCompleteLinks">{halls.filter(h => h.id === 'github' || h.id === 'zenn').map(h => <a key={h.id} className="hallLinkDoor" href={h.external!.href} target="_blank" rel="noopener noreferrer">
               <span><strong>{h.external!.label}</strong><small>{h.tagline} · 別タブで開きます</small></span><span aria-hidden="true">↗</span>
             </a>)}</div>
-            <a className="textLink" href="/profile">経歴と作品を通常表示で読む ↗</a>
+            <Link className="textLink" href="/profile" onNavigate={rememberWorldModeChoice}>経歴と作品を通常表示で読む ↗</Link>
           </div> : selected && (hallPanels[selected] ?? panels[selected])}
 
         </div>
