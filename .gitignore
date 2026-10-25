@@ -4,6 +4,16 @@ node_modules/
 
 .DS_Store
 *.log
+.env*
+*.key
+*.pem
+*.p12
+*.pfx
 
 outputs/
 work/
+
+# Local verification artifacts
+output/
+.playwright-cli/
+tsconfig.tsbuildinfo

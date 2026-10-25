@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  referrer: "no-referrer",
   metadataBase: new URL("https://rion0918.dev"),
   title: "橋本怜苑 | Student Engineer",
   description:
