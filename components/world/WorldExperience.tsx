@@ -148,6 +148,7 @@ export default function WorldExperience({
     } else {
       const url = new URL(location.href);
       url.searchParams.delete("detail");
+      url.searchParams.set("mode", "world");
       history.replaceState(null, "", url);
     }
     navigationRef.current?.explore();
@@ -186,6 +187,7 @@ export default function WorldExperience({
     if (completed && generation === focusGeneration.current) {
       const url = new URL(location.href);
       url.searchParams.delete('detail');
+      url.searchParams.set('mode', 'world');
       history.replaceState(null, '', url);
       setPhase('complete');
     }
@@ -239,7 +241,7 @@ export default function WorldExperience({
       ++focusGeneration.current;
       setPhase('complete');
       setSelected(null);
-      const url = new URL(location.href); url.searchParams.delete('detail'); history.replaceState(null, '', url);
+      const url = new URL(location.href); url.searchParams.delete('detail'); url.searchParams.set('mode', 'world'); history.replaceState(null, '', url);
     } else {
       setPhase(currentPhase => currentPhase === 'intro' ? 'intro' : 'exploring');
     }

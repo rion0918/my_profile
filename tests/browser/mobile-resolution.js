@@ -7,7 +7,7 @@ async page => {
       await context.addInitScript(() => sessionStorage.setItem('portfolio-welcome-v4', 'seen'));
       const p = await context.newPage(); await p.bringToFront();
       p.on('pageerror', error => errors.push(error.message));
-      await p.goto('http://localhost:3001');
+      await p.goto('http://localhost:3001/?mode=world');
       await p.locator('.worldSurface[aria-busy="false"]').waitFor();
       await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
       await p.locator('.worldSurface').focus(); await p.keyboard.press('Escape');
