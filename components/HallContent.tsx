@@ -57,11 +57,11 @@ export function HallContent({ id }: { id: HallId }) {
     </div>
   </div>;
 
-  const github = id === 'github';
-  const account = socials.find(s => s.label === (github ? 'GitHub' : 'Zenn'))!;
+  const account = socials.find(s => s.href === hall.external!.href)!;
+  const icon = id === 'github' ? '/images/brands/github-invertocat-white.png' : id === 'zenn' ? '/images/brands/zenn-mark.png' : '/images/brands/x-logo-white.png';
   return <div className={`hallContent hall-${id}`}>
     <div className="hallSocialHero">
-      <div className="hallSocialMark"><img src={github ? '/images/brands/github-invertocat-white.png' : '/images/brands/zenn-mark.png'} alt={`${account.label}の公式アイコン`} width="180" height="180" /></div>
+      <div className="hallSocialMark"><img src={icon} alt={`${account.label}の公式アイコン`} width="180" height="180" /></div>
       <div className="hallIntroduction">
         <h3>{account.label}</h3>
         <p>{hall.tagline}</p>

@@ -1,6 +1,6 @@
 async(page)=>{
  const browser=page.context().browser(),results=[],errors=[];
- const halls=[['experience','経験館',8,25.55],['yoin','Yoin館',-8,8.125],['pop-reminder','ふわっと。館',8,8.21],['history','キャリア',-8,25.89],['github','GitHub館',-22,16.295],['zenn','Zenn館',22,16.295]];
+ const halls=[['experience','経験館',8,25.55],['yoin','Yoin館',-8,8.125],['pop-reminder','ふわっと。館',8,8.21],['history','キャリア館',-8,25.89],['github','GitHub館',-22,16.295],['zenn','Zenn館',22,16.295]];
  for(const [id,name,x,z] of halls){
   const c=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});try{
    await c.addInitScript(({x,z})=>{sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x,z:z+3}));},{x,z});

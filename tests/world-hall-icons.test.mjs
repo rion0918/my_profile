@@ -8,8 +8,8 @@ import * as layout from '../lib/world-layout.ts';
 import { findPath, isWalkable, getGroundHeight } from '../lib/world-navigation.ts';
 import { cyclingObstacles } from '../lib/world-bike.ts';
 
-test('only GitHub and Zenn have official ground-level marks, with local high-resolution assets',async()=>{
-  assert.deepEqual(halls.filter(h=>h.icon).map(h=>h.id),['github','zenn']);
+test('GitHub, Zenn and X have official ground-level marks, with local high-resolution assets',async()=>{
+  assert.deepEqual(halls.filter(h=>h.icon).map(h=>h.id),['github','zenn','x']);
   const { hallIcons }=await import('../components/world/create-hall-icon.ts');
   for(const hall of halls.filter(h=>h.icon)){
     assert.equal(hall.roofIcon,undefined,'there is no longer a rooftop icon');
@@ -22,13 +22,13 @@ test('only GitHub and Zenn have official ground-level marks, with local high-res
     assert.ok(width>=1024,'the logo stays sharp when zooming');
     assert.ok(Math.abs(width/height-icon.width/icon.height)<.002,'official proportions are preserved');
     const source=svg.toString();
-    assert.ok(source.includes(hall.id==='github'?'fill="white"':'#3EA8FF'),'the official white / blue artwork is retained');
+    assert.ok(source.includes(hall.id==='zenn'?'#3EA8FF':'fill="white"'),'the official white / blue artwork is retained');
   }
 });
 
 test('ground-level logos sit on solid mounts and face correctly on both sides without lighting effects',async()=>{
   const { createHallIcon, hallIcons }=await import('../components/world/create-hall-icon.ts');
-  for(const id of ['github','zenn']){
+  for(const id of ['github','zenn','x']){
     const texture=new THREE.Texture(),group=createHallIcon(id,texture),definition=hallIcons[id];
     const site=layout.hallIconSites.find(s=>s.id===id);assert.ok(site);
     assert.equal(group.name,'service-icon-'+id);assert.equal(group.userData.brand,id);
@@ -56,11 +56,11 @@ test('ground-level logos sit on solid mounts and face correctly on both sides wi
   }
 });
 
-test('the two icon monuments stand beside their halls without blocking paths, doors or vegetation',()=>{
-  const sites=layout.hallIconSites;assert.equal(sites?.length,2);
+test('the three icon monuments stand beside their halls without blocking paths, doors or vegetation',()=>{
+  const sites=layout.hallIconSites;assert.equal(sites?.length,3);
   for(const site of sites){
     const hall=layout.buildings.find(b=>b.id===site.id),c=Math.cos(site.rotation),s=Math.sin(site.rotation);
-    assert.ok(Math.abs(site.x-hall.x)>hall.width/2,'beside the building');
+    assert.ok(Math.abs(site.x-hall.x)>hall.width/2||Math.abs(site.z-hall.z)>hall.depth/2,'outside the building');
     for(let x=-site.width/2;x<=site.width/2;x+=.1)for(let z=-site.depth/2;z<=site.depth/2;z+=.1){
       const p={x:site.x+c*x+s*z,z:site.z-s*x+c*z};
       assert.equal(layout.isOnRoad(p,.25),false,'the pavement stays clear');
@@ -76,7 +76,12 @@ test('the two icon monuments stand beside their halls without blocking paths, do
       for(const tree of layout.trees){
         const crown=new THREE.Box3(new THREE.Vector3(tree.x-2,2.6,tree.z-1.9),new THREE.Vector3(tree.x+2,5.5,tree.z+1.9));
         const hit=ray.intersectBox(crown,new THREE.Vector3());
-        assert.ok(!hit||origin.distanceTo(hit)>30,'the fixed camera can see the entire icon past the tree crowns');
+        assert.ok(!hit||origin.distanceTo(hit)>30,`${site.id} icon is hidden by the tree at ${tree.x},${tree.z}`);
+      }
+      for(const building of layout.buildings){
+        const bounds=new THREE.Box3(new THREE.Vector3(building.x-building.width/2,0,building.z-building.depth/2),new THREE.Vector3(building.x+building.width/2,building.height,building.z+building.depth/2));
+        const hit=ray.intersectBox(bounds,new THREE.Vector3());
+        assert.ok(!hit||origin.distanceTo(hit)>30,`${site.id} icon is hidden by ${building.id}`);
       }
     }
     for(const obstacles of [layout.obstacles,cyclingObstacles(layout.obstacles)])

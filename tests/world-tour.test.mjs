@@ -5,11 +5,12 @@ import { findPath, isWalkable, restorePosition } from '../lib/world-navigation.t
 import { harbor } from '../lib/world-harbor.ts';
 import { onsen } from '../lib/world-onsen.ts';
 
-test('the recruiting street puts the six halls in the agreed positions', () => {
+test('the recruiting street puts the seven halls in their positions', () => {
   assert.deepEqual(buildings.map(({id,x,z})=>({id,x,z})), [
     {id:'experience',x:8,z:23}, {id:'yoin',x:-8,z:6},
     {id:'pop-reminder',x:8,z:6}, {id:'history',x:-8,z:23},
     {id:'github',x:-22,z:14}, {id:'zenn',x:22,z:14},
+    {id:'x',x:-32,z:7},
   ]);
   for(const exhibit of projectExhibits){
     const b=buildings.find(b=>b.id===exhibit.id);

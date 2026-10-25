@@ -1202,7 +1202,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
               className="buildingLabel"
               onClick={() => onSelect(building.id)}
             >
-              <span>{hallMarker(building.id)}{(building.id === "github" || building.id === "zenn") && " 寄り道"}</span>
+              <span>{hallMarker(building.id)}{(building.id === "github" || building.id === "zenn" || building.id === "x") && " 寄り道"}</span>
               {building.name}
               <span aria-hidden="true">↗</span>
             </button>

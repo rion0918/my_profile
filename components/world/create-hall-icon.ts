@@ -13,6 +13,11 @@ export const hallIcons = {
     sha256: 'af4620da91465a91896a9b839186e42e2008b6cd036b2ca205d4686c324808e2',
     width: 1, height: 1, background: 0xffffff, edge: 0xa2c4dc,
   },
+  x: {
+    source: '/images/brands/x-logo.svg', texture: '/images/brands/x-logo-white.png',
+    sha256: 'dd46f96b6f47fcd33683b79ddfaf3daca1d4f8aeba3c0f2bde1584c69cc699d4',
+    width: 1.45, height: 1.45 * 1227 / 1200, background: 0x171a1e, edge: 0xa7adb4,
+  },
 };
 
 export function createHallIcon(brand: keyof typeof hallIcons, texture: THREE.Texture) {

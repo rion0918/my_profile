@@ -92,7 +92,13 @@ export const roads: Road[] = [
     width: 2.8,
   },
   ...buildings.map((b) => ({
-    points: [
+    points: b.id === 'x' ? [
+      [-37, 0],
+      [-37, 7],
+      [-37, b.entry.outside.z],
+      [b.x, b.entry.outside.z],
+      [b.x, b.entry.inside.z],
+    ] : [
       [0, b.entry.outside.z],
       [b.x * 0.65, b.entry.outside.z],
       [b.x, b.entry.outside.z],
@@ -236,7 +242,7 @@ export const lightSupports = [
 ];
 const gardenFootprints = entranceGardens.map(p => ({ ...p, rotation: 0, width: p.radius * 2, depth: p.radius * 2 }));
 export const hallIconSites = buildings.filter(b => b.icon).map(b => ({
-  id: b.id, x: b.x - 6, z: b.z + .2,
+  id: b.id, x: b.x + (b.id === 'x' ? -1 : -6), z: b.z + (b.id === 'x' ? 7 : .2),
   rotation: hallIconDisplay.rotation, scale: hallIconDisplay.scale,
   width: hallIconDisplay.width * hallIconDisplay.scale, depth: hallIconDisplay.depth * hallIconDisplay.scale,
 }));

@@ -35,7 +35,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
       <button className="guideTour" disabled={!canTour} onClick={() => { if (details.current) details.current.open = false; onTour(); }}>案内に沿って見る <span>{tourStops[0].title}から、4つの館へ →</span></button>
       <div className="guideMapHeader"><span>りおまるの街</span><span>地図から、次の寄り道へ。</span></div>
       <p className="guideTouchHint">スマホは1本指で移動、離すと停止。2本指で見渡し・拡大できます。</p>
-      <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・作品。01キャリア、02経験館、03Yoin館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館。北：趣味の街。北に港、北西に温泉、北東にゲーミングPC。中央通りの西にパスタキッチン。青緑の点が現在地です。">
+      <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・作品。01キャリア館、02経験館、03Yoin館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館、XはX館。北：趣味の街。北に港、北西に温泉、北東にゲーミングPC。中央通りの西にパスタキッチン。青緑の点が現在地です。">
         <rect width="100" height="100" rx="5" fill="#b8d9d7" />
         <path d={map.coast} fill="#e4d8b6" stroke="#f0e4c4" strokeWidth="2" />
         {map.roads.map((r,i)=><path key={i} d={r.path} fill="none" stroke="#faf0d8" strokeWidth={r.width} strokeLinecap="round" strokeLinejoin="round"/>)}
@@ -55,7 +55,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
           <text x={map.pastaKitchen.x} y={map.pastaKitchen.y+1.1} textAnchor="middle" fontSize="2.3" fill="#755c3e">PASTA</text>
         </g>
         {map.buildings.map(b=><g key={b.id}>
-          <rect x={b.x-b.width/2} y={b.y-b.height/2} width={b.width} height={b.height} rx="1" fill={b.marker==='G'||b.marker==='Z'?'#649b98':'#d79580'} />
+          <rect x={b.x-b.width/2} y={b.y-b.height/2} width={b.width} height={b.height} rx="1" fill={b.marker==='G'||b.marker==='Z'||b.marker==='X'?'#649b98':'#d79580'} />
           <circle cx={b.x} cy={b.y} r="3.4" fill="#fff8e8" stroke="#c2a68b" strokeWidth=".3"/>
           <text x={b.x} y={b.y+1.1} textAnchor="middle" fontSize="3.2" fill="#4c4d45" fontWeight="700">{b.marker}</text>
         </g>)}
@@ -68,7 +68,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
       </svg>
       <nav className="worldDirectory" aria-label="探索せずに情報を読む">
         <p>そのまま読む。気になったら、歩いてみる。</p>
-        {[...tourStops.map(stop=>sections.find(s=>s.id===stop.id)!), ...sections.filter(s=>s.id==='github'||s.id==='zenn'), ...sections.filter(s=>s.id==='about'||s.id==='tech'||s.id==='social')].map(section=>{
+        {[...tourStops.map(stop=>sections.find(s=>s.id===stop.id)!), ...sections.filter(s=>s.id==='github'||s.id==='zenn'||s.id==='x'), ...sections.filter(s=>s.id==='about'||s.id==='tech'||s.id==='social')].map(section=>{
           const index=map.buildings.findIndex(b=>b.id===section.id);
           return <div className="guideDestination" key={section.id}>
             <a href={section.href} onClick={e=>{
@@ -76,7 +76,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
               e.preventDefault();onSelect(section.id);
             }}>
               <span className="guideDestinationNumber" aria-hidden="true">{index>=0?hallMarker(section.id):'·'}</span>
-              <span>{section.label}{(section.id==='github'||section.id==='zenn') && ' · 寄り道'}<small>{section.tagline}</small></span>
+              <span>{section.label}{(section.id==='github'||section.id==='zenn'||section.id==='x') && ' · 寄り道'}<small>{section.tagline}</small></span>
               <span aria-hidden="true">↗</span>
             </a>
             {index>=0&&<button disabled={!navigation} aria-label={`${section.label}へ歩く`} onClick={()=>walk(section.id)}>歩く ↥</button>}

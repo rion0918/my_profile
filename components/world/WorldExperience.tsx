@@ -372,7 +372,7 @@ export default function WorldExperience({
           {complete ? <div className="tourComplete">
             <p className="hallLead">経歴と2つの作品をご覧いただき、ありがとうございます。</p>
             <p>ここは中央広場です。開発の記録を確認したり、北の温泉や港へ街歩きを続けたりできます。</p>
-            <div className="tourCompleteLinks">{halls.filter(h => h.id === 'github' || h.id === 'zenn').map(h => <a key={h.id} className="hallLinkDoor" href={h.external!.href} target="_blank" rel="noopener noreferrer">
+            <div className="tourCompleteLinks">{halls.filter(h => h.id === 'github' || h.id === 'zenn' || h.id === 'x').map(h => <a key={h.id} className="hallLinkDoor" href={h.external!.href} target="_blank" rel="noopener noreferrer">
               <span><strong>{h.external!.label}</strong><small>{h.tagline} · 別タブで開きます</small></span><span aria-hidden="true">↗</span>
             </a>)}</div>
             <Link className="textLink" href="/profile" onNavigate={rememberWorldModeChoice}>経歴と作品を通常表示で読む ↗</Link>

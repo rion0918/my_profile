@@ -24,7 +24,7 @@ async page=>{
    });
    const initial=await inspect();
    if(initial.boards!==0)throw Error('small roadside boards remain: '+initial.boards);
-   if(initial.words.length!==6||initial.screens!==2||initial.bathLabels!==3)throw Error('large hall signs, product screens or bath architecture changed '+JSON.stringify(initial));
+   if(initial.words.length!==7||initial.screens!==2||initial.bathLabels!==3)throw Error('large hall signs, product screens or bath architecture changed '+JSON.stringify(initial));
    await p.getByRole('button',{name:'街全体を見る',exact:true}).click();
    await p.screenshot({path:`output/playwright/signs-removed-${width}.png`});
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();

@@ -6,7 +6,7 @@ import { buildings } from '../lib/world-layout.ts';
 
 test('the guide map uses the actual street network, buildings and harbor coordinates',()=>{
   const map=createWorldMapData();
-  assert.equal(map.buildings.length,6);
+  assert.equal(map.buildings.length,7);
   for(const building of buildings){
     const marker=map.buildings.find(b=>b.id===building.id);
     assert.deepEqual({x:marker.x,y:marker.y},mapPoint(building));
@@ -18,9 +18,9 @@ test('the guide map uses the actual street network, buildings and harbor coordin
   assert.deepEqual(mapPoint({x:48,z:43}),{x:100,y:100});
 });
 
-test('map identifies four required stops, two optional halls and both districts',()=>{
+test('map identifies four required stops, three optional halls and both districts',()=>{
  const map=createWorldMapData();
- assert.deepEqual(Object.fromEntries(map.buildings.map(b=>[b.id,b.marker])),{experience:'02',yoin:'03','pop-reminder':'04',history:'01',github:'G',zenn:'Z'});
+ assert.deepEqual(Object.fromEntries(map.buildings.map(b=>[b.id,b.marker])),{experience:'02',yoin:'03','pop-reminder':'04',history:'01',github:'G',zenn:'Z',x:'X'});
  assert.deepEqual(map.entrance,mapPoint({x:0,z:31}));
  assert.deepEqual(map.plaza,mapPoint({x:0,z:0}));
  assert.equal(map.boundary,map.plaza.y);

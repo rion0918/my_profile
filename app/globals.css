@@ -1495,7 +1495,7 @@ a {
   .hallCareerCard > p:not(.hallCareerPeriod) { font-size: 13px; }
 }
 
-.tourCompleteLinks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
+.tourCompleteLinks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 28px 0; }
 .tourCompleteLinks .hallLinkDoor { margin: 0; }
 .tourCompleteFooter { justify-content: space-between; }
 @media (max-width: 600px) {

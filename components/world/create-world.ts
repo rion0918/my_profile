@@ -826,11 +826,11 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     }
     if (theme) {
       const y = building.model === "atelier" ? 2.3 : building.model === "bubble" ? 1.9 : 2.15;
-      const width = building.model === "music" ? 2.1 : building.model === "bubble" ? 2.6 : building.model === "workshop" ? 3.55 : 3.15;
-      const height = building.model === "bubble" ? 0.55 : 0.62;
-      const railWidth = building.model === "music" ? 2.15 : building.model === "bubble" ? 2.8 : building.model === "workshop" ? 3.7 : 3.3;
+      const width = building.id === 'x' ? 1 : building.model === "music" ? 2.1 : building.model === "bubble" ? 2.6 : building.model === "workshop" ? 3.55 : 3.15;
+      const height = building.id === 'x' ? .85 : building.model === "bubble" ? 0.55 : 0.62;
+      const railWidth = building.id === 'x' ? 1.2 : building.model === "music" ? 2.15 : building.model === "bubble" ? 2.8 : building.model === "workshop" ? 3.7 : 3.3;
       const wordFont = Array.from(theme.word).every(char => hallFont.data.glyphs[char]) ? hallFont : roundedHallFont;
-      const edging = building.model === "gallery" ? theme.light : theme.primary;
+      const edging = building.model === "gallery" || building.id === 'x' ? theme.light : theme.primary;
       const lettering=createHallWordMaterials(theme.lettering,edging);
       lettering.forEach(value=>materials.add(value));
       const sign = mesh(createHallWordGeometry(theme.word, wordFont, width, height),

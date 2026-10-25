@@ -4,11 +4,11 @@ async page=>{
   const c=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});
   try{
    await c.addInitScript(()=>sessionStorage.setItem('portfolio-welcome-v4','seen'));
-   await c.route(/^https:\/\/(github.com|zenn.dev|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
+   await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
-   await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'キャリア',exact:true}).waitFor({state:'visible'});
+   await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'キャリア館',exact:true}).waitFor({state:'visible'});
    await p.getByRole('heading',{name:'学歴・社歴',exact:true}).waitFor({state:'visible',timeout:2500});
-   if((await p.getByRole('dialog',{name:'キャリア',exact:true}).innerText()).includes('上宮高校から神戸電子'))throw Error('redundant career introduction remains');
+   if((await p.getByRole('dialog',{name:'キャリア館',exact:true}).innerText()).includes('上宮高校から神戸電子'))throw Error('redundant career introduction remains');
    const current=p.getByRole('region',{name:'現在の立場',exact:true});await current.waitFor({state:'visible',timeout:2500});
    const facts=await current.innerText();if(!facts.includes('神戸電子専門学校')||!facts.includes('DMM.com')||!facts.includes('27卒')||!facts.includes('内定'))throw Error('current position is incomplete');
    const cb=await current.boundingBox();if(cb.y<0||cb.y+cb.height>height)throw Error('current position not visible on entry '+JSON.stringify({width,height,cb}));
@@ -51,11 +51,11 @@ async page=>{
     await p.screenshot({path:`output/playwright/hall-exhibit-${id}-${width}.png`});
     if(await hall.locator('.hallDialogBody').evaluate(e=>e.scrollWidth>e.clientWidth+1))throw Error('exhibit has horizontal overflow');
    }
-   for(const [id,name] of [['experience','経験館'],['github','GitHub館'],['zenn','Zenn館']]){
+   for(const [id,name] of [['experience','経験館'],['github','GitHub館'],['zenn','Zenn館'],['x','X館']]){
     await p.goto(origin+'/?detail='+id);const hall=p.getByRole('dialog',{name,exact:true});await hall.waitFor({state:'visible'});
-    if(!await hall.getByRole('heading',{name:id==='experience'?'実務経験・活動':id==='github'?'GitHub':'Zenn',exact:true}).isVisible())throw Error('hall heading does not describe its content');
+    if(!await hall.getByRole('heading',{name:id==='experience'?'実務経験・活動':id==='github'?'GitHub':id==='zenn'?'Zenn':'X',exact:true}).isVisible())throw Error('hall heading does not describe its content');
     if(id==='experience'){const t=await hall.innerText();if(!t.includes('Sky株式会社')||!t.includes('We部')||!t.includes('労務管理チーム'))throw Error('experience facts missing');}
-    else {const a=hall.getByRole('link',{name:id==='github'?'GitHubへ':'Zennへ',exact:true});if(await a.getAttribute('target')!=='_blank'||!await a.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe profile link');if(await hall.locator('.hallSocialMark img').count()!==1)throw Error('official icon missing');}
+    else {const a=hall.getByRole('link',{name:id==='github'?'GitHubへ':id==='zenn'?'Zennへ':'Xへ',exact:true});if(await a.getAttribute('target')!=='_blank'||!await a.getAttribute('rel').then(r=>r.includes('noopener')&&r.includes('noreferrer')))throw Error('unsafe profile link');if(await hall.locator('.hallSocialMark img').count()!==1)throw Error('official icon missing');}
     await p.screenshot({path:`output/playwright/hall-exhibit-${id}-${width}.png`});
    }
    await p.goto(origin+'/profile');const modes=await p.locator('.modeSwitch > *').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {label:e.textContent.trim(),active:e.getAttribute('aria-current')==='page',width:r.width,height:r.height,right:r.right};}));if(modes.map(m=>m.label).join('|')!=='3Dワールド|通常表示'||modes.filter(m=>m.active).map(m=>m.label)[0]!=='通常表示'||modes.some(r=>r.width<44||r.height<44||r.right>width)||await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('normal mode switch is inconsistent, too small or clipped '+JSON.stringify(modes));

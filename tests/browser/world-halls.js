@@ -1,7 +1,7 @@
 async(page)=>{
  const origin='http://localhost:3001',results=[],errors=[];
- const stops=[['history','キャリア'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
- const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn','pop-reminder':'https://fuwatto.pages.dev/'};
+ const stops=[['history','キャリア館'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
+ const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','pop-reminder':'https://fuwatto.pages.dev/'};
  const browser=page.context().browser();
  const setup=async c=>{
   await c.addInitScript(()=>{
@@ -15,7 +15,7 @@ async(page)=>{
  const c=await browser.newContext({viewport:{width:1440,height:900},timezoneId:'Asia/Tokyo'});
  try{
   await setup(c);await c.addInitScript(()=>{sessionStorage.setItem('portfolio-position-v4',JSON.stringify({version:4,x:-7,z:8}));sessionStorage.setItem('portfolio-welcome-v3','seen');});
-  await c.route(/^https:\/\/(github.com|zenn.dev|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
+  await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
   const html=await(await p.request.get(origin)).text();if(!html.includes('街の入口')||!html.includes('通常表示で読む'))throw Error('missing initial HTML');
   await p.goto(origin);await ready(p);const spawn=await position(p);if(Math.hypot(spawn[0],spawn[2]-31)>.01)throw Error('old position restored '+spawn);
@@ -59,8 +59,8 @@ async(page)=>{
   if(await p.getByRole('button',{name:'自由に街を歩く'}).count()!==1)throw Error('duplicate free-walk action on completion');
   const finish=await position(p);if(Math.hypot(finish[0],finish[2])>.01)throw Error('not at central plaza '+finish);
   await p.keyboard.down('w');await p.waitForTimeout(120);await p.keyboard.up('w');if(JSON.stringify(finish)!==JSON.stringify(await position(p)))throw Error('completion did not pause actor');
-  for(const id of ['github','zenn']){
-   const a=p.locator('.tourCompleteLinks a').filter({hasText:id==='github'?'GitHubへ':'Zennへ'});if(await a.getAttribute('target')!=='_blank')throw Error('completion link not blank');
+  for(const id of ['github','zenn','x']){
+   const a=p.locator('.tourCompleteLinks a').filter({hasText:id==='github'?'GitHubへ':id==='zenn'?'Zennへ':'Xへ'});if(await a.getAttribute('target')!=='_blank')throw Error('completion link not blank');
    const popupPromise=p.waitForEvent('popup');await a.click();const popup=await popupPromise;await popup.waitForLoadState('domcontentloaded');if(popup.url().replace(/\/$/,'')!==destinations[id])throw Error('completion destination');await popup.close();
    if(!await p.getByRole('dialog').isVisible()||await p.evaluate(()=>history.length)!==h+1)throw Error('completion link lost state');
   }
@@ -69,17 +69,17 @@ async(page)=>{
   await p.goForward();await p.waitForFunction(()=>document.querySelector('.worldPage').dataset.tourPhase==='exploring');
   await p.reload();await ready(p);if(await p.getByRole('dialog').isVisible()||Math.hypot(...(await position(p)).filter((_,i)=>i!==1))>.01)throw Error('reload did not resume plaza exploration');
   await p.getByRole('button',{name:'街全体を見る',exact:true}).click();await p.screenshot({path:'output/playwright/halls-overview-desktop.png'});
-  const models=await p.evaluate(()=>window.__hallQA.scene.children.filter(o=>o.name.startsWith('hall-')).map(o=>[o.name,o.userData.hallModel]));if(models.length!==6||new Set(models.map(m=>m[1])).size!==6)throw Error('missing distinctive models '+models);
+  const models=await p.evaluate(()=>window.__hallQA.scene.children.filter(o=>o.name.startsWith('hall-')).map(o=>[o.name,o.userData.hallModel]));if(models.length!==7||new Set(models.map(m=>m[1])).size!==6)throw Error('missing distinctive models '+models);
   await p.locator('.worldGuide > summary').click();await p.locator('.guideTour').click();await p.getByRole('dialog').waitFor({state:'visible'});
   await p.locator('.tourNext').click();await p.getByRole('region',{name:'展示へ移動中'}).getByRole('button',{name:'案内を離れて探索',exact:true}).click();await p.waitForTimeout(850);
   if(await p.getByRole('dialog').isVisible())throw Error('cancelled focus reopened tour');
   const camera=await p.evaluate(()=>JSON.parse(sessionStorage.getItem('portfolio-position-v5')).view);if(camera.panned)throw Error('camera detached after exit');
   await p.locator('.worldGuide > summary').click();await p.locator('.guideTour').click();await p.getByRole('dialog').waitFor({state:'visible'});await p.locator('.tourNext').click();await p.goBack();await p.waitForTimeout(800);
   if(await p.getByRole('dialog').isVisible())throw Error('back during focus failed');await p.goForward();await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('.tourFooter').count())throw Error('forward retained stale tour');await p.keyboard.press('Escape');
-  for(const id of ['about','career','social','tech',...stops.map(s=>s[0]),'github','zenn']){
+  for(const id of ['about','career','social','tech',...stops.map(s=>s[0]),'github','zenn','x']){
    await p.goto(origin+'/?detail='+id);await p.getByRole('dialog').waitFor({state:'visible'});if(!await p.locator('#detail-title').innerText())throw Error('direct detail missing '+id);
   }
-  for(const url of ['/about','/tech','/profile','/projects/yoin','/projects/pop-reminder','/career#experience','/career#history','/social#github','/social#zenn']){
+  for(const url of ['/about','/tech','/profile','/projects/yoin','/projects/pop-reminder','/career#experience','/career#history','/social#github','/social#zenn','/social#x']){
    const response=await p.goto(origin+url);if(response&&response.status()!==200)throw Error('article unavailable '+url);if(url.includes('#')&&!await p.locator('#'+url.split('#')[1]).count())throw Error('missing article anchor '+url);
    if(url.includes('pop-reminder')&&(await p.locator('h1').innerText()!=='ふわっと。'||!await p.locator('title').innerText().then(t=>t.includes('ふわっと。'))))throw Error('old product name');
   }

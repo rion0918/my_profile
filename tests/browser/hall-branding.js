@@ -37,11 +37,11 @@ async(page)=>{
     await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
     if(!await p.evaluate(()=>window.__brandQA.sign.geometry===window.__brandQA.geometry&&!window.__brandQA.renderer.shadowMap.enabled&&window.__brandQA.sign.material.every(m=>m.emissiveIntensity>=.8)&&window.__brandQA.sign.getObjectByName('hall-word-glow').visible))throw Error('low mode changes lettering');
     await p.screenshot({path:`output/playwright/${id}-word-sign-low-${width}.png`});
-    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:({history:'キャリア',experience:'経験館',yoin:'Yoin館','pop-reminder':'ふわっと。館',github:'GitHub館',zenn:'Zenn館'}[id])+'へ歩く',exact:true}).click();
+    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:({history:'キャリア館',experience:'経験館',yoin:'Yoin館','pop-reminder':'ふわっと。館',github:'GitHub館',zenn:'Zenn館'}[id])+'へ歩く',exact:true}).click();
     await p.getByRole('dialog').waitFor({state:'visible',timeout:15000});
     const link=p.locator('.hallLinkDoor');
     if(id==='history'){
-     if(await p.locator('#detail-title').innerText()!=='キャリア'||await link.getAttribute('href')!=='/career#history')throw Error('Career name or existing URL changed');
+     if(await p.locator('#detail-title').innerText()!=='キャリア館'||await link.getAttribute('href')!=='/career#history')throw Error('Career name or existing URL changed');
      if(!await p.locator('.hallFactNote').innerText().then(t=>t.includes('27卒')&&t.includes('内定')))throw Error('Career facts lost');
     }else if(id==='experience'){
      if(await link.getAttribute('href')!=='/career#experience'||await p.locator('.hallCareerCard').count()!==2)throw Error('Experience contents changed');
