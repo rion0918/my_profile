@@ -82,6 +82,8 @@ export default function WorldExperience({
     try { sessionStorage.setItem(welcomeStorageKey, 'seen'); } catch { /* Optional storage. */ }
   }, []);
   const dialog = useRef<HTMLDialogElement>(null);
+  const entry = useRef<HTMLDivElement>(null);
+  const entryExplore = useRef(false);
   const returnFocus = useRef<HTMLElement | null>(null);
   const openedHere = useRef(false);
   const syncUrl = useCallback(() => {
@@ -188,6 +190,16 @@ export default function WorldExperience({
     }
   };
   const complete = phase === 'complete';
+  const entryVisible = phase === 'intro' && !selected;
+  useEffect(() => {
+    if (entryVisible) entry.current?.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+  }, [entryVisible]);
+  useEffect(() => {
+    if (!entryVisible && entryExplore.current && navigation) {
+      entryExplore.current = false;
+      navigation.explore();
+    }
+  }, [entryVisible, navigation]);
   const modalVisible = !!selected || complete;
   useEffect(() => {
     const modal = dialog.current;
@@ -228,7 +240,7 @@ export default function WorldExperience({
       setSelected(null);
       const url = new URL(location.href); url.searchParams.delete('detail'); history.replaceState(null, '', url);
     } else {
-      setPhase('exploring');
+      setPhase(currentPhase => currentPhase === 'intro' ? 'intro' : 'exploring');
     }
   }, []);
   useEffect(() => () => { ++focusGeneration.current; navigationRef.current?.cancelFocus(); }, []);
@@ -243,7 +255,7 @@ export default function WorldExperience({
   } as CSSProperties : undefined;
   return (
     <div className="worldPage" data-tour-phase={phase}>
-      <main className="worldMain">
+      <main className="worldMain" inert={entryVisible}>
         <h1 className="worldScreenReaderOnly">橋本怜苑のポートフォリオ</h1>
         <div className="worldToolbar" role="group" aria-label="表示と街の案内">
           <ModeBar mode="world" />
@@ -273,17 +285,6 @@ export default function WorldExperience({
             </div>
           )}
         </div>
-        {phase === 'intro' && !selected && <section className="worldWelcome" aria-label="街の入口">
-          <p className="welcomeKicker">Rion Hashimoto · Portfolio</p>
-          <h2>経歴と作品から、<br/>私のことを。</h2>
-          <p>神戸電子専門学校の学生エンジニア、橋本怜苑です。Webとアプリを制作しています。</p>
-          <p className="welcomeRoute">キャリア → 経験 → Yoin → ふわっと。<br/>南の4館で経歴と作品を紹介します。GitHub・Zennへの寄り道や、北の趣味の街へも自由に進めます。</p>
-          <div className="welcomeActions">
-            <button disabled={!navigation && !failed} onClick={() => void goToStop(0, true)}>案内に沿って見る <span aria-hidden="true">→</span></button>
-            <a href="/profile">通常表示で読む ↗</a>
-            <button onClick={() => { dismissWelcome(); navigation?.explore(); }}>自由に探索する</button>
-          </div>
-        </section>}
         {phase === 'focusing' && <section className="tourTravel" aria-label="展示へ移動中">
           <p role="status">{finishing ? '案内のまとめへ · 中央広場へ移動中' : `${String(step + 1).padStart(2, '0')} / ${tourStops.length} · ${tourStops[step].title}へ`}</p>
           <a href="/profile">通常表示で読む</a>
@@ -291,6 +292,31 @@ export default function WorldExperience({
         </section>}
 
       </main>
+      {entryVisible && <div className="worldEntry" ref={entry} role="dialog" aria-modal="true" aria-label="閲覧方法を選択" aria-describedby="welcome-summary"
+        onKeyDown={event => {
+          if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); }
+          if (event.key !== 'Tab') return;
+          const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+          const first = controls[0], last = controls[controls.length - 1];
+          const index = controls.indexOf(document.activeElement as HTMLElement);
+          if (event.shiftKey && index <= 0) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && (index < 0 || document.activeElement === last)) { event.preventDefault(); first.focus(); }
+        }}>
+        <section className="worldWelcome" aria-label="街の入口">
+          <div className="welcomeIdentity">
+            <p className="welcomeKicker">Portfolio</p>
+            <h2 tabIndex={-1}>橋本怜苑</h2>
+            <p className="welcomeSummary" id="welcome-summary">神戸電子専門学校<span>Web・アプリ開発</span></p>
+          </div>
+          <div className="welcomeActions">
+            <button className="welcomeTour" disabled={!navigation && !failed} aria-label="案内を見る" aria-describedby="welcome-tour-help" onClick={() => void goToStop(0, true)}>
+              <span><strong>案内を見る</strong><small id="welcome-tour-help">{!navigation && !failed ? '3Dを準備中' : '操作なし・4館'}</small></span><span aria-hidden="true">→</span>
+            </button>
+            <a href="/profile" aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></a>
+            <button aria-label="自由に探索する" onClick={() => { entryExplore.current = true; dismissWelcome(); }}><span><strong>自由に探索</strong><small>自分で操作</small></span><span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+      </div>}
       <dialog
         className={`detailDialog${currentHall ? ' hallDialog' : ''}`}
         style={hallStyle}

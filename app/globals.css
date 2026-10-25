@@ -1813,3 +1813,81 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .hallDialogBody, .hallImageViewport { scroll-behavior: auto; }
 }
+
+/* Choose a reading mode before interacting with the town. */
+.worldEntry {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background: #132e2566;
+}
+.worldMain[inert] .worldToolbar { visibility: hidden; }
+.worldEntry .worldWelcome {
+  position: relative;
+  inset: auto;
+  display: block;
+  width: min(560px, 100%);
+  max-height: 100%;
+  margin: 0;
+  padding: 40px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #fffdf5;
+  border-radius: 18px;
+  background: #fffaf3;
+  color: #233e34;
+  box-shadow: 0 24px 100px #152b263d;
+  animation: none;
+}
+.worldEntry .welcomeKicker { margin: 0 0 14px; color: #596f62; font-size: 12px; line-height: 1.5; letter-spacing: .08em; }
+.worldEntry .worldWelcome h2 { margin: 0 0 14px; font-size: 44px; line-height: 1.25; font-weight: 600; letter-spacing: -.025em; }
+.worldEntry .worldWelcome h2:focus { outline: none; }
+.worldEntry .welcomeSummary { margin: 0; font-size: 14px; line-height: 1.8; color: #53685a; }
+.worldEntry .welcomeSummary span { display: block; }
+.worldEntry .welcomeActions { grid-column: auto; grid-row: auto; align-self: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 30px; }
+.worldEntry .welcomeActions > :is(a, button) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 76px;
+  padding: 14px 18px;
+  border: 1px solid #cbd4c8;
+  border-radius: 8px;
+  background: transparent;
+  color: #294b3e;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.worldEntry .welcomeActions strong { display: block; font-weight: 600; white-space: nowrap; }
+.worldEntry .welcomeActions small { display: block; margin-top: 3px; font-size: 11px; color: #576d5e; white-space: nowrap; }
+.worldEntry .welcomeActions > :is(a, button):hover { border-color: #748c7b; background: #f0f3e9; }
+.worldEntry .welcomeActions .welcomeTour { grid-column: 1 / -1; background: #294f42; color: #fffdf5; border-color: #294f42; font-size: 20px; }
+.worldEntry .welcomeTour small { color: #e0eade; font-size: 12px; }
+.worldEntry .welcomeActions .welcomeTour:hover { background: #1c3e32; border-color: #1c3e32; }
+.worldEntry .welcomeActions .welcomeTour:disabled { opacity: .65; cursor: wait; }
+.worldEntry .welcomeActions :focus-visible { outline: 3px solid #427e7b; outline-offset: 4px; }
+@media (max-width: 640px) {
+  .worldEntry { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .worldEntry .worldWelcome { padding: 28px 24px; border-radius: 14px; }
+  .worldEntry .worldWelcome h2 { font-size: 38px; }
+  .worldEntry .welcomeActions { margin-top: 26px; gap: 10px; }
+  .worldEntry .welcomeActions > :is(a, button) { padding: 12px; gap: 8px; font-size: 14px; }
+  .worldEntry .welcomeActions .welcomeTour { padding: 14px 18px; font-size: 19px; }
+}
+@media (max-height: 500px) and (min-width: 641px) {
+  .worldEntry .worldWelcome { width: min(720px, 100%); display: grid; grid-template-columns: 1fr 1.1fr; gap: 32px; align-items: center; padding: 28px; }
+  .worldEntry .worldWelcome h2 { font-size: 34px; }
+  .worldEntry .welcomeActions { grid-column: 2; grid-row: 1; margin: 0; }
+  .worldEntry .welcomeActions > :is(a, button) { padding-inline: 12px; font-size: 14px; }
+  .worldEntry .welcomeActions .welcomeTour { font-size: 19px; }
+}

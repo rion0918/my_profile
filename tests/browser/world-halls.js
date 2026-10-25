@@ -89,11 +89,12 @@ async(page)=>{
    await setup(c);const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin);await ready(p);
    await p.screenshot({path:`output/playwright/halls-entry-${width}.png`});
    if(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('entry overflow');
+   await p.getByRole('button',{name:'自由に探索する',exact:true}).click();
    const geometry=()=>p.evaluate(()=>{const ids=[];window.__hallQA.scene.children.filter(o=>o.name.startsWith('hall-')).forEach(o=>o.traverse(c=>{if(c.isMesh)ids.push(c.geometry.uuid)}));return ids;});
    const before=await geometry();await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
    if(JSON.stringify(before)!==JSON.stringify(await geometry()))throw Error('quality changes hall geometry');
    if(await p.evaluate(()=>window.__hallQA.renderer.shadowMap.enabled))throw Error('low shadows not disabled');
-   const started=Date.now();await p.locator('.welcomeActions button').first().click();await p.getByRole('dialog').waitFor({state:'visible'});if(Date.now()-started>650)throw Error('reduced motion animates');
+   await p.locator('.worldGuide > summary').click();const started=Date.now();await p.locator('.guideTour').click();await p.getByRole('dialog').waitFor({state:'visible'});if(Date.now()-started>650)throw Error('reduced motion animates');
    for(let i=0;i<stops.length;i++){
     await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('#detail-title').innerText()!==stops[i][1])throw Error('mobile stop');
     const box=await p.locator('.tourFooter').boundingBox();if(box.x<0||box.x+box.width>width||box.y<0||box.y+box.height>height)throw Error('footer clipped '+JSON.stringify({width,height,box}));
