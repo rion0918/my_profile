@@ -274,10 +274,13 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       }
     };
     let lastTimeSync = -Infinity;
+    let lastVisibilityFrame = performance.now();
     const draw = () => {
       if (disposed || document.hidden || !compiled) return;
       const viewportWidth=element.clientWidth,viewportHeight=element.clientHeight;
-      world.updateVisibility();
+      const visibilityTime = performance.now();
+      const fading = world.updateVisibility(camera, Math.min((visibilityTime - lastVisibilityFrame) / 1000, .04), reduced.matches);
+      lastVisibilityFrame = visibilityTime;
       const now = Date.now();
       if (Math.abs(now - lastTimeSync) >= 30_000) {
         const lighting = world.updateTime(new Date(now));
@@ -351,6 +354,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
           label.style.transform = `translate(-50%, -100%) translate(${((point.x + 1) * viewportWidth) / 2}px,${((1 - point.y) * viewportHeight) / 2}px)`;
         }
       });
+      if (fading) render();
     };
     const render = () => {
       if(disposed||document.hidden||!compiled||frame||drawFrame)return;

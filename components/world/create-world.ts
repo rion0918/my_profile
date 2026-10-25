@@ -1624,6 +1624,9 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   resources.push(wildlife.dispose); await pause();
   selectable.push(bike.group);
   const visibility = createCharacterVisibility(person);
+  for (const door of doors) scene.getObjectByName(`hall-${door.id}`)!.attach(door.pivot);
+  for (const group of selectable) if (group.name.startsWith('hall-')) visibility.trackBuilding(group);
+  resources.push(visibility.dispose);
   const thermalBaths = createOnsen(scene, visibility.apply, ()=>{if(complete&&!signal.aborted)requestRender();});
   resources.push(thermalBaths.dispose); await pause();
   const areaGate = createAreaGate(scene, visibility.apply, hallFont);
@@ -1674,7 +1677,10 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     wildlife,
     scene,
     person,
-    updateVisibility: visibility.update,
+    updateVisibility(camera: THREE.Camera, delta: number, reduced: boolean) {
+      visibility.update();
+      return visibility.fadeBuildings(camera, delta, reduced);
+    },
     doors,
     selectable,
     destination,
