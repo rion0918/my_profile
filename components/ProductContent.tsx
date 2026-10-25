@@ -92,17 +92,17 @@ export function ProductContent({ product }: { product: Product }) {
           ))}
         </section>
       )}
-      {product.links?.map((link) => (
+      {!!product.links?.length && <div className="productLinks">{product.links.map((link) => (
         <a
           className="textLink"
           href={link.href}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           key={link.href}
         >
           {link.label} ↗
         </a>
-      ))}
+      ))}</div>}
     </div>
   );
 }

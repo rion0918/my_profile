@@ -12,7 +12,7 @@ export function createHallWordGeometry(word: string, font: Font, width: number, 
   const bounds = geometry.boundingBox!;
   const scale = Math.min(width / (bounds.max.x - bounds.min.x), height / (bounds.max.y - bounds.min.y));
   geometry.translate(-(bounds.min.x + bounds.max.x) / 2, -bounds.min.y, -bounds.min.z);
-  geometry.scale(scale, scale, scale);
+  geometry.scale(scale, scale, Math.max(scale, .5));
   // Draw all letter faces together, then all sides, instead of a draw per glyph.
   const faces: number[] = [], sides: number[] = [];
   for (const group of geometry.groups) {

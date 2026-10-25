@@ -32,7 +32,7 @@ export const techGroups = [
   },
   {
     title: "Framework",
-    items: ["Next.js", "React", "NestJS", "Storybook", "Jest"],
+    items: ["Next.js", "React", "Three.js", "NestJS", "Storybook", "Jest"],
   },
   {
     title: "DataBase",
@@ -96,7 +96,7 @@ export const career = [
 
 export const careerGroups = [
   { id: 'experience', title: '実務経験・活動', items: [career[2], career[1]] },
-  { id: 'history', title: '学歴・社歴', items: [
+  { id: 'history', title: 'Background', items: [
     { period: '2019 - 2022', title: profile.find(([label]) => label === 'High School')![1],
       description: '出身高校。', tags: ['High School'] },
     career[3], career[0],

@@ -88,8 +88,21 @@ export function prepareNavigation(obstacles: Obstacle[]) {
   let grid = grids.get(obstacles);
   if (!grid) {
     grid = new Uint8Array(columns * rows);
-    for (let i = 0; i < grid.length; i++)
-      grid[i] = +isWalkable(pointAt(i), obstacles);
+    const size = 4, cells = new Map<string, Obstacle[]>();
+    for (const obstacle of obstacles) {
+      const left = Math.floor((obstacle.x - obstacle.width / 2 - radius) / size);
+      const right = Math.floor((obstacle.x + obstacle.width / 2 + radius) / size);
+      const top = Math.floor((obstacle.z - obstacle.depth / 2 - radius) / size);
+      const bottom = Math.floor((obstacle.z + obstacle.depth / 2 + radius) / size);
+      for (let x = left; x <= right; x++) for (let z = top; z <= bottom; z++) {
+        const key = `${x},${z}`, list = cells.get(key) ?? [];
+        list.push(obstacle); cells.set(key, list);
+      }
+    }
+    for (let i = 0; i < grid.length; i++) {
+      const point = pointAt(i);
+      grid[i] = +isWalkable(point, cells.get(`${Math.floor(point.x / size)},${Math.floor(point.z / size)}`) ?? []);
+    }
     grids.set(obstacles, grid);
   }
   return grid;

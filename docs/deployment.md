@@ -6,6 +6,8 @@
 
 `vercel.json`でnpmのロックファイルから依存を導入し、`npm run build`の結果の`out/`だけを配信する。Framework Presetは`Other`に固定し、HTMLのCSPを追加した静的ファイルをそのまま使う。`cleanUrls`で`/profile`・`/projects/yoin`など既存の拡張子なしURLを維持する。`public/_headers`と同じ保護ヘッダーは、Vercel側の`headers`設定で全パスに適用する。
 
+トップページは通常表示。3Dで使う `world-map.json` も `force-static` のGET Route Handlerから `out/` へ生成する静的ファイルで、実行時のAPIサーバーは不要。地図取得と3Dプログラムの先読みは通常表示後に行う。[アーキテクチャと検証基準](architecture.md)も参照する。
+
 公開前:
 
 ```sh

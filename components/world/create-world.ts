@@ -31,6 +31,7 @@ import {
 import { createHallWordGeometry, createHallWordMaterials, createHallWordGlow } from "./create-hall-word";
 import { createHallIcon, hallIcons } from "./create-hall-icon";
 import { createHallArchitecture } from "./create-hall-architecture";
+import { createStaticGeometryCache, releaseUnusedGeometries } from "./static-geometry";
 import roundedHallFontData from "./assets/fuwatto.typeface.json";
 import hallFontData from "./assets/helvetiker_regular.typeface.json";
 import fontData from "./assets/riomaru.typeface.json";
@@ -58,6 +59,8 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   const materials = new Set<THREE.Material>();
   const textures = new Set<THREE.Texture>();
   const resources: (()=>void)[] = [];
+  const batchGeometry = createStaticGeometryCache();
+  resources.push(batchGeometry.dispose);
   const instances = new Set<THREE.InstancedMesh>();
   const dispose = () => {
     resources.forEach(release=>release());
@@ -1168,9 +1171,7 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     for (const [mat, objects] of buckets) {
       if (objects.length < 2) continue;
       const parts = objects.map((object) => {
-        const geo = object.geometry.index
-          ? object.geometry.toNonIndexed()
-          : object.geometry.clone();
+        const geo = batchGeometry.clone(object.geometry);
         for (const key of Object.keys(geo.attributes))
           if (!["position", "normal", "uv", "color"].includes(key))
             geo.deleteAttribute(key);
@@ -1278,6 +1279,8 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   const projectDisplays=createProjectExhibits(scene,visibility.apply,requestRender);
   resources.push(projectDisplays.dispose); await pause();
   selectable.push(...projectDisplays.selectable,...wildlife.selectable);
+  batchGeometry.dispose();
+  releaseUnusedGeometries(scene, geometries);
   materials.forEach(value => {
     if (value instanceof THREE.MeshStandardMaterial && !value.transparent)
       visibility.apply(value);

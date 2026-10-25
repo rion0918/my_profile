@@ -24,7 +24,7 @@ async page=>{
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
    if(!await p.evaluate(()=>{const q=window.__xQA;return q.scene.getObjectByName('hall-x').getObjectByName('hall-word-sign').geometry===q.geometry&&q.scene.getObjectByName('service-icon-x')===q.icon&&!q.renderer.shadowMap.enabled;}))throw Error('low mode changes X hall');
    await p.locator('.worldGuide>summary').click();
-   if(!await p.locator('.guideMap').getAttribute('aria-label').then(t=>t.includes('キャリア館')&&t.includes('XはX館'))||await p.locator('.guideMap text').filter({hasText:/^X$/}).count()!==1)throw Error('X or career missing on the map');
+   if(!await p.locator('.guideMap').getAttribute('aria-label').then(t=>t.includes('Background')&&t.includes('XはX館'))||await p.locator('.guideMap text').filter({hasText:/^X$/}).count()!==1)throw Error('X or career missing on the map');
    if(!await p.locator('.worldDirectory a').filter({hasText:'X館 · 寄り道'}).isVisible())throw Error('X is missing from optional halls');
    await p.getByRole('button',{name:'X館へ歩く',exact:true}).click();const hall=p.getByRole('dialog',{name:'X館',exact:true});await hall.waitFor({state:'visible',timeout:15000});
    if(!p.url().endsWith('?detail=x')||await p.locator('.tourFooter').count()||await hall.locator('.hallAccount').innerText()!=='x.com/rioi7_0918')throw Error('X entry or account incorrect');

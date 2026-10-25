@@ -5,6 +5,7 @@ import { buildings } from '../lib/world-layout.ts';
 import { sections } from '../lib/sections.ts';
 import { tourStops, tourFork } from '../lib/world-tour.ts';
 import { products } from '../lib/products.ts';
+import { careerGroups } from '../lib/portfolio.ts';
 import { createEntryController } from '../lib/world-entry.ts';
 
 test('seven halls share their identity, placement and doorway destination',()=>{
@@ -42,12 +43,13 @@ test('legacy detail identifiers and article paths remain available alongside new
   assert.equal(sections.find(s=>s.id==='x').href,'/social#x');
 });
 
-test('the first tour hall is Career, with a navy, ivory and gold gallery palette',()=>{
+test('Background is shared by the normal heading, hall, sign and first tour stop',()=>{
   const hall=halls.find(h=>h.id==='history');
-  assert.equal(hall.name,'キャリア館');
-  assert.equal(sections.find(s=>s.id==='history').title,'キャリア館');
-  assert.equal(tourStops[0].title,'キャリア館');
-  assert.deepEqual(hall.theme,{word:'Career',primary:0x243b55,surface:0xf2ebdb,light:0xc5a46b,lettering:0xf2ebdb});
+  assert.equal(hall.name,'Background');
+  assert.equal(careerGroups.find(group=>group.id==='history').title,hall.name);
+  assert.equal(sections.find(s=>s.id==='history').title,hall.name);
+  assert.equal(tourStops[0].title,hall.name);
+  assert.deepEqual(hall.theme,{word:'Background',primary:0x243b55,surface:0xf2ebdb,light:0xc5a46b,lettering:0xf2ebdb});
   assert.equal(hall.model,'gallery');
   assert.equal(hall.href,'/career#history');
 });

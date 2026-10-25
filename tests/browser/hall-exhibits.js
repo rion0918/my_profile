@@ -6,9 +6,9 @@ async page=>{
    await c.addInitScript(()=>sessionStorage.setItem('portfolio-welcome-v4','seen'));
    await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
-   await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'キャリア館',exact:true}).waitFor({state:'visible'});
-   await p.getByRole('heading',{name:'学歴・社歴',exact:true}).waitFor({state:'visible',timeout:2500});
-   if((await p.getByRole('dialog',{name:'キャリア館',exact:true}).innerText()).includes('上宮高校から神戸電子'))throw Error('redundant career introduction remains');
+   await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'Background',exact:true}).waitFor({state:'visible'});
+   await p.locator('.hallIntroduction').getByRole('heading',{name:'Background',exact:true}).waitFor({state:'visible',timeout:2500});
+   if((await p.getByRole('dialog',{name:'Background',exact:true}).innerText()).includes('上宮高校から神戸電子'))throw Error('redundant career introduction remains');
    const current=p.getByRole('region',{name:'現在の立場',exact:true});await current.waitFor({state:'visible',timeout:2500});
    const facts=await current.innerText();if(!facts.includes('神戸電子専門学校')||!facts.includes('DMM.com')||!facts.includes('27卒')||!facts.includes('内定'))throw Error('current position is incomplete');
    const cb=await current.boundingBox();if(cb.y<0||cb.y+cb.height>height)throw Error('current position not visible on entry '+JSON.stringify({width,height,cb}));

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createStaticGeometryCache } from './static-geometry.ts';
 import type { Font } from 'three/addons/loaders/FontLoader.js';
 import { createHallWordGeometry, createHallWordMaterials } from './create-hall-word.ts';
 import { pastaKitchen } from '../../lib/world-pasta.ts';
@@ -8,6 +9,7 @@ import { pastaKitchen } from '../../lib/world-pasta.ts';
 export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial) => void, font: Font) {
   const root = new THREE.Group(); root.name = 'pasta-kitchen'; root.position.set(pastaKitchen.x, 0, pastaKitchen.z); scene.add(root);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>();
+  const batchGeometry = createStaticGeometryCache();
   const cache = new Map<string, THREE.BufferGeometry>(), groups: THREE.Group[] = [];
   let seed = 418; const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const part = (name: string, parent: THREE.Object3D = root) => {
@@ -343,14 +345,15 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     const buckets=new Map<THREE.Material,THREE.BufferGeometry[]>();
     for(const object of [...group.children]){
       if(!(object instanceof THREE.Mesh)||object instanceof THREE.InstancedMesh||Array.isArray(object.material)||object.material.transparent)continue;
-      object.updateMatrix();const g=object.geometry.index?object.geometry.toNonIndexed():object.geometry.clone();g.applyMatrix4(object.matrix);
+      object.updateMatrix();const g=batchGeometry.clone(object.geometry);g.applyMatrix4(object.matrix);
       const items=buckets.get(object.material)??[];items.push(g);buckets.set(object.material,items);object.removeFromParent();
     }
     for(const [material,parts] of buckets){
       const merged=mergeGeometries(parts);parts.forEach(g=>g.dispose());
-      if(merged){const indexed=mergeVertices(merged);merged.dispose();mesh(group,indexed,material);}
+      if(merged)mesh(group,merged,material);
     }
   }
+  batchGeometry.dispose();
   const liveGeometry=new Set<THREE.BufferGeometry>();root.traverse(o=>{if(o instanceof THREE.Mesh)liveGeometry.add(o.geometry);});
   for(const g of geometries)if(!liveGeometry.has(g)){g.dispose();geometries.delete(g);}
   const instanced:THREE.InstancedMesh[]=[];root.traverse(o=>{if(o instanceof THREE.InstancedMesh)instanced.push(o);});

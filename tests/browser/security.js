@@ -21,9 +21,9 @@ async (page) => {
       window.__securityViolations = [];
       document.addEventListener('securitypolicyviolation', event => window.__securityViolations.push(event.effectiveDirective));
     });
-    for (const path of ['/', '/profile', '/about', '/tech', '/career', '/social', '/projects/yoin', '/projects/pop-reminder', '/404.html', '/_not-found']) {
+    for (const path of ['/', '/?mode=world', '/profile', '/about', '/tech', '/career', '/social', '/projects/yoin', '/projects/pop-reminder', '/404.html', '/_not-found']) {
       const response = await p.goto(`${origin}${path}`);
-      if (path === '/') await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
+      if (path.includes('mode=world')) await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       await p.waitForTimeout(100);
       const state = await p.evaluate(() => ({
         policy: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content,
@@ -36,7 +36,7 @@ async (page) => {
       if (await response.headerValue('x-content-type-options') !== 'nosniff') throw Error(`Missing response headers on ${path}`);
       results.push({ path, scriptsAllowed: true, violations: 0 });
     }
-    await p.goto(origin);
+    await p.goto(origin+'/?mode=world');
     await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
     const defaults = await p.evaluate(() => ({ quality: document.querySelector('#world-quality').value, bgm: document.querySelector('.bgmToggle').getAttribute('aria-pressed') }));
     if (defaults.quality !== 'quality' || defaults.bgm !== 'true') throw Error('Initial settings changed');

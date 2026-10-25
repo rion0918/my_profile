@@ -1,6 +1,6 @@
 async(page)=>{
  const origin='http://localhost:3001',results=[],errors=[];
- const stops=[['history','キャリア館'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
+ const stops=[['history','Background'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
  const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','pop-reminder':'https://fuwatto.pages.dev/'};
  const browser=page.context().browser();
  const setup=async c=>{

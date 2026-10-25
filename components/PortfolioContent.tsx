@@ -36,7 +36,7 @@ export function CareerContent({ group }: { group?: 'experience' | 'history' }) {
       {!group && <h2>{item.title}</h2>}
       <div className="careerFlow">
         {item.items.map((entry, index) => <article key={entry.title} className="careerItem">
-          <div className="flowMeta"><span>{String(index + 1).padStart(2, '0')}</span><time>{entry.period}</time></div>
+          <div className="flowMeta"><span>{String(index + 1).padStart(2, '0')}</span><time>{entry.period.split(/(?=（)/).map((part, index) => index === 0 ? part : <span className="periodNote" key={part}>{part}</span>)}</time></div>
           <div>
             <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
             <p>{entry.description}</p>

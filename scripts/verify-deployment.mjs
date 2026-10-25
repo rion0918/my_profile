@@ -10,7 +10,7 @@ const headers = {
   'referrer-policy': 'no-referrer',
   'permissions-policy': 'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
 };
-const assets = new Set(['/models/rion-walker.glb', '/audio/bossa-antigua.mp3', '/images/world-preview.jpg', '/images/projects/yoin/library.jpg', '/images/projects/pop-reminder/home.png', '/textures/onsen/stone-color.webp', '/textures/onsen/stone-normal.webp', '/textures/onsen/stone-arm.webp']);
+const assets = new Set(['/world-map.json', '/models/rion-walker.glb', '/audio/bossa-antigua.mp3', '/images/world-preview.jpg', '/images/projects/yoin/library.jpg', '/images/projects/pop-reminder/home.png', '/textures/onsen/stone-color.webp', '/textures/onsen/stone-normal.webp', '/textures/onsen/stone-arm.webp']);
 for (const path of pages) {
   const response = await fetch(new URL(path, origin));
   assert.equal(response.status, path.includes('missing-page') ? 404 : 200, path);
@@ -33,6 +33,12 @@ for (const path of assets) {
   assert.equal(response.status, 200, path);
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff', path);
   assert.notEqual(response.headers.get('content-type')?.split(';')[0], 'text/html', `${path}: asset returned HTML`);
-  assert.ok((await response.arrayBuffer()).byteLength > 0, `${path}: empty asset`);
+  const body = await response.arrayBuffer();
+  assert.ok(body.byteLength > 0, `${path}: empty asset`);
+  if (path === '/world-map.json') {
+    assert.match(response.headers.get('content-type') ?? '', /application\/json/);
+    const map = JSON.parse(Buffer.from(body).toString('utf8'));
+    assert.ok(map.streets?.surface?.length && map.buildings?.length, 'street geometry or hall metadata is missing');
+  }
 }
 console.log(`PASS ${assets.size} production assets`);

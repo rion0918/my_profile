@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createStaticGeometryCache, releaseUnusedGeometries } from './static-geometry.ts';
 import { gamingPC, gamingPCSpecs } from '../../lib/world-gaming-pc.ts';
 
 export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial) => void) {
   const root = new THREE.Group(); root.name = 'gaming-pc'; root.position.set(gamingPC.x, 0, gamingPC.z); scene.add(root);
   const body = new THREE.Group(); body.position.y = gamingPC.plinthHeight; root.add(body);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>();
+  const batchGeometry = createStaticGeometryCache();
   const cache = new Map<string, THREE.BufferGeometry>();
   const groups: THREE.Group[] = [], rotors: THREE.Mesh[] = [];
   const part = (name: string, parent: THREE.Object3D = body) => {
@@ -178,7 +180,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   const bladeGeometry = new THREE.ExtrudeGeometry(blade, { depth: .038, bevelEnabled: true, bevelSize: .012, bevelThickness: .009, bevelSegments: 1, curveSegments: 8 });
   const rotorParts: THREE.BufferGeometry[] = Array.from({ length: 7 }, (_, i) => bladeGeometry.clone().rotateZ(i / 7 * Math.PI * 2));
   const hub = new THREE.CylinderGeometry(.17, .17, .1, 24); hub.rotateX(Math.PI / 2); hub.translate(0, 0, .045); rotorParts.push(hub);
-  const rotorTriangles = rotorParts.map(g => g.index ? g.toNonIndexed() : g);
+  const rotorTriangles = rotorParts.map(g => batchGeometry.clone(g));
   const rotorGeometry = mergeGeometries(rotorTriangles)!;
   new Set([...rotorParts, ...rotorTriangles]).forEach(g => g.dispose()); bladeGeometry.dispose();
   const glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 128;
@@ -310,7 +312,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
       const material = object.material as THREE.Material;
       if (object === screen) continue;
       if (material.transparent && material !== halo) continue;
-      const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone(); geometry.applyMatrix4(object.matrix);
+      const geometry = batchGeometry.clone(object.geometry); geometry.applyMatrix4(object.matrix);
       const parts = byMaterial.get(material) ?? []; parts.push(geometry); byMaterial.set(material, parts); object.removeFromParent();
     }
     for (const [material, parts] of byMaterial) {
@@ -319,6 +321,8 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
       }
     }
   }
+  batchGeometry.dispose();
+  releaseUnusedGeometries(root, geometries);
   return {
     update(time: number, reduced: boolean) {
       rotors.forEach((rotor, i) => { rotor.rotation.z = reduced ? 0 : time * (i < 10 ? 2.6 : 1.8) + i * .37; });

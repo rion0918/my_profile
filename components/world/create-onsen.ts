@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createStaticGeometryCache } from './static-geometry.ts';
 import { onsen, onsenBoundary, onsenBambooGroves, onsenRocks, onsenLanterns, isInsideBathhouse, isBathhouseApproach } from '../../lib/world-onsen.ts';
 
 export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial) => void, onTextureReady:()=>void=()=>{}) {
   const root = new THREE.Group(); root.name = 'onsen'; root.position.set(onsen.x,0,onsen.z); scene.add(root);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>();
+  const batchGeometry = createStaticGeometryCache();
   const parts: THREE.Group[] = [], time = {value:0}, waterLight = {value:1};
   let disposed=false;
   let seed=7629;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
@@ -412,10 +414,11 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
     group.traverse(o=>{if(o instanceof THREE.Mesh&&!(o instanceof THREE.InstancedMesh)&&!Array.isArray(o.material)&&!o.material.transparent){const a=buckets.get(o.material)??[];a.push(o);buckets.set(o.material,a);}});
     for(const [m,objects] of buckets){
       if(objects.length<2)continue;
-      const geometriesToMerge=objects.map(o=>{const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();if(!g.getAttribute('uv'))g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.getAttribute('position').count*2),2));g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return g;});
-      const merged=mergeGeometries(geometriesToMerge);geometriesToMerge.forEach(g=>g.dispose());if(merged){const indexed=mergeVertices(merged);merged.dispose();objects.forEach(o=>o.removeFromParent());mesh(group,indexed,m);}
+      const geometriesToMerge=objects.map(o=>{const g=batchGeometry.clone(o.geometry);if(!g.getAttribute('uv'))g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.getAttribute('position').count*2),2));g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return g;});
+      const merged=mergeGeometries(geometriesToMerge);geometriesToMerge.forEach(g=>g.dispose());if(merged){objects.forEach(o=>o.removeFromParent());mesh(group,merged,m);}
     }
   }
+  batchGeometry.dispose();
   const live=new Set<THREE.BufferGeometry>(),instances:THREE.InstancedMesh[]=[];root.traverse(o=>{if(o instanceof THREE.Mesh)live.add(o.geometry);if(o instanceof THREE.InstancedMesh)instances.push(o);if(o instanceof THREE.Points)live.add(o.geometry);});
   for(const g of geometries)if(!live.has(g)){g.dispose();geometries.delete(g);}
   return {

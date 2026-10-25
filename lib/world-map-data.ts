@@ -9,7 +9,7 @@ import { onsen, onsenBoundary } from './world-onsen.ts';
 import { gamingPC } from './world-gaming-pc.ts';
 import { pastaKitchen } from './world-pasta.ts';
 
-// Built on the server so the HTML guide does not eagerly load Three.js.
+// Exported once during the build; normal HTML does not carry the street polygons.
 export function createWorldMapData() {
   const path = (points: {x:number;z:number}[]) => points.map((p,i)=>{
     const {x,y}=mapPoint(p);return `${i?'L':'M'}${x.toFixed(2)},${y.toFixed(2)}`;

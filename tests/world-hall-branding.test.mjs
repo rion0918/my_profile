@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { halls } from '../lib/world-halls.ts';
 
-const expected={experience:{word:'Experience',primary:0x356f5d,surface:0xf0eadb,light:0xb9cfb2,lettering:0x356f5d},yoin:{word:'Yoin',primary:0x795166,surface:0xe9c9c2,light:0xf4d9a6,lettering:0xfff1db},'pop-reminder':{word:'ふわっと。',primary:0x67adb5,surface:0xffddd6,light:0xfff0dc,lettering:0x2f7078},history:{word:'Career',primary:0x243b55,surface:0xf2ebdb,light:0xc5a46b,lettering:0xf2ebdb},github:{word:'GitHub',primary:0x0fbf3e,surface:0x232925,light:0xf2f5f3,lettering:0xf2f5f3},zenn:{word:'Zenn',primary:0x3ea8ff,surface:0xffffff,light:0xe7f4ff,lettering:0x3ea8ff},x:{word:'X',primary:0x202327,surface:0x171a1e,light:0xf4f5f6,lettering:0xffffff}};
+const expected={experience:{word:'Experience',primary:0x356f5d,surface:0xf0eadb,light:0xb9cfb2,lettering:0x356f5d},yoin:{word:'Yoin',primary:0x795166,surface:0xe9c9c2,light:0xf4d9a6,lettering:0xfff1db},'pop-reminder':{word:'ふわっと。',primary:0x67adb5,surface:0xffddd6,light:0xfff0dc,lettering:0x2f7078},history:{word:'Background',primary:0x243b55,surface:0xf2ebdb,light:0xc5a46b,lettering:0xf2ebdb},github:{word:'GitHub',primary:0x0fbf3e,surface:0x232925,light:0xf2f5f3,lettering:0xf2f5f3},zenn:{word:'Zenn',primary:0x3ea8ff,surface:0xffffff,light:0xe7f4ff,lettering:0x3ea8ff},x:{word:'X',primary:0x202327,surface:0x171a1e,light:0xf4f5f6,lettering:0xffffff}};
 
 test('the themed halls carry their own lettering and building palette',()=>{
  assert.equal(Object.keys(expected).length,halls.length);

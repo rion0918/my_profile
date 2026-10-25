@@ -100,3 +100,28 @@ test("the welcome landmark leaves the main promenade open at the old RION positi
   for (let z = 6; z <= 16; z += 0.1)
     assert.equal(isWalkable({ x: 0.5, z }, obstacles), true, `promenade z=${z}`);
 });
+
+test('navigation grid construction checks nearby obstacles instead of scanning the whole island', async () => {
+  const { prepareNavigation } = await import('../lib/world-navigation.ts');
+  let reads = 0;
+  const obstacles = Array.from({ length: 120 }, (_, i) => ({
+    get x() { reads++; return -40 + i % 12 * 7; },
+    z: -34 + Math.floor(i / 12) * 7, width: .8, depth: .8,
+  }));
+  const grid = prepareNavigation(obstacles);
+  assert.ok(reads < 200_000, `static collision checks exceeded the work budget: ${reads}`);
+  for (let i = 0; i < grid.length; i++) {
+    const p = { x: i % 193 * .5 - 48, z: Math.floor(i / 193) * .5 - 51 };
+    assert.equal(grid[i], +isWalkable(p, obstacles), JSON.stringify(p));
+  }
+  assert.equal(prepareNavigation(obstacles), grid);
+});
+
+test('the accelerated grid agrees with direct collision checks across the actual island', async () => {
+  const { prepareNavigation } = await import('../lib/world-navigation.ts');
+  const grid = prepareNavigation(obstacles);
+  for (let i = 0; i < grid.length; i++) {
+    const point = { x: i % 193 * .5 - 48, z: Math.floor(i / 193) * .5 - 51 };
+    assert.equal(grid[i], +isWalkable(point, obstacles), JSON.stringify(point));
+  }
+});

@@ -60,13 +60,16 @@ export default function WorldExperience({
   panels,
   hallPanels,
   map,
+  mapFailed,
 }: {
   panels: Record<string, ReactNode>;
   hallPanels: Record<string, ReactNode>;
-  map: WorldMapData;
+  map: WorldMapData | null;
+  mapFailed: boolean;
 }) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const unavailable = failed || mapFailed;
   const [quality, setQuality] = useState<WorldQuality>("quality");
   const [selected, setSelected] = useState<string | null>(null);
   const [navigation,setNavigation]=useState<WorldNavigation|null>(null);
@@ -263,10 +266,14 @@ export default function WorldExperience({
         <div className="worldToolbar" role="group" aria-label="表示と街の案内">
           <ModeBar mode="world" />
           <WorldAudio quality={quality} onQualityChange={setQuality} />
-          <WorldGuide map={map} navigation={navigation} onSelect={select} onTour={() => void goToStop(0, true)} canTour={!!navigation || failed} onExplore={() => { if (tourActive.current) close(); else dismissWelcome(); }}/>
+          <WorldGuide map={map} navigation={navigation} onSelect={select} onTour={() => void goToStop(0, true)} canTour={!!navigation || unavailable} onExplore={() => { if (tourActive.current) close(); else dismissWelcome(); }}/>
         </div>
         <div className="worldStage">
-          {ready ? (
+          {!map ? <div className={`worldLoading${mapFailed ? ' worldFallback' : ''}`} role={mapFailed ? 'alert' : 'status'}>
+            {mapFailed ? '地図を読み込めませんでした。' : '街を準備しています'}
+            <span>プロフィールや作品は「街の案内」から読めます。</span>
+            <Link className="fallbackLink" href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む ↗</Link>
+          </div> : ready ? (
             <WorldBoundary onError={error}>
               {failed ? (
                 <Fallback />
@@ -312,8 +319,8 @@ export default function WorldExperience({
             <p className="welcomeSummary" id="welcome-summary">神戸電子専門学校<span>Web・アプリ開発</span></p>
           </div>
           <div className="welcomeActions">
-            <button className="welcomeTour" disabled={!navigation && !failed} aria-label="案内を見る" aria-describedby="welcome-tour-help" onClick={() => void goToStop(0, true)}>
-              <span><strong>案内を見る</strong><small id="welcome-tour-help">{!navigation && !failed ? '3Dを準備中' : '操作なし・4館'}</small></span><span aria-hidden="true">→</span>
+            <button className="welcomeTour" disabled={!navigation && !unavailable} aria-label="案内を見る" aria-describedby="welcome-tour-help" onClick={() => void goToStop(0, true)}>
+              <span><strong>案内を見る</strong><small id="welcome-tour-help">{!navigation && !unavailable ? '3Dを準備中' : '操作なし・4館'}</small></span><span aria-hidden="true">→</span>
             </button>
             <Link href="/profile" onNavigate={rememberWorldModeChoice} aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></Link>
             <button aria-label="自由に探索する" onClick={() => { entryExplore.current = true; dismissWelcome(); }}><span><strong>自由に探索</strong><small>自分で操作</small></span><span aria-hidden="true">→</span></button>

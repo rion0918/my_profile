@@ -21,6 +21,7 @@ export const products: Product[] = [
   {
     slug: "yoin",
     name: "Yoin",
+    links: [{ label: "GitHubでコードを見る", href: "https://github.com/rion0918/Yoin" }],
     summary:
       "会話から生まれた曲を、日時・場所・元の会話と一緒に聴き返すアプリ。",
     technologies: ["TypeScript", "React Native", "Expo", "SQLite"],
@@ -44,7 +45,10 @@ export const products: Product[] = [
   {
     slug: "pop-reminder",
     name: "ふわっと。",
-    links: [{ label: "公式サイトを見る", href: "https://fuwatto.pages.dev/" }],
+    links: [
+      { label: "公式サイトを見る", href: "https://fuwatto.pages.dev/" },
+      { label: "GitHubでコードを見る", href: "https://github.com/rion0918/pop-reminder" },
+    ],
     summary: "忘れたくないことを、ふわっと泡にして残せるリマインダーアプリ。",
     media: [
       { src: "/images/projects/pop-reminder/home.png", alt: "ふわっと。のAndroid画面。牛乳を買うなどのデモ予定が泡として浮かぶ", caption: "ホーム画面" },

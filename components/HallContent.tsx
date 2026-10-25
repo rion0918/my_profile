@@ -14,7 +14,7 @@ export function HallContent({ id }: { id: HallId }) {
     return <div className="hallContent hall-history">
       <div className="hallCareerHero">
         <div className="hallIntroduction">
-          <h3>学歴・社歴</h3>
+          <h3>{hall.name}</h3>
         </div>
         <section className="hallCurrent" aria-label="現在の立場">
           <p className="hallCurrentLabel">現在の立場</p>
@@ -27,8 +27,8 @@ export function HallContent({ id }: { id: HallId }) {
         </section>
       </div>
       <section className="hallHistoryExhibit" aria-labelledby="hall-history-heading">
-        <h3 id="hall-history-heading">経歴</h3>
-        <ol className="hallTimeline" aria-label="経歴">
+        <h3 id="hall-history-heading">タイムライン</h3>
+        <ol className="hallTimeline" aria-label="タイムライン">
           {entries.map(entry => <li key={entry.title}>
             <article className="hallCareerCard">
               <p className="hallTimelinePeriod">{entry.period}</p>

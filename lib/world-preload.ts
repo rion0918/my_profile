@@ -1,11 +1,13 @@
 import { products } from "./products";
+import { loadWorldMap } from "./world-map-loader";
 
 let pending: Promise<unknown> | undefined;
 
 export function preloadWorld() {
   pending ??= Promise.all([
-    import("../components/world/WorldExperience"),
+    import("../components/world/WorldApp"),
     import("../components/world/WorldCanvas"),
+    loadWorldMap(),
     ...[
       "/models/rion-walker.glb",
       "/textures/onsen/stone-color.webp",
