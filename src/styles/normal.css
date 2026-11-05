@@ -1,0 +1,79 @@
+@import "./content.css";
+
+
+@media (max-width: 760px) {
+  .modeBar {
+    height: 68px;
+    padding: 0 16px;
+    gap: 10px;
+  }
+  .wordmark {
+    font-size: 21px;
+  }
+  .wordmark > span {
+    display: none;
+  }
+  .modeSwitch > :is(a, span) {
+    padding: 9px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+*::before,
+*::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.section {
+  scroll-margin-top: 96px;
+}
+.sectionHead {
+  top: 104px;
+}
+:root {
+  --control-ink: #294b3e;
+  --control-paper: #fffaf3;
+  --control-line: #bbc9bb;
+  --control-hover: #edf3e9;
+  --control-selected: #e2eddf;
+  --control-primary: #294f42;
+  --control-focus: #34716c;
+}
+.modeSwitch a,
+.modeSwitch > span[aria-current="page"] {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  touch-action: manipulation;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+.modeSwitch a:focus-visible {
+  outline: 3px solid var(--control-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--control-paper);
+}
+.modeBar .modeSwitch { gap: 8px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.modeBar .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--control-paper); color: var(--control-ink); box-shadow: 0 3px 12px #163c2420; font-size: 13px; font-weight: 550; }
+.modeBar .modeSwitch > :is(a, span)[aria-current="page"] { border-color: #62856c; background: var(--control-selected); color: #214b36; }
+@media (hover: hover) and (pointer: fine) {
+  .modeBar .modeSwitch a:hover {
+    border-color: #738d78;
+    background: var(--control-hover);
+    color: var(--control-ink);
+  }
+}
+@media (max-width: 760px) {
+  .modeBar .modeSwitch { gap: 6px; }
+  .modeBar .modeSwitch > :is(a, span) { padding-inline: 8px; }
+  .modeBar .modeSwitch > :is(a, span) { font-size: 12px; }
+}
+@media (max-width: 360px) {
+  .modeBar .modeSwitch > :is(a, span) { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modeSwitch a { transition: none; }
+}

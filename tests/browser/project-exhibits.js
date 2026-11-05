@@ -13,7 +13,7 @@ async(page)=>{
      });
     });
     const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
-    await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+    await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
     const data=await p.evaluate(id=>{
      const qa=window.__screenQA,g=qa.scene.getObjectByName('product-exhibit-'+id);qa.exhibit=g;
      const front=g.getObjectByName('product-screen-front'),back=g.getObjectByName('product-screen-back');

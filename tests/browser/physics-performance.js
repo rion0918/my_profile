@@ -3,7 +3,7 @@ async(page)=>{
  try{
   const p=await c.newPage(),cdp=await c.newCDPSession(p),errors=[];p.on('pageerror',e=>errors.push(e.message));
   await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});await cdp.send('Network.enable');await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:150,downloadThroughput:500000,uploadThroughput:125000});
-  const start=Date.now();await p.goto('http://localhost:3001');await p.locator('.worldLoading').waitFor({state:'hidden'});const readyMs=Date.now()-start;
+  const start=Date.now();await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});const readyMs=Date.now()-start;
   await p.getByRole('button',{name:'BGMを再生',exact:true}).tap();
   const borrowStart=Date.now();await p.getByRole('button',{name:'自転車に乗る',exact:true}).tap();await p.getByRole('button',{name:'自転車を降りる',exact:true}).waitFor({state:'visible',timeout:30000});const rideReadyMs=Date.now()-borrowStart;
   await p.getByRole('button',{name:'街全体を見る',exact:true}).tap();await p.getByRole('button',{name:'港の桟橋へ歩く',exact:true}).tap();await p.waitForTimeout(6000);

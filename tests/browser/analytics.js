@@ -37,8 +37,14 @@ async page => {
       await p.getByRole('link', { name: '3Dワールド', exact: true }).click();
       await p.locator('.worldSurface[aria-busy="false"]').waitFor();
       await p.waitForTimeout(100);
-      if (views.length !== 2 || new URL(views[1].o).pathname !== '/') throw Error(`Client navigation was not tracked exactly once: ${JSON.stringify(views)}`);
+      if (views.length !== 2 || new URL(views[1].o).pathname !== '/world') throw Error(`Client navigation was not tracked exactly once: ${JSON.stringify(views)}`);
       if (await p.locator('script[src*="/_vercel/insights/"]').count() !== 1) throw Error('Duplicate analytics script');
+      await p.locator('.worldGuide > summary').click();
+      await p.locator('.worldDirectory a').filter({ hasText: 'Background' }).click();
+      await p.getByRole('dialog', { name: 'Background', exact: true }).waitFor();
+      await p.getByRole('button', { name: '詳細を閉じる', exact: true }).click();
+      await p.waitForTimeout(200);
+      if (views.length !== 2) throw Error('Exhibit history counted a duplicate page view');
       await p.getByRole('link', { name: '通常表示', exact: true }).click();
       await p.waitForURL(`${origin}/profile`);
       await p.waitForTimeout(100);

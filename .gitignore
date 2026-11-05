@@ -20,3 +20,7 @@ work/
 output/
 .playwright-cli/
 tsconfig.tsbuildinfo
+
+# Astro generated output
+dist/
+.astro/

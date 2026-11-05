@@ -10,7 +10,8 @@ async page=>{
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__touchQA.scene=e.detail;if(e.detail.isWebGLRenderer){const render=e.detail.render.bind(e.detail);e.detail.render=(scene,camera)=>{window.__touchQA.camera=camera;return render(scene,camera);};}});
     document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')window.__touchQA.pointerId=e.pointerId;});
    },{mode});
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.waitForFunction(()=>window.__touchQA.scene?.children.some(o=>o.getObjectByName('Hips')));
    const client=await c.newCDPSession(p),touch=(type,points)=>client.send('Input.dispatchTouchEvent',{type,touchPoints:points});
    const position=()=>p.evaluate(()=>window.__touchQA.scene.children.find(o=>o.getObjectByName('Hips')).position.toArray());
    const distance=(a,b)=>Math.hypot(a[0]-b[0],a[2]-b[2]);

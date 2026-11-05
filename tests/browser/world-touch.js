@@ -8,7 +8,7 @@ async page=>{
     window.__THREE_DEVTOOLS__=new EventTarget();window.__touchQA={};
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__touchQA.scene=e.detail;if(e.detail.isWebGLRenderer){const render=e.detail.render.bind(e.detail);e.detail.render=(scene,camera)=>{window.__touchQA.camera=camera;return render(scene,camera);};}});
    });
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption(quality);await p.getByLabel('画質・BGM設定').click();
    const client=await c.newCDPSession(p),position=()=>p.evaluate(()=>window.__touchQA.scene.children.find(o=>o.getObjectByName('Hips')).position.toArray());
    const start=await p.evaluate(()=>{for(const y of [.55,.45,.65])for(const x of [.4,.6,.2,.8])if(document.elementFromPoint(innerWidth*x,innerHeight*y)?.tagName==='CANVAS')return {x:innerWidth*x,y:innerHeight*y};});

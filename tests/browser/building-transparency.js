@@ -16,7 +16,7 @@ async page=>{
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&/THREE|WebGL|shader/i.test(m.text()))errors.push(m.text());});
    p.on('response',r=>{if(r.status()>=400&&!r.url().includes('/favicon.ico'))errors.push(`${r.status()} ${r.url()}`);});
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
-   await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.waitForFunction(id=>{
     const hall=window.__fadeQA.scene.getObjectByName('hall-'+id),materials=new Set();
     hall.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});

@@ -1,0 +1,11 @@
+---
+import { profile } from "../../lib/portfolio";
+---
+<div class="aboutGrid">
+      {profile.map(([label, value]) => (
+        <article class="factRow">
+          <p>{label}</p>
+          <h3>{value}</h3>
+        </article>
+      ))}
+    </div>

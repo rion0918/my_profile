@@ -5,7 +5,7 @@ async(page)=>{
   const c=await page.context().browser().newContext({viewport:{width,height},isMobile:width===390,hasTouch:width===390,reducedMotion:'reduce'});
   await c.addInitScript(()=>sessionStorage.setItem('portfolio-position-v3',JSON.stringify({version:3,x:0,z:-39,view:{x:0,z:-43,overview:false,panned:true}})));
   try{
-   const p=await c.newPage();await p.goto('http://localhost:3001');await p.locator('.worldLoading').waitFor({state:'hidden'});await p.getByRole('button',{name:'ダッシュ',exact:true}).click();
+   const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});await p.getByRole('button',{name:'ダッシュ',exact:true}).click();
    const span=width===390?5.1:6.3,scale=height/(2*span),h=Math.hypot(12,20),d=Math.hypot(12,12.4,20),point={x:-1,y:.42,z:-46};
    const x=width/2+(point.x*20/h-(point.z+43)*12/h)*scale;
    const y=height/2-(-point.x*12/h*12.4/d+(point.y-.4)*h/d-(point.z+43)*20/h*12.4/d)*scale;

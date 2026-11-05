@@ -2,7 +2,7 @@ async(page)=>{
  const c=await page.context().browser().newContext({viewport:{width:1440,height:900},timezoneId:'Asia/Tokyo'}),errors=[];
  try{
   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
-  await p.goto('http://localhost:3001');await p.getByRole('button',{name:'自由に探索する',exact:true}).waitFor();await p.screenshot({path:'output/playwright/polish-welcome-1440.png'});
+  await p.goto('http://localhost:3001/world');await p.getByRole('button',{name:'自由に探索する',exact:true}).waitFor();await p.screenshot({path:'output/playwright/polish-welcome-1440.png'});
   await p.setViewportSize({width:390,height:844});await p.screenshot({path:'output/playwright/polish-welcome-390.png'});
   await p.getByRole('button',{name:'自由に探索する',exact:true}).click();
   if(await p.locator('.worldWelcome').count())throw Error('welcome not dismissed');

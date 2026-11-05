@@ -1,9 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Link from "next/link";
 import {
   Component,
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -17,19 +17,12 @@ import WorldAudio from "./WorldAudio";
 import WorldGuide from "./WorldGuide";
 import type { WorldMapData } from "../../lib/world-map-data";
 import type { WorldNavigation } from "../../lib/world-map";
-import { ModeBar, rememberWorldModeChoice } from "../ModeBar";
+import { ModeBar } from "../ModeBar";
+import { rememberWorldModeChoice } from "../../lib/reading-position";
 import { sections } from "../../lib/sections";
 import { tourStops, type TourPhase } from "../../lib/world-tour";
 import type { WorldQuality } from "../../lib/world-quality";
-const WorldCanvas = dynamic(() => import("./WorldCanvas"), {
-  ssr: false,
-  loading: () => (
-    <div className="worldLoading" role="status">
-      街を準備しています
-      <span>「街の案内」から、先にプロフィールや作品を読めます。</span>
-    </div>
-  ),
-});
+const WorldCanvas = lazy(() => import("./WorldCanvas"));
 function Fallback() {
   return (
     <div className="worldLoading worldFallback" role="status">
@@ -37,9 +30,9 @@ function Fallback() {
       <span>
         プロフィール・経歴・作品は、「街の案内」からそのまま読めます。
       </span>
-      <Link className="fallbackLink" href="/profile" onNavigate={rememberWorldModeChoice}>
+      <a className="fallbackLink" href="/profile" onClick={rememberWorldModeChoice}>
         通常表示で読む ↗
-      </Link>
+      </a>
     </div>
   );
 }
@@ -135,7 +128,7 @@ export default function WorldExperience({
     returnFocus.current=active.closest('.worldWelcome')?document.querySelector<HTMLElement>('.worldSurface'):active;
     const url = new URL(location.href);
     url.searchParams.set("detail", id);
-    history.pushState(null, "", url);
+    history.pushState(history.state, "", url);
     openedHere.current = true;
     setSelected(id);
   }, [dismissWelcome]);
@@ -152,7 +145,7 @@ export default function WorldExperience({
       const url = new URL(location.href);
       url.searchParams.delete("detail");
       url.searchParams.set("mode", "world");
-      history.replaceState(null, "", url);
+      history.replaceState(history.state, "", url);
     }
     navigationRef.current?.explore();
   }, [dismissWelcome]);
@@ -171,8 +164,8 @@ export default function WorldExperience({
     returnFocus.current = document.querySelector<HTMLElement>('.worldSurface');
     const url = new URL(location.href);
     url.searchParams.set('detail', stop.id);
-    if (starting) { history.pushState(null, '', url); openedHere.current = true; }
-    else history.replaceState(null, '', url);
+    if (starting) { history.pushState(history.state, '', url); openedHere.current = true; }
+    else history.replaceState(history.state, '', url);
     const completed = navigationRef.current ? await navigationRef.current.focusTo(stop.id) : true;
     if (completed && generation === focusGeneration.current) {
       setSelected(stop.id);
@@ -191,7 +184,7 @@ export default function WorldExperience({
       const url = new URL(location.href);
       url.searchParams.delete('detail');
       url.searchParams.set('mode', 'world');
-      history.replaceState(null, '', url);
+      history.replaceState(history.state, '', url);
       setPhase('complete');
     }
   };
@@ -244,7 +237,7 @@ export default function WorldExperience({
       ++focusGeneration.current;
       setPhase('complete');
       setSelected(null);
-      const url = new URL(location.href); url.searchParams.delete('detail'); url.searchParams.set('mode', 'world'); history.replaceState(null, '', url);
+      const url = new URL(location.href); url.searchParams.delete('detail'); url.searchParams.set('mode', 'world'); history.replaceState(history.state, '', url);
     } else {
       setPhase(currentPhase => currentPhase === 'intro' ? 'intro' : 'exploring');
     }
@@ -272,9 +265,10 @@ export default function WorldExperience({
           {!map ? <div className={`worldLoading${mapFailed ? ' worldFallback' : ''}`} role={mapFailed ? 'alert' : 'status'}>
             {mapFailed ? '地図を読み込めませんでした。' : '街を準備しています'}
             <span>プロフィールや作品は「街の案内」から読めます。</span>
-            <Link className="fallbackLink" href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む ↗</Link>
+            <a className="fallbackLink" href="/profile" onClick={rememberWorldModeChoice}>通常表示で読む ↗</a>
           </div> : ready ? (
             <WorldBoundary onError={error}>
+              <Suspense fallback={<div className="worldLoading" role="status">街を準備しています<span>「街の案内」から、先にプロフィールや作品を読めます。</span></div>}>
               {failed ? (
                 <Fallback />
               ) : (
@@ -288,6 +282,7 @@ export default function WorldExperience({
                   onExplore={dismissWelcome}
                 />
               )}
+              </Suspense>
             </WorldBoundary>
           ) : (
             <div className="worldLoading" role="status">
@@ -297,7 +292,7 @@ export default function WorldExperience({
         </div>
         {phase === 'focusing' && <section className="tourTravel" aria-label="展示へ移動中">
           <p role="status">{finishing ? '案内のまとめへ · 中央広場へ移動中' : `${String(step + 1).padStart(2, '0')} / ${tourStops.length} · ${tourStops[step].title}へ`}</p>
-          <Link href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む</Link>
+          <a href="/profile" onClick={rememberWorldModeChoice}>通常表示で読む</a>
           <button onClick={close}>案内を離れて探索</button>
         </section>}
 
@@ -322,7 +317,7 @@ export default function WorldExperience({
             <button className="welcomeTour" disabled={!navigation && !unavailable} aria-label="案内を見る" aria-describedby="welcome-tour-help" onClick={() => void goToStop(0, true)}>
               <span><strong>案内を見る</strong><small id="welcome-tour-help">{!navigation && !unavailable ? '3Dを準備中' : '操作なし・4館'}</small></span><span aria-hidden="true">→</span>
             </button>
-            <Link href="/profile" onNavigate={rememberWorldModeChoice} aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></Link>
+            <a href="/profile" onClick={rememberWorldModeChoice} aria-label="通常表示で読む"><span><strong>通常表示</strong><small>文章で読む</small></span><span aria-hidden="true">↗</span></a>
             <button aria-label="自由に探索する" onClick={() => { entryExplore.current = true; dismissWelcome(); }}><span><strong>自由に探索</strong><small>自分で操作</small></span><span aria-hidden="true">→</span></button>
           </div>
         </section>
@@ -359,15 +354,15 @@ export default function WorldExperience({
       >
         {currentHall && <header className="hallDialogHeader">
           <h2 id="detail-title" tabIndex={-1}>{currentHall.name}</h2>
-          <Link href={currentHall.href} onNavigate={rememberWorldModeChoice} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></Link>
+          <a href={currentHall.href} onClick={rememberWorldModeChoice} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></a>
           <button onClick={close} aria-label={guided ? '案内を離れて探索' : '詳細を閉じる'}>街へ戻る <span aria-hidden="true">×</span></button>
         </header>}
         <div className={`dialogInner${currentHall ? ' hallDialogBody' : ''}`} key={selected ?? 'complete'}>
           {!currentHall && <div className="dialogToolbar">
-            {(guided || complete) && <Link className="textLink" href="/profile" onNavigate={rememberWorldModeChoice}>通常表示で読む ↗</Link>}
-            {current && <Link className="textLink" href={current.href} onNavigate={rememberWorldModeChoice}>
+            {(guided || complete) && <a className="textLink" href="/profile" onClick={rememberWorldModeChoice}>通常表示で読む ↗</a>}
+            {current && <a className="textLink" href={current.href} onClick={rememberWorldModeChoice}>
               この詳細のURLを開く ↗
-            </Link>}
+            </a>}
             {!complete && <button onClick={close} aria-label={guided ? "案内を離れて探索" : "詳細を閉じる"}>
               {guided ? '案内を離れて探索' : '閉じる'} <span aria-hidden="true">×</span>
             </button>}
@@ -384,7 +379,7 @@ export default function WorldExperience({
             <div className="tourCompleteLinks">{halls.filter(h => h.id === 'github' || h.id === 'zenn' || h.id === 'x').map(h => <a key={h.id} className="hallLinkDoor" href={h.external!.href} target="_blank" rel="noopener noreferrer">
               <span><strong>{h.external!.label}</strong><small>{h.tagline} · 別タブで開きます</small></span><span aria-hidden="true">↗</span>
             </a>)}</div>
-            <Link className="textLink" href="/profile" onNavigate={rememberWorldModeChoice}>経歴と作品を通常表示で読む ↗</Link>
+            <a className="textLink" href="/profile" onClick={rememberWorldModeChoice}>経歴と作品を通常表示で読む ↗</a>
           </div> : selected && (hallPanels[selected] ?? panels[selected])}
 
         </div>

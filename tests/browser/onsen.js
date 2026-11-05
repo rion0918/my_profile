@@ -10,7 +10,7 @@ async page=>{
     document.addEventListener('securitypolicyviolation',e=>window.__onsenViolations.push(e.effectiveDirective));
    },width===1440);
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))errors.push(m.text());});p.on('response',r=>{if(r.status()>=400&&!r.url().endsWith('/favicon.ico'))errors.push(r.status()+' '+r.url());});
-   await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.waitForFunction(()=>{const materials=new Set();window.__onsenQA.scene.getObjectByName('onsen').traverse(o=>{if(o.material?.normalMap)materials.add(o.material);});return materials.size>0&&[...materials].every(m=>[m.map,m.normalMap,m.roughnessMap,m.aoMap].every(t=>t.image?.width===1024));});
    await p.evaluate(()=>{const q=window.__onsenQA;q.person=q.scene.children.find(o=>o.getObjectByName('Hips'));q.geometry=[];q.scene.getObjectByName('onsen').traverse(o=>{if(o.isMesh)q.geometry.push(o.geometry.uuid);});});
    if(width===1440){await p.getByRole('button',{name:'自転車に乗る',exact:true}).click();await p.getByRole('button',{name:'自転車を降りる',exact:true}).waitFor({timeout:20000});}

@@ -13,7 +13,7 @@ async page=>{
     });
    },{x,z});
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&/THREE|WebGL|shader/i.test(m.text()))errors.push(m.text());});
-   await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor().catch(async e=>{throw Error(e.message+' '+JSON.stringify({errors,body:await p.locator('body').innerText()}));});
+   await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor().catch(async e=>{throw Error(e.message+' '+JSON.stringify({errors,body:await p.locator('body').innerText()}));});
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
    if(width<760)await p.getByRole('button',{name:'景色を縮小',exact:true}).click();
    const framing=await p.evaluate(id=>{

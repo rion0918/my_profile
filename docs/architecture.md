@@ -1,46 +1,29 @@
 # アーキテクチャと最適化
 
-## 決定
+## Astro移行後の構成
 
-このリポジトリは、Next.js の静的書き出しを使うポートフォリオとして運用する。入口はサーバーでHTMLを生成する通常表示、3Dは必要なときにロードするクライアント機能とする。経歴・作品の事実、館と配置、操作ルールを `lib/` に置き、通常ページと館の表示が同じ定義を参照する。
+Astroの静的生成を基盤とし、通常表示はAstroコンポーネントからHTMLを生成する。Reactのクライアント実行は `/world` の `WorldApp client:only="react"` に限定する。共有の事実・経歴・作品・館・操作ルールは引き続き `lib/` に置く。通常本文と館のReact表示は同じデータを参照する。
 
 | 責務 | 実装 | 守ること |
 | --- | --- | --- |
-| 通常表示 | `app/page.tsx`、`components/ProfilePage.tsx` | JavaScriptや3Dの成功を待たずに本文を読める |
-| 表示の選択 | `components/HomeView.tsx`、`components/ModeBar.tsx` | `/?mode=world`・旧 `?detail=…`・記事URL・読書位置を維持する |
-| 3Dの読込 | `components/world/WorldApp.tsx`、`lib/world-preload.ts` | 通常表示後の先読みではWebGL・BGMを起動しない |
-| 地図の生成 | `app/world-map.json/route.ts`、`lib/world-map-data.ts` | 同じ館・道路データからビルド時に静的JSONを生成する |
-| 地図の取得 | `lib/world-map-loader.ts` | 文書内では要求を共有し、新しい文書ではHTTPキャッシュを再検証する。失敗を永久キャッシュしない |
-| 館・ツアーの状態 | `components/world/WorldExperience.tsx` | 地図の待機・失敗によって本文閲覧を止めない。地図なしの歩行操作は無効にする |
-| 3Dの実行 | `components/world/WorldCanvas.tsx`、`components/world/create-*.ts` | カメラ・入力・描画・資源解放を受け持ち、毎フレームの座標をReactの状態へ送らない |
-| 移動の規則 | `lib/world-navigation.ts` など | 衝突・経路・自転車・入館・フォーカスはDOMに依存しない関数で検証する |
-| 静的形状の結合 | `components/world/static-geometry.ts` | 共有形状を一度だけインデックス化し、変更用のクローンを返す。結合後に不要な資源を解放する |
+| 静的HTML・SEO | `src/pages/`、`src/layouts/Layout.astro` | JavaScriptなしで主要本文を読める。既存URL・タイトル・OGP・言語・referrerを維持する |
+| 通常表示 | `src/components/*.astro` | Hydrationしない。画像はAstroでビルド時にWebPと複数幅を生成する |
+| ページ間遷移 | Astro `ClientRouter`、`src/scripts/navigation.ts` | 同じ文書で移動し、読書位置を復元する。旧クエリURLは履歴を増やさず `/world` へ移す |
+| 3D Island | `components/world/WorldApp.tsx`、`WorldExperience.tsx` | `/world` 内の詳細履歴では `transition:persist` で同じIsland・Canvasを維持する |
+| 地図の生成 | `src/pages/world-map.json.ts`、`lib/world-map-data.ts` | ビルド時に静的JSONを生成し、実行時サーバーを必要としない |
+| 地図の取得 | `lib/world-map-loader.ts` | 文書内の要求を共有し、別文書ではHTTPキャッシュを再検証する。失敗を永久キャッシュしない |
+| 先読み | `src/scripts/navigation.ts`、`lib/world-preload.ts` | Hover/Focusの意図があるときだけ実行。Save-Data/2Gは遷移時まで待つ。WebGL・音声・Rapierを起動しない |
+| 3Dの実行 | `WorldCanvas.tsx`、`create-*.ts` | 既存のThree.js・キャラクター・カメラ・タッチ・BGM・遅延Rapier・資源解放を維持する |
+| 静的出力の保護 | `scripts/secure-static-export.mjs` | `public/` と `dist/` を検査し、ビルド内の正確なスクリプトハッシュでCSPを生成する |
+| 計測 | `src/components/Telemetry.astro` | Vercel SDKを一度だけ注入し、画面遷移完了後のclean URLを一度だけ計測。館の開閉は重複計測しない |
 
-```mermaid
-flowchart LR
-  Content[lib の経歴・作品・館データ] --> Normal[通常表示の静的HTML]
-  Content --> Exhibits[遅延ロードする館の本文]
-  Layout[館・道路・海岸の定義] --> Build[ビルド時の地図生成]
-  Build --> JSON[world-map.json]
-  Normal --> Entry[HomeViewで3Dを選択]
-  Entry --> App[WorldApp]
-  JSON --> Loader[共有する地図の取得]
-  Loader --> App
-  Exhibits --> App
-  App --> UI[WorldExperience]
-  UI --> Runtime[WorldCanvas]
-  Runtime --> Rules[移動・衝突・入館ルール]
-  Runtime --> Scene[各施設のcreate関数]
-  Scene --> Geometry[静的形状のキャッシュと解放]
-```
+通常ページの初期依存にはReact・Three.js・Rapier・地図・3D素材を含めない。Astroの小さなクライアントルーターは、既存の文書を再読み込みしないUXを維持するために採用する。Reactの通常ページ全体をクライアントアプリとして残す構成や、常時描画する隠し3Dシーンは使わない。
 
-## この境界にした理由
+通常表示から離れると3D Islandを破棄し、既存の終了処理で座標・カメラを保存して描画と音声を停止する。戻ったときは同じ保存形式から復元する。館の詳細履歴は `history.state` のAstro用情報を保持し、既存の `popstate` による詳細同期を使う。同じ `/world` 間ではIslandを永続化するため、閉じる・戻る・進むでWebGLを再初期化しない。
 
-以前のトップページは、通常表示に加えて全館の本文と地図をReactのペイロードへ埋め込んでいた。現在は、本文を持つ `WorldApp` のコードと、地図の静的JSONを通常表示後に先読みする。地図の多角形演算をブラウザで再実行することなく、トップHTMLから3D用データを外せる。
+CSSは `common.css`（基礎）、`content.css`（通常本文と3Dパネル共通）、`normal.css`（通常表示の追加規則）、`world.css`（3D専用）に分ける。元の規則の順序を保ち、通常表示向けの後段の共通操作スタイルだけを `normal.css` に含める。既存の3D専用上書きはそのまま `world.css` に残す。
 
-地図のJSON化は通信の失敗点を増やすため、館の本文は地図と独立して表示する。待機中でも直接URL・街の案内から本文へ進める。取得失敗時は通常表示へ戻れ、描画なしでツアーの本文を見られる。取得が完了しても、開いていた館をリセットしない。
-
-静的なJSONも `force-static` のGET Route Handlerから書き出すため、実行時サーバーは不要。[Next.jsの静的書き出し](https://nextjs.org/docs/app/guides/static-exports)の範囲で構成している。データベース・状態管理ライブラリ・ECS・常時動作する背景の3Dレンダラーは、この機能には追加しない。
+移行時の比較・先読み4条件・検証結果は [Astro移行の検証記録](astro-migration.md) を参照。以降は再利用した3D最適化と、その移行前の設計根拠を記録する。
 
 ## 形状と資源の扱い
 
@@ -56,7 +39,7 @@ flowchart LR
 
 候補数を減らした後も、実際の島全域と合成した障害物配置の全グリッド点について、元の直接判定との一致を検証する。
 
-## 測定
+## 以前の3D最適化の測定（2026-10-25）
 
 2026-10-25、ローカルの本番ビルドをChromiumで測定。通常表示後に素材の先読みを待ち、3Dへの切り替えから準備完了までを測った。スマホ相当は390×844、端末DPR 3・描画DPR 2、CPUを4倍低速化。PCは1440×900・端末DPR 2。実機のスマートフォンやSafariの測定値ではない。
 
@@ -82,7 +65,7 @@ npm run security:audit
 git diff --check
 ```
 
-本番書き出しの `out/` をポート3001で配信し、Playwright CLIの `run-code --filename` から次を実行する。
+本番書き出しの `dist/` をポート3001で配信し、Playwright CLIの `run-code --filename` から次を実行する。
 
 - `tests/browser/architecture-performance.js`: 通常HTML 64KiB以下、ジオメトリ90MiB以下、描画間隔p95 50ms以下。PCとスマホ相当・両画質の実描画を記録する。
 - `tests/browser/world-data-loading.js`: 地図が遅い場合と503の場合の館・案内・通常表示への復帰。本文を読む前に地図が必要にならないことを確認する。

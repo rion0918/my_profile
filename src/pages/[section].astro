@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ModeBar from "../components/ModeBar.astro";
+import AboutContent from "../components/AboutContent.astro";
+import TechContent from "../components/TechContent.astro";
+import CareerContent from "../components/CareerContent.astro";
+import SocialContent from "../components/SocialContent.astro";
+import { sections } from "../../lib/sections";
+import "../styles/normal.css";
+
+export function getStaticPaths() {
+  return ["about", "tech", "career", "social"].map(section => ({ params: { section } }));
+}
+const content = { about: AboutContent, tech: TechContent, career: CareerContent, social: SocialContent };
+const section = Astro.params.section as keyof typeof content;
+const Content = content[section];
+const title = sections.find(item => item.id === section)!.title;
+---
+<Layout title={`${title} | 橋本怜苑`}>
+  <ModeBar />
+  <main class="detailPage">
+    <a class="textLink" href={`/profile#${section}`}>← プロフィール一覧</a>
+    <h1>{title}</h1>
+    <Content />
+  </main>
+</Layout>

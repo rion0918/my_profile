@@ -7,7 +7,7 @@ async page=>{
     sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x:34,z:-10,view:{x:28,z:-10,overview:false,panned:true}}));
     window.__THREE_DEVTOOLS__=new EventTarget();window.__pondQA={};window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__pondQA.scene=e.detail;});
    });
-   const p=await c.newPage();await p.bringToFront();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   const p=await c.newPage();await p.bringToFront();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
    const surfaces=()=>p.evaluate(()=>{const result=[];window.__pondQA.scene.traverse(o=>{if(o.isMesh&&o.material.uniforms?.ocean?.value===0)result.push({geometry:o.geometry.uuid,position:o.position.toArray(),basin:o.material.uniforms.basin.value.toArray(),reflections:o.material.uniforms.reflectionsEnabled.value});});return result;});
    const before=await surfaces();if(before.length!==2)throw Error('missing lake surfaces');

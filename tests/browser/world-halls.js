@@ -18,7 +18,7 @@ async(page)=>{
   await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
   const html=await(await p.request.get(origin)).text();if(!html.includes('街の入口')||!html.includes('通常表示で読む'))throw Error('missing initial HTML');
-  await p.goto(origin);await ready(p);const spawn=await position(p);if(Math.hypot(spawn[0],spawn[2]-31)>.01)throw Error('old position restored '+spawn);
+  await p.goto(origin+'/world');await ready(p);const spawn=await position(p);if(Math.hypot(spawn[0],spawn[2]-31)>.01)throw Error('old position restored '+spawn);
   await p.screenshot({path:'output/playwright/halls-entry-desktop.png'});
   const h=await p.evaluate(()=>history.length);await p.locator('.welcomeActions button').first().click();
   for(let i=0;i<stops.length;i++){
@@ -87,7 +87,7 @@ async(page)=>{
  }finally{await c.close();}
  for(const [width,height] of [[390,844],[375,667],[844,390]]){
   const c=await browser.newContext({viewport:{width,height},isMobile:width<760,hasTouch:true,reducedMotion:'reduce'});try{
-   await setup(c);const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin);await ready(p);
+   await setup(c);const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin+'/world');await ready(p);
    await p.screenshot({path:`output/playwright/halls-entry-${width}.png`});
    if(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('entry overflow');
    await p.getByRole('button',{name:'自由に探索する',exact:true}).click();

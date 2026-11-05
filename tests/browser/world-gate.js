@@ -14,7 +14,7 @@ async page=>{
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
    p.on('console',m=>{if(m.type()==='error'&&/shader|WebGLProgram|mergeGeometries/i.test(m.text()))errors.push(m.text());});
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
-   await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    const data=await p.evaluate(()=>{
     const qa=window.__gateQA,root=qa.scene.getObjectByName('area-gate');if(!root)throw Error('no area gate');
     qa.geometry=[];root.traverse(o=>{if(o.isMesh)qa.geometry.push(o.geometry.uuid);});

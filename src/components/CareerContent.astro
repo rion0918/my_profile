@@ -1,0 +1,23 @@
+---
+import { careerGroups } from "../../lib/portfolio";
+interface Props { group?: "experience" | "history"; }
+const { group } = Astro.props;
+---
+<div class="careerGroups">
+    {careerGroups.filter(item => !group || item.id === group).map(item => <section id={item.id} class="careerGroup">
+      {!group && <h2>{item.title}</h2>}
+      <div class="careerFlow">
+        {item.items.map((entry, index) => <article class="careerItem">
+          <div class="flowMeta"><span>{String(index + 1).padStart(2, '0')}</span><time>{entry.period.split(/(?=（)/).map((part, index) => index === 0 ? part : <span class="periodNote">{part}</span>)}</time></div>
+          <div>
+            <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
+            <p>{entry.description}</p>
+            <div class="miniTags">{entry.tags.map(tag => <span>{tag}</span>)}</div>
+            {'links' in entry && entry.links && <div class="careerLinks">
+              {entry.links.map(link => <a class="textLink" href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}
+            </div>}
+          </div>
+        </article>)}
+      </div>
+    </section>)}
+  </div>

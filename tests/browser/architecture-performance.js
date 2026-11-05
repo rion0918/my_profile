@@ -4,6 +4,7 @@ async page => {
   const c=await page.context().browser().newContext({viewport:{width,height},deviceScaleFactor:dpr,isMobile:cpu>1,hasTouch:cpu>1}),errors=[];
   try{
    await c.addInitScript(()=>{
+    const NativeDate=Date,fixed=Date.parse('2026-10-25T12:00:00+09:00');window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[fixed]));}static now(){return fixed;}};
     sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x:0,z:20}));
     window.__architecture={frames:[],tasks:[],scenes:[]};window.__THREE_DEVTOOLS__=new EventTarget();
     new PerformanceObserver(list=>window.__architecture.tasks.push(...list.getEntries().map(e=>e.duration))).observe({type:'longtask',buffered:true});
@@ -18,10 +19,11 @@ async page => {
    });
    const p=await c.newPage();await p.bringToFront();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);await client.send('Emulation.setCPUThrottlingRate',{rate:cpu});
    const response=await p.goto('http://localhost:3001'),htmlBytes=(await response.body()).byteLength;
+   await p.getByRole('link',{name:'3Dワールド',exact:true}).hover();
    await p.waitForFunction(()=>performance.getEntriesByType('resource').some(e=>e.name.endsWith('/models/rion-walker.glb')&&e.responseEnd>0));
    if(await p.locator('.worldSurface').count())throw Error('Normal display eagerly mounts 3D');
    const start=Date.now();await p.getByRole('link',{name:'3Dワールド',exact:true}).click();await p.locator('.worldSurface[aria-busy="false"]').waitFor({timeout:60000});const readyMs=Date.now()-start;
-   await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
+   await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
    const geometry=await p.evaluate(()=>{
     const q=window.__architecture,s=q.scenes.find(s=>s.getObjectByName('hall-history')),geometries=new Set(),buffers=new Set();let triangles=0;
     s.traverse(o=>{if(!o.geometry||geometries.has(o.geometry))return;const g=o.geometry;geometries.add(g);if(o.isMesh)triangles+=(g.index?.count??g.attributes.position?.count??0)/3;

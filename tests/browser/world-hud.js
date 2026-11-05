@@ -7,7 +7,7 @@ async page=>{
     sessionStorage.setItem('portfolio-welcome-v4','seen');window.__THREE_DEVTOOLS__=new EventTarget();window.__hud={};
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__hud.scene=e.detail;});
    });
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');
+   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');
    await p.locator('.worldLoading').waitFor({state:'hidden'});
    const modes=await p.locator('.worldToolbar .modeSwitch').evaluate(nav=>({labels:[...nav.children].map(e=>e.textContent.trim()),active:nav.querySelector('[aria-current="page"]')?.textContent.trim()}));
    if(JSON.stringify(modes)!==JSON.stringify({labels:['3Dワールド','通常表示'],active:'3Dワールド'}))throw Error('world mode switch is inconsistent '+JSON.stringify(modes));

@@ -12,7 +12,7 @@ async page=>{
     };}
    });
   });
-  const p=await c.newPage();await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+  const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
   await p.evaluate(()=>window.__inputFrames.collect=true);
   for(let i=0;i<4;i++){await p.getByRole('button',{name:'景色を拡大',exact:true}).click();await p.getByRole('button',{name:'景色を縮小',exact:true}).click();}
   await p.waitForTimeout(100);

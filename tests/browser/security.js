@@ -21,9 +21,9 @@ async (page) => {
       window.__securityViolations = [];
       document.addEventListener('securitypolicyviolation', event => window.__securityViolations.push(event.effectiveDirective));
     });
-    for (const path of ['/', '/?mode=world', '/profile', '/about', '/tech', '/career', '/social', '/projects/yoin', '/projects/pop-reminder', '/404.html', '/_not-found']) {
+    for (const path of ['/', '/world', '/?mode=world', '/profile', '/about', '/tech', '/career', '/social', '/projects/yoin', '/projects/pop-reminder', '/404.html', '/_not-found']) {
       const response = await p.goto(`${origin}${path}`);
-      if (path.includes('mode=world')) await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
+      if (path === '/world' || path.includes('mode=world')) await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       await p.waitForTimeout(100);
       const state = await p.evaluate(() => ({
         policy: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content,

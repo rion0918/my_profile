@@ -4,13 +4,14 @@ async page=>{
   const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
    await c.addInitScript(()=>{
+    sessionStorage.setItem('portfolio-welcome-v4','seen');
     window.__THREE_DEVTOOLS__=new EventTarget();window.__loading={};
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene){window.__loading.scene=e.detail;if(window.__loseDuringBuild)setTimeout(()=>{window.__loading.lossHallCount=e.detail.children.filter(o=>o.name.startsWith('hall-')).length;window.__loading.renderer.forceContextLoss();},0);}if(e.detail.isWebGLRenderer)window.__loading.renderer=e.detail;});
    });
    if(mode==='context-loss')await c.addInitScript(()=>{window.__loseDuringBuild=true;});
    if(mode==='character-failure')await c.route('**/models/rion-walker.glb',r=>r.abort());
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);await client.send('Emulation.setCPUThrottlingRate',{rate:4});
-   await p.goto('http://localhost:3001');
+   await p.goto('http://localhost:3001/world');
    if(mode==='context-loss'){
     await p.waitForFunction(()=>window.__loading.scene);
     await p.getByText('この環境では3Dを表示できませんでした。',{exact:true}).waitFor();

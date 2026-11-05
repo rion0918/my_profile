@@ -1,0 +1,40 @@
+---
+import { ClientRouter } from "astro:transitions";
+import Telemetry from "../components/Telemetry.astro";
+import "../styles/common.css";
+
+interface Props { title?: string; description?: string; ogDescription?: string; ogTitle?: string; ogImage?: string | null; }
+const {
+  title = "橋本怜苑 | Student Engineer",
+  description = "神戸電子専門学校に所属する学生エンジニア、橋本怜苑のプロフィールサイト。",
+  ogDescription = "Next.js, React, NestJS, GraphQL, gRPCなどを学ぶ学生エンジニアのプロフィール。",
+  ogTitle = "橋本怜苑 | Student Engineer",
+  ogImage = "https://riomaru.jp/images/student-desk-kobe.png",
+} = Astro.props;
+---
+<!doctype html>
+<html lang="ja" transition:animate="none">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <ClientRouter fallback="swap" />
+  </head>
+  <body>
+    <slot />
+    <Telemetry />
+    <script>
+      import "../scripts/navigation";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+interface Props { src: string; alt: string; widths: number[]; sizes: string; }
+const { src, alt, widths, sizes } = Astro.props;
+const images = import.meta.glob<{ default: ImageMetadata }>("../../public/images/projects/*/*.{jpg,png}");
+const image = await images[`../../public${src}`]();
+---
+<Image src={image.default} alt={alt} widths={widths} sizes={sizes} format="webp" quality={85} loading="lazy" />

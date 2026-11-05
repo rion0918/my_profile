@@ -10,7 +10,7 @@ async(page)=>{
      window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__brandQA.scene=e.detail;if(e.detail.isWebGLRenderer){window.__brandQA.renderer=e.detail;const render=e.detail.render.bind(e.detail);e.detail.render=(scene,camera)=>{window.__brandQA.camera=camera;return render(scene,camera);};}});
     },{x,z:id==='history'||id==='experience'?30:id==='yoin'||id==='pop-reminder'?12.5:20});
     const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
-    await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+    await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
     if(!await p.evaluate(()=>{
      const letters=[];window.__brandQA.scene.traverse(o=>{if(o.name==='entrance-word-letter')letters.push(o);});
      return letters.length===4&&letters.every(o=>o.material.every(m=>m.emissiveIntensity>=.8)&&o.getObjectByName('hall-word-glow'));

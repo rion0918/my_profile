@@ -3,7 +3,7 @@ async(page)=>{
  try{
   const p=await c.newPage();let failed=true;
   await p.route('**/audio/bossa-antigua.mp3',r=>failed?r.fulfill({status:404,body:'not found'}):r.continue());
-  await p.goto('http://localhost:3001');await p.getByRole('button',{name:'BGMを再生',exact:true}).tap();
+  await p.goto('http://localhost:3001/world');await p.getByRole('button',{name:'BGMを再生',exact:true}).tap();
   await p.getByRole('button',{name:'BGMの再生を再試行',exact:true}).waitFor({state:'visible'});
   if(!await p.locator('audio').evaluate(a=>a.paused))throw Error('failed audio not paused');
   failed=false;await p.getByRole('button',{name:'BGMの再生を再試行',exact:true}).tap();

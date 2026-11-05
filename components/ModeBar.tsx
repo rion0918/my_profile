@@ -1,36 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { welcomeStorageKey } from "../lib/world-zones";
-
-export function rememberWorldModeChoice() {
-  try {
-    window.sessionStorage.setItem(welcomeStorageKey, "seen");
-  } catch {
-    /* Optional storage. */
-  }
-}
-
-const readingPositionKey = "portfolio-reading-position";
-
-export function enterWorld() {
-  rememberWorldModeChoice();
-  try {
-    sessionStorage.setItem(readingPositionKey, JSON.stringify({
-      href: location.pathname + location.search + location.hash,
-      y: window.scrollY,
-    }));
-  } catch { /* Optional storage. */ }
-}
+import { readingPosition, rememberWorldModeChoice } from "../lib/reading-position";
 
 export function ModeBar({ mode }: { mode: "world" | "profile" }) {
   const [readingHref, setReadingHref] = useState("/");
   useEffect(() => {
     let frame = 0;
     try {
-      const saved = JSON.parse(sessionStorage.getItem(readingPositionKey) || "null");
-      if (saved?.href?.startsWith("/") && !saved.href.startsWith("//")) {
+      const saved = readingPosition();
+      if (saved) {
         if (mode === "world") setReadingHref(saved.href);
         else if (saved.href === location.pathname + location.search + location.hash && Number.isFinite(saved.y)) {
           frame = requestAnimationFrame(() => {
@@ -43,19 +22,19 @@ export function ModeBar({ mode }: { mode: "world" | "profile" }) {
   }, [mode]);
   return (
     <header className={`modeBar ${mode === "world" ? "modeBarDark" : ""}`}>
-      {mode !== "world" && <Link className="wordmark" href="/#top" aria-label="RH Rion Hashimoto ホーム">
+      {mode !== "world" && <a className="wordmark" href="/#top" aria-label="RH Rion Hashimoto ホーム">
         RH{" "}<span>Rion Hashimoto</span>
-      </Link>}
+      </a>}
       <nav className="modeSwitch" aria-label="表示モード">
         {mode === "world" ? (
           <span aria-current="page">3Dワールド</span>
         ) : (
-          <Link href="/?mode=world" prefetch={false} onNavigate={enterWorld}>3Dワールド</Link>
+          <a href="/world" data-world-entry>3Dワールド</a>
         )}
         {mode === "profile" ? (
           <span aria-current="page">通常表示</span>
         ) : (
-          <Link href={readingHref} scroll={false} onNavigate={rememberWorldModeChoice}>通常表示</Link>
+          <a href={readingHref} onClick={rememberWorldModeChoice}>通常表示</a>
         )}
       </nav>
     </header>

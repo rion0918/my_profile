@@ -1,0 +1,15 @@
+---
+import { techGroups } from "../../lib/portfolio";
+---
+<div class="techGrid">
+      {techGroups.map((group) => (
+        <article class="techGroup">
+          <h3>{group.title}</h3>
+          <div class="pillList">
+            {group.items.map((item) => (
+              <span>{item}</span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>

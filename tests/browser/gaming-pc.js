@@ -14,7 +14,7 @@ async page=>{
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
    p.on('console',m=>{if(m.type()==='error'&&/shader|WebGLProgram|mergeGeometries/i.test(m.text()))errors.push(m.text());});
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
-   await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.locator('.worldGuide>summary').click();
    const specs=await p.locator('.guidePCSpecs').innerText();
    for(const value of ['Ryzen 7 5700X','RTX 3070 Ti','32 GB','1 TB'])if(!specs.includes(value))throw Error('missing PC specification '+value);
@@ -64,7 +64,7 @@ async page=>{
    sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x:16.15,z:25}));
    window.__THREE_DEVTOOLS__=new EventTarget();window.__pcBike={};window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__pcBike.scene=e.detail;});
   });
-  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
   await p.getByRole('button',{name:'自転車に乗る',exact:true}).click();await p.getByRole('button',{name:'自転車を降りる',exact:true}).waitFor({timeout:20000});
   await p.locator('.worldGuide>summary').click();await p.getByRole('button',{name:/ゲーミングPCを見に行く/}).click();
   await p.waitForFunction(()=>{const p=window.__pcBike.scene.children.find(o=>o.getObjectByName('Hips')).position;return Math.hypot(p.x-11.8,p.z+6.6)<1;},null,{timeout:40000});

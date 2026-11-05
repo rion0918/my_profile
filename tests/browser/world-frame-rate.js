@@ -22,9 +22,9 @@ async page=>{
      }
     });
    },{hour});
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);
+   const p=await c.newPage();await p.bringToFront();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);
    await client.send('Emulation.setCPUThrottlingRate',{rate:cpu});
-   await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+   await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption(quality);await p.getByLabel('画質・BGM設定').click();
    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:'露天風呂へ歩く ↗',exact:true}).click();
    await p.waitForTimeout(1000);

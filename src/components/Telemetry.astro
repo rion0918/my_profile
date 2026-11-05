@@ -1,0 +1,20 @@
+<script>
+  import { inject, pageview } from "@vercel/analytics";
+  import { injectSpeedInsights } from "@vercel/speed-insights";
+
+  let insights: ReturnType<typeof injectSpeedInsights>;
+  let trackedPath: string | undefined;
+  document.addEventListener("astro:page-load", () => {
+    const query = new URLSearchParams(location.search);
+    if (location.pathname === "/" && (query.get("mode") === "world" || query.has("detail"))) return;
+    if (trackedPath === location.pathname) return;
+    trackedPath = location.pathname;
+    // Static file generation uses .html internally; report the clean URL that
+    // the visitor sees, once after each ClientRouter navigation completes.
+    const route = location.pathname.startsWith("/projects/") ? "/projects/[slug]" : location.pathname;
+    inject({ framework: "astro", disableAutoTrack: true });
+    pageview({ path: location.pathname, route });
+    if (insights) insights.setRoute(route);
+    else insights = injectSpeedInsights({ framework: "astro", route });
+  });
+</script>

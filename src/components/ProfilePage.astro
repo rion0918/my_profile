@@ -1,0 +1,100 @@
+---
+import { socials } from "../../lib/portfolio";
+import AboutContent from "./AboutContent.astro";
+import TechContent from "./TechContent.astro";
+import CareerContent from "./CareerContent.astro";
+import SocialContent from "./SocialContent.astro";
+import ProductList from "./ProductList.astro";
+import ModeBar from "./ModeBar.astro";
+import WorldPreview from "./WorldPreview.astro";
+import { Image } from "astro:assets";
+import avatar from "../../public/images/33CEE35D-5EBF-4A83-BAC5-3669ACB35CB2.JPG";
+const sections = [
+  ["01", "About", "#about"],
+  ["02", "Tech Stack", "#tech"],
+  ["03", "Career", "#career"],
+  ["04", "Social", "#social"],
+  ["05", "Products", "#products"],
+];
+
+---
+
+      <ModeBar />
+      <main>
+        <aside class="sideIndex" aria-label="ページ内ナビゲーション">
+          {sections.map(([number, label, href]) => (
+            <a href={href}>
+              <span>{number}</span>
+              {label}
+            </a>
+          ))}
+        </aside>
+
+        <div class="pageShell">
+          <header class="profileHeader" id="top">
+            <a class="avatar" href="#top" aria-label="ページトップ">
+              <Image
+                src={avatar} widths={[104, 208, 312]} sizes="104px" width={312} format="webp" quality={85} loading="eager" fetchpriority="high"
+                alt="橋本怜苑のプロフィール写真"
+              />
+            </a>
+            <div class="identity">
+              <p class="jpName">橋本怜苑</p>
+              <h1>Rion Hashimoto</h1>
+              <p class="role">学生エンジニア</p>
+            </div>
+            <nav aria-label="外部リンク">
+              {socials.map((social) => (
+                <a
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {social.label}
+                </a>
+              ))}
+            </nav>
+          </header>
+
+          <WorldPreview />
+
+          <section class="section about" id="about" aria-label="About">
+            <div class="sectionHead">
+              <span>01</span>
+              <h2>About</h2>
+            </div>
+            <AboutContent />
+          </section>
+
+          <section class="section" id="tech" aria-label="Tech Stack">
+            <div class="sectionHead">
+              <span>02</span>
+              <h2>Tech Stack</h2>
+            </div>
+            <TechContent />
+          </section>
+
+          <section class="section" id="career" aria-label="Career">
+            <div class="sectionHead">
+              <span>03</span>
+              <h2>Career</h2>
+            </div>
+            <CareerContent />
+          </section>
+
+          <section class="section social" id="social" aria-label="Social">
+            <div class="sectionHead">
+              <span>04</span>
+              <h2>Social</h2>
+            </div>
+            <SocialContent />
+          </section>
+          <section class="section" id="products" aria-label="Products">
+            <div class="sectionHead">
+              <span>05</span>
+              <h2>Products</h2>
+            </div>
+            <ProductList />
+          </section>
+        </div>
+      </main>

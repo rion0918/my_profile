@@ -4,7 +4,7 @@ async(page)=>{
  for(const [id,name,x,z] of halls){
   const c=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});try{
    await c.addInitScript(({x,z})=>{sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x,z:z+3}));},{x,z});
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
    if(await p.locator('.entryLabel').count()||await p.getByRole('button',{name:/に入る（入口へ歩く）/}).count())throw Error('entry prompt remains near '+id);
    const sign=p.locator('.buildingLabel').filter({hasText:name});await sign.click();await p.getByRole('dialog').waitFor({state:'visible'});
    if(await p.locator('#detail-title').innerText()!==name)throw Error('hall sign opens the wrong exhibit '+id);
@@ -18,7 +18,7 @@ async(page)=>{
  }
  const c=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});try{
   await c.addInitScript(()=>{sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x:16.15,z:25}));});
-  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
+  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
   await p.getByRole('button',{name:'自転車に乗る',exact:true}).click();await p.getByRole('button',{name:'自転車を降りる',exact:true}).waitFor({state:'visible',timeout:15000});
   await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:'Zenn館へ歩く',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible',timeout:45000});
   if(await p.locator('#detail-title').innerText()!=='Zenn館')throw Error('cycling entry failed');

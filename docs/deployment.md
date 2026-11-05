@@ -1,36 +1,46 @@
 # Vercelへの公開
 
-既存のVercelプロジェクト`my-profile`はGitHubの`rion0918/my_profile`と接続されている。`main`へのpushで本番を更新する。
+既存のVercelプロジェクト `my-profile` とカスタムドメイン `riomaru.jp` を継続利用する。この移行作業ではpush・デプロイ・ドメイン変更を行わない。既存のGit連携では `main` へのpushが本番更新につながるため、公開時は先に別ブランチのPreviewで確認する。
 
-公開URL: https://my-profile-sand-omega.vercel.app/
+`vercel.json` は Framework Preset `Astro`、Install Command `npm ci --include=dev`、Build Command `npm run build`、Output Directory `dist` を指定する。Astroは `output: "static"`、`build.format: "file"` で生成する。アダプター・SSR・Functionsは不要。`cleanUrls: true` で `/profile`・`/projects/yoin`・`/world` などの拡張子なしURLを維持する。`public/_headers` と同じHTTP保護ヘッダーをVercelの全パスへ適用する。
 
-`vercel.json`でnpmのロックファイルから依存を導入し、`npm run build`の結果の`out/`だけを配信する。Framework Presetは`Other`に固定し、HTMLのCSPを追加した静的ファイルをそのまま使う。`cleanUrls`で`/profile`・`/projects/yoin`など既存の拡張子なしURLを維持する。`public/_headers`と同じ保護ヘッダーは、Vercel側の`headers`設定で全パスに適用する。
+Astro・Sharpに対応するNode.js 24をVercelプロジェクトのNode.js Versionに設定する。最小要件は `package.json` の `>=22.23.4`。インストール元は `package-lock.json` に統一し、旧Next.jsの `pnpm-lock.yaml` は削除した。
 
-トップページは通常表示。3Dで使う `world-map.json` も `force-static` のGET Route Handlerから `out/` へ生成する静的ファイルで、実行時のAPIサーバーは不要。地図取得と3Dプログラムの先読みは通常表示後に行う。[アーキテクチャと検証基準](architecture.md)も参照する。
+トップは通常表示で、Reactや3D素材は自動読込しない。`world-map.json` はAstroの静的エンドポイントからビルド時に `dist/` へ生成する。旧 `/?mode=world`・`/?detail=...` はクライアントルーターで `/world` に移す。[アーキテクチャ](architecture.md) と [移行の検証結果](astro-migration.md) を参照。
 
-公開前:
+公開前のローカル確認:
 
 ```sh
+npm ci --include=dev
+npm run security:audit
 npm test
 npm run typecheck
 npm run build
+node scripts/verify-static-build.mjs
 git diff --check
+node scripts/preview-static.mjs
 ```
 
-GitHub上のVercelステータスが対象コミットで成功した後、実際の公開先を確認する:
+別ターミナルでHTTPヘッダーと静的出力を確認する:
 
 ```sh
-node scripts/verify-deployment.mjs https://my-profile-sand-omega.vercel.app
+node scripts/verify-deployment.mjs http://localhost:3001
 ```
 
-検証は8ページと未存在URL、各ページのHTTP保護ヘッダー・インラインスクリプトのCSPハッシュ、JS・音声・モデル・作品画像を確認する。ブラウザでは3Dの読み込み、ツアー、スマホのフリック移動、通常表示を確認する。
+`tests/browser/*.js` はPlaywright CLIの `run-code --filename` に渡すブラウザ検証関数。静的出力をポート3001で配信してから実行する。検証用のAPIサーバーや本番へのデータ書き込みは必要ない。
 
-ローカルの検証画像・ログ・出力物はGitから除外する。公開されるのは静的出力だけで、検証スクリプト・テスト・ソース全体をWeb配信する構成にはしない。
+公開するときは、既存プロジェクトのFramework・Build・Outputのダッシュボード上の古い上書き設定が `vercel.json` と矛盾していないことを確認する。承認されたコミットをPreviewへ反映し、通常本文、旧URL、3D、CSP、WASM、BGM、タッチ、Analytics/Speed Insightsを確認してから本番へ反映する。既存のカスタムドメインは付け替えない。公開後は実際のURLで検証する:
 
-## Web Analytics
+```sh
+node scripts/verify-deployment.mjs https://riomaru.jp
+```
 
-`@vercel/analytics/next` の `Analytics` を共通レイアウトに設置し、3D・通常表示・個別ページの閲覧とクライアント側のページ遷移を計測する。Vercel プロジェクト `my-profile` の Web Analytics は有効化済み。コードのデプロイ後に [Analytics](https://vercel.com/rion0918s-projects/my-profile/analytics) で集計を確認できる。
+静的ファイルを配信するため、公開物は保護処理済み `dist/` のみ。`out/`・`.next/` は移行前のローカル生成物で、公開しない。ソース・テスト・検証画像・ログも公開しない。
 
-ローカルの静的プレビューには Vercel の計測エンドポイントがない。`tests/browser/analytics.js` は本番で配信される計測スクリプトをローカルで動かし、送信を捕捉して通常表示→3D→通常表示の計測、二重読み込み、CSP 違反を PC・スマホ幅で検証する。本番へ検証用の閲覧データは送らない。Playwright CLI の `run-code --filename` で使い、`out/` をポート 3001 で配信した状態で実行する。
+## Analytics / Speed Insights
 
-実装の参照: [Vercel Web Analytics の導入](https://vercel.com/docs/analytics/quickstart)、[公式 SDK の設定](https://vercel.com/docs/analytics/package)。
+`src/components/Telemetry.astro` はReactに依存しないVercel SDKを使用する。`astro:page-load` で実際のclean URLを読み、ページ遷移ごとに1回だけpageviewを送る。SDKの自動追跡は無効化し、同じパス内の館の詳細開閉では重複計測しない。Speed Insightsは同じスクリプトを維持したままrouteを更新する。送信先は同一オリジンの `/_vercel/` を使用し、CSPへ外部許可を追加しない。
+
+ローカルにはVercelの計測エンドポイントがないため、通常のプレビューでは該当スクリプトが404になる。`tests/browser/analytics.js` は実際のAnalyticsスクリプトをローカルで動かし、送信を捕捉してPC・スマホ幅で重複とCSP違反を検証する。本番へ検証用ページビューは送らない。本番のSpeed Insights集計と実ユーザーのINPは公開後に確認する。
+
+参照: [Astro on Vercel](https://vercel.com/docs/frameworks/frontend/astro)、[Web Analytics SDK](https://vercel.com/docs/analytics/package)、[Speed Insights](https://vercel.com/docs/speed-insights/quickstart)。

@@ -12,7 +12,7 @@ async page=>{
    const current=p.getByRole('region',{name:'現在の立場',exact:true});await current.waitFor({state:'visible',timeout:2500});
    const facts=await current.innerText();if(!facts.includes('神戸電子専門学校')||!facts.includes('DMM.com')||!facts.includes('27卒')||!facts.includes('内定'))throw Error('current position is incomplete');
    const cb=await current.boundingBox();if(cb.y<0||cb.y+cb.height>height)throw Error('current position not visible on entry '+JSON.stringify({width,height,cb}));
-   const timeline=await p.getByRole('list',{name:'経歴',exact:true}).locator('li').allTextContents();
+   const timeline=await p.getByRole('list',{name:'タイムライン',exact:true}).locator('li').allTextContents();
    if(timeline.length!==3||!timeline[0].includes('上宮')||!timeline[1].includes('神戸電子')||!timeline[2].includes('内定'))throw Error('career timeline lost existing facts');
    await p.screenshot({path:`output/playwright/hall-exhibit-career-${width}.png`});
    for(const [id,name,featureCount] of [['yoin','Yoin',2],['pop-reminder','ふわっと。',3]]){

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 
 const origin = new URL(process.argv[2]);
-const pages = ['/', '/profile', '/about', '/career', '/social', '/tech', '/projects/yoin', '/projects/pop-reminder', '/deployment-missing-page'];
+const pages = ['/', '/world', '/profile', '/about', '/career', '/social', '/tech', '/projects/yoin', '/projects/pop-reminder', '/deployment-missing-page'];
 const headers = {
   'content-security-policy': "frame-ancestors 'none'",
   'x-frame-options': 'DENY',
@@ -24,7 +24,7 @@ for (const path of pages) {
     if (external) { assert.equal(new URL(external, origin).origin, origin.origin); assets.add(external); }
     else assert.ok(policy.includes(`'sha256-${createHash('sha256').update(source).digest('base64')}'`), `${path}: hydration script blocked by its CSP`);
   }
-  if (path === '/') assert.ok(html.includes('id="career"') && html.includes('id="products"') && html.includes('href="/?mode=world"'), 'readable portfolio and 3D entry are not published');
+  if (path === '/') assert.ok(html.includes('id="career"') && html.includes('id="products"') && html.includes('href="/world"'), 'readable portfolio and 3D entry are not published');
   if (path === '/projects/pop-reminder') assert.ok(html.includes('ふわっと。'), 'product display name is outdated');
   console.log(`PASS ${response.status} ${path}: headers and HTML scripts`);
 }

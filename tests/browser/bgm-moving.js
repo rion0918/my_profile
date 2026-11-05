@@ -1,6 +1,6 @@
 async(page)=>{
  const c=await page.context().browser().newContext({viewport:{width:1440,height:900}});try{
-  const p=await c.newPage();await p.goto('http://localhost:3001');await p.locator('.worldLoading').waitFor({state:'hidden'});
+  const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});
   await p.getByRole('region',{name:/^街を探索/}).focus();await p.keyboard.down('w');await p.keyboard.down('d');await p.waitForTimeout(200);
   await p.getByRole('button',{name:'BGMを再生',exact:true}).click();await p.waitForTimeout(800);
   await p.keyboard.up('w');await p.keyboard.up('d');

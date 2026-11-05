@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+import WorldApp from "../../components/world/WorldApp";
+import "../styles/content.css";
+import "../styles/world.css";
+---
+<Layout>
+  <WorldApp client:only="react" transition:persist="portfolio-world">
+    <div slot="fallback" class="worldLoading" role="status">
+      街を準備しています
+      <a class="fallbackLink" href="/profile">通常表示でプロフィールと作品を読む ↗</a>
+    </div>
+  </WorldApp>
+  <noscript><p class="noscriptNotice">3Dの探索にはJavaScriptが必要です。<a href="/profile">通常表示でプロフィールと作品を読む</a></p></noscript>
+</Layout>

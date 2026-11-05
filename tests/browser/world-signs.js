@@ -9,7 +9,7 @@ async page=>{
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__signQA.scene=e.detail;});
    });
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
-   await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+   await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    const inspect=()=>p.evaluate(()=>{
     const scene=window.__signQA.scene,words=[],bathLabels=new Set();let boards=0,screens=0;
     scene.traverse(o=>{

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { secureStaticExport } from '../scripts/secure-static-export.mjs';
 
-test('static pages allow only their own inline scripts, including exact Unicode and whitespace', async () => {
+test('static pages allow exact build-owned inline scripts across client navigation', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'portfolio-security-'));
   const scripts = ['self.__next_f=[];', 'self.__next_f.push("橋本怜苑");\n'];
   try {
@@ -25,7 +25,7 @@ test('static pages allow only their own inline scripts, including exact Unicode 
       const expected = createHash('sha256').update(scripts[i]).digest('base64');
       const other = createHash('sha256').update(scripts[1 - i]).digest('base64');
       assert.ok(policy.includes(`'sha256-${expected}'`));
-      assert.ok(!policy.includes(`'sha256-${other}'`));
+      assert.ok(policy.includes(`'sha256-${other}'`), 'client navigation must allow scripts from other generated pages');
       const scriptPolicy = policy.split(';').find(d => d.trim().startsWith('script-src '));
       assert.ok(scriptPolicy.includes("'self'"));
       assert.ok(scriptPolicy.includes("'wasm-unsafe-eval'"), 'bicycle physics remains available');

@@ -10,7 +10,7 @@ async(page)=>{
   await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
   await client.send('Emulation.setCPUThrottlingRate',{rate:4});await client.send('Network.enable');
   await client.send('Network.emulateNetworkConditions',{offline:false,latency:150,downloadThroughput:500000,uploadThroughput:125000});
-  const start=Date.now();await p.goto('http://localhost:3001');
+  const start=Date.now();await p.goto('http://localhost:3001/world');
   await p.getByRole('link',{name:'通常表示で読む ↗',exact:true}).waitFor();const readingAvailableMs=Date.now()-start;
   await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');const sceneReadyMs=Date.now()-start;
   await p.getByRole('button',{name:'自由に探索する',exact:true}).tap();

@@ -1,12 +1,14 @@
 # 3Dポートフォリオの実装・検証
 
-## 通常表示から3Dへ
+## 通常表示から3Dへ（Astro移行後）
 
-`/` は通常表示を静的HTMLで表示する。`/profile` も同じ `ProfilePage` を使う。`/?mode=world` で3Dへ切り替え、既存の `/?detail=…` は館・詳細を直接開く。詳細を閉じるときとツアー完了時は `mode=world` を残す。
+`/` と `/profile` はAstroコンポーネントの静的HTML。`/world` で既存のReact/Three.jsワールドを読み込む。旧 `/?mode=world` と `/?detail=…` は履歴を置き換えて `/world` へ移し、クエリ・ハッシュを維持する。詳細を閉じるときとツアー完了時は3Dに留まる。
 
-`WorldPreview` は通常表示の読み込み後、ブラウザの空き時間に3Dプログラム、ビルド時に生成した `world-map.json`、人物モデル、街の主要画像を先読みする。地図と全館の本文を通常表示のHTMLへ埋め込まず、館の本文は遅延ロードする `WorldApp` で組み立てる。先読みではWebGL・街の生成・音声再生を始めず、3Dへ切り替えた後に開始する。プレビューは実際の街の静止画像。通常表示から3Dへ移るときにURLと読書位置をセッション内に記録し、表示切り替えや戻る・進むで復帰する。既存の街の位置保存は変更しない。構成と性能の判断は [architecture.md](architecture.md) に記録する。
+`WorldPreview.astro` とモード切り替えのHover/Focusがあるときだけ、既存の `world-preload.ts` を動的に読み込む。地図・モデル・主要画像・WorldApp/WorldCanvasの要求を共有し、WebGL・音声・Rapierの初期化は行わない。自動アイドル先読みは廃止し、Save-Data/2Gでも先読みしない。通常表示から離れる際のURL・読書位置と、街の位置・カメラの保存形式は維持する。
 
-`tests/browser/normal-first.js` でPC・スマホの初期表示、先読み中の描画・音声停止、読書位置、履歴、詳細URL、ツアー完了、JavaScriptなしでの本文表示を確認する。3D素材の先読み後も、GPUへの初回描画準備は表示時に行う。
+Astro ClientRouterで文書を再読み込みせずに遷移する。`WorldApp` Islandは `/world` 間の遷移で永続化し、館の閉じる・戻る・進むでCanvasを作り直さない。通常本文へ移るとIslandを破棄し、既存の終了処理で描画・音声を停止する。詳しい構成、実測値、制約は [architecture.md](architecture.md) と [astro-migration.md](astro-migration.md) を参照する。
+
+`normal-first.js`、`astro-boundaries.js`、`world-history.js`、`world-mode-switch.js` で通常本文・非起動・読書位置・街の位置・詳細履歴・失敗時の導線を検証する。以降は3D構築時点の過去の設計・改修記録であり、古いフレームワーク名や保存キーはその時点の情報を表す。
 
 ## 6館に分割した時点の記録
 

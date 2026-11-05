@@ -9,7 +9,7 @@ async(page)=>{
    });
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
    await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
-   await p.goto('http://localhost:3001');
+   await p.goto('http://localhost:3001/world');
    const choice=p.getByRole('dialog',{name:'閲覧方法を選択',exact:true});await choice.waitFor({state:'visible',timeout:2500});
    const box=await choice.locator('.worldWelcome').boundingBox();if(Math.abs(box.x+box.width/2-width/2)>2||Math.abs(box.y+box.height/2-height/2)>2||box.y<0||box.y+box.height>height)throw Error('entry choice is not centered or clipped');
    if((await choice.innerText()).length>120||!await choice.getByRole('heading',{name:'橋本怜苑',exact:true}).isVisible())throw Error('entry is too wordy or identity missing');
@@ -45,8 +45,8 @@ async(page)=>{
   }finally{await c.close();}
  }
  const c=await browser.newContext({viewport:{width:320,height:568},javaScriptEnabled:false});
- try{const p=await c.newPage();await p.goto('http://localhost:3001');const choice=p.getByRole('dialog',{name:'閲覧方法を選択',exact:true});await choice.waitFor({state:'visible'});if(!await choice.getByRole('heading',{name:'橋本怜苑',exact:true}).isVisible())throw Error('identity waits for JavaScript');await choice.getByRole('link',{name:'通常表示で読む',exact:true}).click();await p.waitForURL('**/profile');if(!await p.getByRole('heading',{level:1}).isVisible())throw Error('normal display cannot be opened before 3D');results.push({withoutJavaScript:true});}finally{await c.close();}
+ try{const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.getByRole('link',{name:'通常表示でプロフィールと作品を読む',exact:true}).click();await p.waitForURL('**/profile');if(!await p.getByRole('heading',{level:1}).isVisible())throw Error('normal display cannot be opened before 3D');results.push({withoutJavaScript:true});}finally{await c.close();}
  const fallback=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
- try{await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args);};});const p=await fallback.newPage();await p.goto('http://localhost:3001');await p.getByText('この環境では3Dを表示できませんでした。',{exact:true}).waitFor({state:'attached'});const choice=p.getByRole('dialog',{name:'閲覧方法を選択',exact:true});await choice.waitFor({state:'visible',timeout:2500});await choice.getByRole('button',{name:'案内を見る',exact:true}).click();await p.getByRole('dialog',{name:'Background',exact:true}).waitFor({state:'visible'});if(await choice.count())throw Error('choice did not close for fallback tour');results.push({webglFallbackChoice:true});}finally{await fallback.close();}
+ try{await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args);};});const p=await fallback.newPage();await p.goto('http://localhost:3001/world');await p.getByText('この環境では3Dを表示できませんでした。',{exact:true}).waitFor({state:'attached'});const choice=p.getByRole('dialog',{name:'閲覧方法を選択',exact:true});await choice.waitFor({state:'visible',timeout:2500});await choice.getByRole('button',{name:'案内を見る',exact:true}).click();await p.getByRole('dialog',{name:'Background',exact:true}).waitFor({state:'visible'});if(await choice.count())throw Error('choice did not close for fallback tour');results.push({webglFallbackChoice:true});}finally{await fallback.close();}
  if(errors.length)throw Error(errors.join('\n'));return {results,errors};
 }

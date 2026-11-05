@@ -4,7 +4,7 @@ async(page)=>{
   const c=await page.context().browser().newContext({viewport:{width,height:width===390?844:900},isMobile:width===390,hasTouch:width===390});
   try{
    const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-   await p.goto('http://localhost:3001');await p.locator('.worldLoading').waitFor({state:'hidden'});
+   await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});
    await p.screenshot({path:`output/playwright/bike-initial-${width}.png`});
    const borrow=p.getByRole('button',{name:'自転車に乗る',exact:true});if(width===390)await borrow.tap();else await borrow.click();
    const off=p.getByRole('button',{name:'自転車を降りる',exact:true});await off.waitFor({state:'visible',timeout:10000});

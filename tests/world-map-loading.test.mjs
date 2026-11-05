@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { createWorldMapData } from '../lib/world-map-data.ts';
 
 test('the static map endpoint exports the canonical geometry and hall metadata', async () => {
-  const { GET, dynamic } = await import('../app/world-map.json/route.ts');
-  assert.equal(dynamic, 'force-static');
+  const { GET, prerender } = await import('../src/pages/world-map.json.ts');
+  assert.equal(prerender, true);
   const response = GET();
   assert.equal(response.status, 200);
   assert.match(response.headers.get('content-type'), /application\/json/);

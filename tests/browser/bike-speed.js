@@ -7,7 +7,7 @@ async page=>{
     sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x:19,z:25}));
     window.__THREE_DEVTOOLS__=new EventTarget();window.__bikeSpeed={};window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__bikeSpeed.scene=e.detail;});
    });
-   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor().catch(async e=>{throw Error(e.message+' '+JSON.stringify({errors,body:await p.locator('body').innerText()}));});
+   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor().catch(async e=>{throw Error(e.message+' '+JSON.stringify({errors,body:await p.locator('body').innerText()}));});
    await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption(quality);await p.getByLabel('画質・BGM設定').click();
    const pos=()=>p.evaluate(()=>window.__bikeSpeed.scene.children.find(o=>o.getObjectByName('Hips')).position.toArray());
    const distance=(a,b)=>Math.hypot(a[0]-b[0],a[2]-b[2]);

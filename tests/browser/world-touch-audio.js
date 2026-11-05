@@ -8,7 +8,7 @@ async page=>{
    HTMLMediaElement.prototype.play=function(){window.__touchAudio.plays++;return window.__touchAudio.released?Promise.resolve():Promise.reject(new DOMException('blocked startup','NotAllowedError'));};
    window.addEventListener('pointerup',()=>window.__touchAudio.released=true,{capture:true});
   });
-  const p=await c.newPage();await p.goto('http://localhost:3001');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
+  const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
   const before=await p.evaluate(()=>window.__touchAudio.plays),client=await c.newCDPSession(p);
   await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:450,id:1}]});
   await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:150,y:380,id:1}]});await p.waitForTimeout(150);

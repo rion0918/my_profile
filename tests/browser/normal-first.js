@@ -20,7 +20,8 @@ async page => {
       await p.goto('http://localhost:3001');
       if (!await p.locator('#career').isVisible() || await p.locator('.worldPage').count()) throw Error('The initial page is not the readable portfolio');
       const readingReadyMs = Date.now() - started;
-      await p.waitForFunction(() => performance.getEntriesByType('resource').some(e => e.name.endsWith('/models/rion-walker.glb') && e.responseEnd > 0));
+      await p.waitForTimeout(1200);
+      if (await p.evaluate(() => performance.getEntriesByType('resource').some(e => /WorldApp|WorldCanvas|rapier|world-map|models|textures/.test(e.name)))) throw Error('Normal display downloaded 3D resources without interest');
       const idle = await p.evaluate(() => window.__entryQA);
       if (idle.gl || idle.audio || await p.locator('.worldSurface').count()) throw Error('Reading started rendering or BGM: ' + JSON.stringify(idle));
       await p.screenshot({ path: `output/playwright/normal-first-${width}.png` });
@@ -30,7 +31,7 @@ async page => {
       await p.locator('.modeSwitch a').filter({ hasText: '3Dワールド' }).click();
       await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       const switchReadyMs = Date.now() - switchStart;
-      if (!p.url().includes('mode=world') || await p.locator('.worldEntry').count() || await p.evaluate(() => performance.timeOrigin) !== timeOrigin) throw Error('Entering 3D reloaded the page or showed the old entry choice');
+      if (new URL(p.url()).pathname !== '/world' || await p.locator('.worldEntry').count() || await p.evaluate(() => performance.timeOrigin) !== timeOrigin) throw Error('Entering 3D reloaded the page or showed the old entry choice');
       await p.locator('.modeSwitch a').filter({ hasText: '通常表示' }).click();
       await p.locator('#career').waitFor();
       await p.waitForFunction(y => Math.abs(scrollY - y) < 3, readY);
@@ -42,14 +43,14 @@ async page => {
       await p.getByRole('dialog', { name: 'Yoin館', exact: true }).waitFor();
       await p.getByRole('button', { name: '詳細を閉じる', exact: true }).click();
       await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
-      if (!p.url().includes('mode=world') || !await p.locator('.worldPage').isVisible()) throw Error('Closing a direct detail left the world');
+      if (new URL(p.url()).pathname !== '/world' || !await p.locator('.worldPage').isVisible()) throw Error('Closing a direct detail left the world');
       await p.locator('.worldGuide > summary').click(); await p.locator('.guideTour').click();
       for (let index = 0; index < 4; index++) {
         await p.locator('.worldPage[data-tour-phase="reading"]').waitFor();
         await p.locator('.tourFooter .tourNext').click();
       }
       await p.locator('.worldPage[data-tour-phase="complete"]').waitFor();
-      if (p.url().includes('detail=') || !p.url().includes('mode=world')) throw Error('Tour completion lost the world mode');
+      if (p.url().includes('detail=') || new URL(p.url()).pathname !== '/world') throw Error('Tour completion lost the world mode');
       await p.locator('.tourCompleteFooter .tourNext').click();
       await p.goto('http://localhost:3001/profile');
       if (!await p.locator('#career').isVisible()) throw Error('The existing profile URL broke');

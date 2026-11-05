@@ -23,15 +23,22 @@ async function inspectPublishableFiles(directory) {
 
 export async function secureStaticExport(directory) {
   const pages = await inspectPublishableFiles(directory);
-  if (!pages.length) throw new Error('No exported HTML pages found. Run next build first.');
-  for (const path of pages) {
-    const html = (await readFile(path, 'utf8')).replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*"\s*\/>/g, '');
-    const hashes = new Set();
+  if (!pages.length) throw new Error('No exported HTML pages found. Run astro build first.');
+  // ClientRouter keeps one document alive across routes. Its initial policy must
+  // allow the exact scripts generated for every page in this build.
+  const hashes = new Set();
+  const documents = await Promise.all(pages.map(async path => ({
+    path,
+    html: (await readFile(path, 'utf8')).replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*"[^>]*>/g, ''),
+  })));
+  for (const { html } of documents) {
     for (const [, attributes, source] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
       if (!/\bsrc\s*=/i.test(attributes)) {
         hashes.add(`'sha256-${createHash('sha256').update(source).digest('base64')}'`);
       }
     }
+  }
+  for (const { path, html } of documents) {
     const policy = [
       "default-src 'none'",
       `script-src 'self' 'wasm-unsafe-eval' ${[...hashes].sort().join(' ')}`,
@@ -48,9 +55,9 @@ export async function secureStaticExport(directory) {
       "frame-src 'none'",
     ].join('; ');
     // Keep charset first and enforce the policy before any script or resource tag.
-    const head = /<head>(?:<meta charset="utf-8"\s*\/>)?/i;
+    const head = /<head>(?:\s*<meta charset="utf-8"\s*\/?>)?/i;
     if (!head.test(html)) throw new Error(`Missing head in ${path}`);
-    const secured = html.replace(head, match => `${match}<meta http-equiv="Content-Security-Policy" content="${policy}"/>`);
+    const secured = html.replace(head, match => `${match}<meta http-equiv="Content-Security-Policy" content="${policy}" data-astro-transition-persist="portfolio-csp"/>`);
     await writeFile(path, secured);
   }
   return pages.length;
@@ -61,7 +68,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     await inspectPublishableFiles(resolve('public'));
     console.log('Public assets passed security inspection.');
   } else {
-    const count = await secureStaticExport(resolve('out'));
+    const count = await secureStaticExport(resolve('dist'));
     console.log(`Security policy added to ${count} static HTML pages.`);
   }
 }

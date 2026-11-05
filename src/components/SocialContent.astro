@@ -1,0 +1,16 @@
+---
+import { socials } from "../../lib/portfolio";
+---
+<div class="socialList">
+      {socials.map((social) => (
+        <a
+          id={social.label.toLowerCase()}
+          href={social.href}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span>{social.label}</span>
+          <small>{social.display}</small>
+        </a>
+      ))}
+    </div>

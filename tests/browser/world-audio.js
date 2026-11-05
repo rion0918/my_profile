@@ -4,7 +4,7 @@ async(page)=>{
   const c=await page.context().browser().newContext({viewport:{width,height:width===390?844:900},isMobile:width===390,hasTouch:width===390});
   try{
    const p=await c.newPage(),errors=[],requests=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(r.url().includes('/audio/'))requests.push(r.url())});
-   await p.goto('http://localhost:3001');await p.locator('.worldLoading').waitFor({state:'hidden'});
+   await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});
    const toggle=p.getByRole('button',{name:'BGMを再生',exact:true}),audio=p.locator('audio');
    if(requests.length||await audio.getAttribute('src'))throw Error('audio downloaded before consent');
    await p.screenshot({path:`output/playwright/bgm-initial-${width}.png`});
