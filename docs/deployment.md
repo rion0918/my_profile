@@ -4,7 +4,7 @@
 
 `vercel.json` は Framework Preset `Astro`、Install Command `npm ci --include=dev`、Build Command `npm run build`、Output Directory `dist` を指定する。Astroは `output: "static"`、`build.format: "file"` で生成する。アダプター・SSR・Functionsは不要。`cleanUrls: true` で `/profile`・`/projects/yoin`・`/world` などの拡張子なしURLを維持する。`public/_headers` と同じHTTP保護ヘッダーをVercelの全パスへ適用する。
 
-Astro・Sharpに対応するNode.js 24をVercelプロジェクトのNode.js Versionに設定する。最小要件は `package.json` の `>=22.23.4`。インストール元は `package-lock.json` に統一し、旧Next.jsの `pnpm-lock.yaml` は削除した。
+Astro・Sharpに対応するNode.js 24をVercelプロジェクトのNode.js Versionに設定し、`package.json` の `engines.node` も `24.x` に固定する。これによりVercelのProject Settingsがエンジン指定に上書きされないようにする。インストール元は `package-lock.json` に統一し、旧Next.jsの `pnpm-lock.yaml` は削除した。
 
 トップは通常表示で、Reactや3D素材は自動読込しない。`world-map.json` はAstroの静的エンドポイントからビルド時に `dist/` へ生成する。旧 `/?mode=world`・`/?detail=...` はクライアントルーターで `/world` に移す。[アーキテクチャ](architecture.md) と [移行の検証結果](astro-migration.md) を参照。
 

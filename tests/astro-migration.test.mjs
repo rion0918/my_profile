@@ -14,6 +14,7 @@ test('Astro builds static pages and hydrates only the world island', async () =>
   const pkg = JSON.parse(await read('package.json'));
   assert.ok(pkg.dependencies.astro);
   assert.ok(!pkg.dependencies.next);
+  assert.equal(pkg.engines.node, '24.x');
 });
 
 test('normal page navigation loads world prefetch code only on explicit interest', async () => {
