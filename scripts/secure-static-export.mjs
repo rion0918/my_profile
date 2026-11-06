@@ -50,9 +50,9 @@ export async function secureStaticExport(directory) {
       "connect-src 'self'",
       "worker-src 'none'",
       "base-uri 'none'",
-      "form-action 'none'",
+      "form-action https://docs.google.com",
       "object-src 'none'",
-      "frame-src 'none'",
+      "frame-src https://docs.google.com",
     ].join('; ');
     // Keep charset first and enforce the policy before any script or resource tag.
     const head = /<head>(?:\s*<meta charset="utf-8"\s*\/?>)?/i;

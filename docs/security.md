@@ -1,17 +1,17 @@
 # 公開サイトのセキュリティ
 
-このサイトは Astro の静的生成を使う。認証・投稿・ファイルアップロード・Server Actions・API・Cookie は使用しない。公開物は `npm run build` で生成した `dist/` のみとし、リポジトリ全体や開発サーバーを公開しない。
+このサイトは Astro の静的生成を使う。問い合わせフォームは Google フォームを iframe で埋め込み、回答を Google が受け付ける。認証・ファイルアップロード・Server Actions・独自 API・Cookie は使用しない。公開物は `npm run build` で生成した `dist/` のみとし、リポジトリ全体や開発サーバーを公開しない。
 
 ## 実装した保護
 
 - Next.jsへの依存を削除し、Astro・React integrationをnpmのロックファイルで固定する。
-- ビルドの最後に `scripts/secure-static-export.mjs` を実行し、全 HTML（404 を含む）に CSP を追加する。ビルド内の全HTMLのインラインスクリプトの SHA-256 を計算し、未登録のインラインスクリプト・イベント属性・外部スクリプト・外部通信・フォーム送信・プラグイン・フレーム読み込み・base タグによる URL の変更を制限する。
+- ビルドの最後に `scripts/secure-static-export.mjs` を実行し、全 HTML（404 を含む）に CSP を追加する。ビルド内の全HTMLのインラインスクリプトの SHA-256 を計算し、未登録のインラインスクリプト・イベント属性・外部スクリプト・外部通信・プラグイン・base タグによる URL の変更を制限する。外部フォーム送信と iframe は Google フォームの `https://docs.google.com` だけを許可する。
 - 自転車の Rapier に必要な WebAssembly のみ `wasm-unsafe-eval` で許可する。JavaScript の `unsafe-eval` と `unsafe-inline` は許可しない。`style-src` の `unsafe-inline` は、既存の React・Three.js 周辺の動的スタイルに必要なため残す。画像の `data:`・`blob:` はローカルの画像・モデル用。
 - Vercel Web Analytics は共通レイアウトで読み込み、ページ閲覧を計測する。本番のスクリプトと送信先は同一オリジンの `/_vercel/insights/*`（Vercel がビルド設定で指定した場合はその専用パス）を使うため、CSP に外部ドメインや追加のスクリプト実行許可は加えない。カスタムイベントや利用者 ID の送信は実装しない。
 - リファラーを HTML と配信ヘッダーの両方で `no-referrer` にする。既存の別タブリンクには `noreferrer` または `noopener` が付いている。
 - `.env*`・秘密鍵・`.npmrc`・`.netrc`・`.vercel/` を Git の対象から除外する。ビルド前の `public/` とビルド後の `dist/` の両方で、これらの設定ファイル・秘密鍵・ソースマップ・`.git` の混入を検査し、検出したらビルドを失敗させる。シンボリックリンクも、公開ディレクトリ外のファイルがコピー・公開されるのを防ぐため拒否する。既にコミットされた秘密情報を取り消す機能や、任意のファイル内容からすべての秘密情報を見つける機能ではない。
 
-ClientRouterでは文書の寿命をまたいでCSPを緩められないため、全ルートが同じビルド所有ハッシュの集合を使う。`data-astro-transition-persist` でポリシーを保持し、遷移先のmetaにも同じ内容を適用する。任意のインライン実行や外部ホストは許可しない。
+ClientRouterでは文書の寿命をまたいでCSPを緩められないため、全ルートが同じビルド所有ハッシュの集合を使う。`data-astro-transition-persist` でポリシーを保持し、遷移先のmetaにも同じ内容を適用する。任意のインライン実行や外部ホストは許可せず、フォーム送信と iframe には Google フォームの HTTPS オリジンだけを許可する。
 
 ## 配信ヘッダー
 
@@ -43,7 +43,7 @@ npm run build
 
 `.github/dependabot.yml` は npm 系の依存と GitHub Actions の更新候補を週次で確認する。自動マージは行わず、更新後も検証する。これらはファイルを GitHub のデフォルトブランチに反映後に有効になる。リポジトリ設定による Actions の無効化や、必須チェックの設定まではこのファイルでは変更しない。
 
-2026-10-25 時点で 旧構成の npm・pnpm の監査はともに既知の脆弱性 0 件。公開サイトの各ページ・404・JS・画像・音声・モデルの配信ヘッダーと CSP も確認した。将来の脆弱性まで保証するものではないため、依存更新時と公開前に再監査する。新しくフォーム・認証・API・外部サービスを追加する場合は、必要な入力検証・権限管理と CSP を別途見直す。
+2026-10-25 時点で 旧構成の npm・pnpm の監査はともに既知の脆弱性 0 件。公開サイトの各ページ・404・JS・画像・音声・モデルの配信ヘッダーと CSP も確認した。将来の脆弱性まで保証するものではないため、依存更新時と公開前に再監査する。別のフォーム送信先・認証・API・外部サービスを追加する場合は、必要な入力検証・権限管理と CSP を別途見直す。
 
 仕様の参照: [Astroの静的エンドポイント](https://docs.astro.build/en/guides/endpoints/)、[CSP の script-src](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src)、[frame-ancestors](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)、[Cloudflare Pages のヘッダー設定](https://developers.cloudflare.com/pages/configuration/headers/)。
 

@@ -1,0 +1,20 @@
+---
+const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfFQ_8CB_A13XxTq1G7VGVpJ3BggbiJxdHN8--r1TL5TuQyoQ/viewform";
+---
+
+<div class="contactContent">
+  <p class="contactLead">お仕事のご相談やご質問など、お気軽にお問い合わせください。</p>
+  <p class="contactNote">送信内容はGoogleフォームで受け付けられ、問い合わせへの返信に使用します。</p>
+  <div class="contactForm">
+    <iframe
+      class="contactFormEmbed"
+      src={`${formUrl}?embedded=true`}
+      title="橋本怜苑へのお問い合わせフォーム"
+      width="640"
+      height="878"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    ></iframe>
+    <a class="contactFormLink" href={formUrl} target="_blank" rel="noreferrer">フォームを別のタブで開く ↗</a>
+  </div>
+</div>

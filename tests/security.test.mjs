@@ -33,8 +33,9 @@ test('static pages allow exact build-owned inline scripts across client navigati
       assert.ok(!scriptPolicy.includes("'unsafe-eval'"));
       assert.ok(policy.includes("base-uri 'none'"));
       assert.ok(policy.includes("object-src 'none'"));
-      assert.ok(policy.includes("form-action 'none'"));
+      assert.ok(policy.includes("form-action https://docs.google.com"));
       assert.ok(policy.includes("connect-src 'self'"));
+      assert.ok(policy.includes("frame-src https://docs.google.com"));
       assert.ok(!policy.includes('frame-ancestors'), 'frame protection belongs in HTTP headers');
       assert.ok(html.includes(`<script>${scripts[i]}</script>`), 'hydration scripts stay intact');
     }

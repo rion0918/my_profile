@@ -4,6 +4,7 @@ import AboutContent from "./AboutContent.astro";
 import TechContent from "./TechContent.astro";
 import CareerContent from "./CareerContent.astro";
 import SocialContent from "./SocialContent.astro";
+import ContactContent from "./ContactContent.astro";
 import ProductList from "./ProductList.astro";
 import ModeBar from "./ModeBar.astro";
 import WorldPreview from "./WorldPreview.astro";
@@ -15,6 +16,7 @@ const sections = [
   ["03", "Career", "#career"],
   ["04", "Social", "#social"],
   ["05", "Products", "#products"],
+  ["06", "Contact", "#contact"],
 ];
 
 ---
@@ -95,6 +97,13 @@ const sections = [
               <h2>Products</h2>
             </div>
             <ProductList />
+          </section>
+          <section class="section" id="contact" aria-label="Contact">
+            <div class="sectionHead">
+              <span>06</span>
+              <h2>Contact</h2>
+            </div>
+            <ContactContent />
           </section>
         </div>
       </main>

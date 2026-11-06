@@ -394,6 +394,54 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.contactContent {
+  display: grid;
+  gap: 24px;
+}
+
+.contactLead {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 650;
+  line-height: 1.8;
+}
+
+.contactForm {
+  display: grid;
+  gap: 12px;
+}
+
+.contactFormEmbed {
+  display: block;
+  width: 100%;
+  height: 940px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.contactFormLink {
+  justify-self: start;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.contactNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+  .contactFormEmbed {
+    height: 1050px;
+  }
+}
+
 @media (max-width: 1180px) {
   .sideIndex {
     display: none;
