@@ -14,6 +14,7 @@ function prefetch(event: Event) {
 }
 
 document.addEventListener("pointerover", prefetch, { passive: true });
+document.addEventListener("pointerdown", prefetch, { passive: true });
 document.addEventListener("focusin", prefetch);
 document.addEventListener("click", event => {
   if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && worldLink(event)) enterWorld();

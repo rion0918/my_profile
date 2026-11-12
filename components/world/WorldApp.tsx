@@ -21,6 +21,7 @@ export default function WorldApp() {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let active = true;
+    void import("./WorldCanvas").catch(() => {});
     loadWorldMap().then(data => { if (active) setMap(data); })
       .catch(() => { if (active) setFailed(true); });
     return () => { active = false; };

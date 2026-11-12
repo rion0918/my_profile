@@ -42,7 +42,7 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
     if (!geometries.has(key)) geometries.set(key, new RoundedBoxGeometry(width, height, depth, 1, Math.min(radius, width / 4, height / 4, depth / 4)));
     return mesh(parent, geometries.get(key)!, material, x, y, z);
   };
-  const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, radius: number, height: number, material: THREE.Material, segments = 40) => {
+  const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, radius: number, height: number, material: THREE.Material, segments = 24) => {
     const key = `cylinder-${radius},${height},${segments}`;
     if (!geometries.has(key)) geometries.set(key, new THREE.CylinderGeometry(radius, radius, height, segments));
     return mesh(parent, geometries.get(key)!, material, x, y, z);
@@ -63,7 +63,7 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
     s.quadraticCurveTo(x, -y, x, -y - radius); s.lineTo(x, y + radius); s.quadraticCurveTo(x, y, x + radius, y); return s;
   };
   const slab = (shape: THREE.Shape, height: number, y: number, material: THREE.Material) => {
-    const geometry = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false, curveSegments: 24 });
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false, curveSegments: 16 });
     geometry.rotateX(-Math.PI / 2); return mesh(structure, geometry, material, 0, y, 0);
   };
   const roofRing = (width: number, depth: number, radius: number, y: number, holeWidth: number, holeDepth: number, material: THREE.Material) => {
@@ -213,13 +213,13 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
       box(interior, x -.03, y -.035, -d / 2 + .23, .34, .018, .01, light, .004);
     }
     for (const [x, y, r] of [[-.76, 1.71, .23], [.76, 1.9, .18], [.37, 1.48, .13]]) {
-      const bubble = mesh(glazing, new THREE.SphereGeometry(r, 24, 16), glass, x, y, -.08); bubble.renderOrder = 2;
+      const bubble = mesh(glazing, new THREE.SphereGeometry(r, 16, 12), glass, x, y, -.08); bubble.renderOrder = 2;
       cylinder(interior, x, (2.48 + y + r) / 2, -.08, .007, 2.48 - y - r, metal, 8);
     }
     for (const [x, y, z, r] of [[-.23, 2.78, -.02, .31], [.28, 2.97, -.12, .19], [-.25, 3.2, -.08, .13]]) {
-      const bubble = mesh(glazing, new THREE.SphereGeometry(r, 32, 20), glass, x, y, z); bubble.renderOrder = 2;
-      const rim = mesh(structure, new THREE.TorusGeometry(r * .98, .007, 5, 48), metal, x, y, z); rim.rotation.set(.3, -.45, .1);
-      mesh(structure, new THREE.SphereGeometry(r * .12, 10, 8), light, x - r * .28, y + r * .57, z + r * .7);
+      const bubble = mesh(glazing, new THREE.SphereGeometry(r, 20, 14), glass, x, y, z); bubble.renderOrder = 2;
+      const rim = mesh(structure, new THREE.TorusGeometry(r * .98, .007, 5, 32), metal, x, y, z); rim.rotation.set(.3, -.45, .1);
+      mesh(structure, new THREE.SphereGeometry(r * .12, 8, 6), light, x - r * .28, y + r * .57, z + r * .7);
     }
     cylinder(interior, -.91, .48, .35, .3, .33, plaster); cylinder(interior, -.91, .66, .35, .3, .035, ivory);
     cylinder(interior, .86, .47, .35, .23, .31, brand); cylinder(interior, .86, .64, .35, .24, .035, ivory);

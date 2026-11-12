@@ -48,14 +48,14 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     texture.magFilter = THREE.LinearFilter; texture.minFilter = THREE.LinearMipmapLinearFilter; texture.generateMipmaps = true; texture.needsUpdate = true;
     textures.add(texture); return texture;
   };
-  const sauceRelief = relief(128, 44), glazeRelief = relief(128, 18), woodRelief = relief(128, 37), searRelief = relief(64, 110);
+  const sauceRelief = relief(64, 44), glazeRelief = relief(64, 18), woodRelief = relief(64, 37), searRelief = relief(64, 110);
   sauceRelief.repeat.set(7, 1); woodRelief.repeat.set(2, 8); searRelief.repeat.set(2, 2);
   for (const m of [...pasta, sauce]) { m.bumpMap = sauceRelief; m.bumpScale = .009; m.emissiveIntensity = .025; }
   ceramic.bumpMap = glazeRelief; ceramic.bumpScale = .005;
   walnut.bumpMap = endgrain.bumpMap = woodRelief; walnut.bumpScale = endgrain.bumpScale = .018;
   crust.bumpMap = fat.bumpMap = searRelief; crust.bumpScale = .025; fat.bumpScale = .009; fat.roughness = .27;
   // Local studio reflections keep the glaze, sauce and polished cutlery legible without changing the world's lighting.
-  const envWidth = 256, envHeight = 128, envData = new Uint8Array(envWidth * envHeight * 4);
+  const envWidth = 128, envHeight = 64, envData = new Uint8Array(envWidth * envHeight * 4);
   for (let y = 0; y < envHeight; y++) for (let x = 0; x < envWidth; x++) {
     const u = x / envWidth, v = y / envHeight;
     const softbox = Math.exp(-(((u - .28) / .085) ** 2) - ((v - .32) / .11) ** 2) * 164 + Math.exp(-(((u - .76) / .045) ** 2) - ((v - .4) / .19) ** 2) * 112;
@@ -75,17 +75,17 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     return mesh(p, cache.get(key)!, m, x, y, z);
   };
   const sphere = (p: THREE.Object3D, x: number, y: number, z: number, r: number, m: THREE.Material, sx = 1, sy = 1, sz = 1) => {
-    const key = 'sphere-' + r; if (!cache.has(key)) cache.set(key, new THREE.SphereGeometry(r, 24, 16));
+    const key = 'sphere-' + r; if (!cache.has(key)) cache.set(key, new THREE.SphereGeometry(r, 14, 10));
     const object = mesh(p, cache.get(key)!, m, x, y, z); object.scale.set(sx, sy, sz); return object;
   };
   const cylinder = (p: THREE.Object3D, x: number, y: number, z: number, r: number, h: number, m: THREE.Material) => {
-    const key = 'cyl-' + [r, h].join(','); if (!cache.has(key)) cache.set(key, new THREE.CylinderGeometry(r, r, h, 64)); return mesh(p, cache.get(key)!, m, x, y, z);
+    const key = 'cyl-' + [r, h].join(','); if (!cache.has(key)) cache.set(key, new THREE.CylinderGeometry(r, r, h, 28)); return mesh(p, cache.get(key)!, m, x, y, z);
   };
   const ring = (p: THREE.Object3D, x: number, y: number, z: number, r: number, thickness: number, m: THREE.Material) => {
-    const g = new THREE.TorusGeometry(r, thickness, 8, 96); g.rotateX(Math.PI / 2); return mesh(p, g, m, x, y, z);
+    const g = new THREE.TorusGeometry(r, thickness, 6, 36); g.rotateX(Math.PI / 2); return mesh(p, g, m, x, y, z);
   };
-  const tube = (p: THREE.Object3D, points: THREE.Vector3[], radius: number, m: THREE.Material, segments = 64) => mesh(p, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), segments, radius, 6, false), m);
-  const lathe = (p: THREE.Object3D, profile: number[][], m: THREE.Material, x = 0, y = 0, z = 0) => mesh(p, new THREE.LatheGeometry(profile.map(([r, h]) => new THREE.Vector2(r, h)), 128), m, x, y, z);
+  const tube = (p: THREE.Object3D, points: THREE.Vector3[], radius: number, m: THREE.Material, segments = 32) => mesh(p, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), segments, radius, 5, false), m);
+  const lathe = (p: THREE.Object3D, profile: number[][], m: THREE.Material, x = 0, y = 0, z = 0) => mesh(p, new THREE.LatheGeometry(profile.map(([r, h]) => new THREE.Vector2(r, h)), 48), m, x, y, z);
   const instances = (p: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material, count: number) => {
     geometries.add(geometry); const value = new THREE.InstancedMesh(geometry, material, count); value.castShadow = true; value.receiveShadow = true; p.add(value); return value;
   };
@@ -109,10 +109,10 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   const title = part('title');
   const titleMaterials = createHallWordMaterials(0xffe8be, 0xb68d58); titleMaterials.forEach(m => { materials.add(m); applyVisibility(m); });
   mesh(title, createHallWordGeometry('CARBONARA', font, 6.3, .48), titleMaterials, 0, 3.27, -2.45);
-  const captionCanvas = document.createElement('canvas'); captionCanvas.width = 1536; captionCanvas.height = 210;
-  const context = captionCanvas.getContext('2d')!; context.clearRect(0, 0, 1536, 210); context.textAlign = 'center'; context.textBaseline = 'middle';
-  context.fillStyle = '#eadac2'; context.font = '500 60px sans-serif'; context.fillText('パスタ作りが趣味。', 768, 62);
-  context.fillStyle = '#d0c4ac'; context.font = '400 43px sans-serif'; context.fillText('よく作るのは、カルボナーラ。', 768, 142);
+  const captionCanvas = document.createElement('canvas'); captionCanvas.width = 768; captionCanvas.height = 105;
+  const context = captionCanvas.getContext('2d')!; context.clearRect(0, 0, 768, 105); context.textAlign = 'center'; context.textBaseline = 'middle';
+  context.fillStyle = '#eadac2'; context.font = '500 30px sans-serif'; context.fillText('パスタ作りが趣味。', 384, 31);
+  context.fillStyle = '#d0c4ac'; context.font = '400 22px sans-serif'; context.fillText('よく作るのは、カルボナーラ。', 384, 71);
   const captionTexture = new THREE.CanvasTexture(captionCanvas); captionTexture.colorSpace = THREE.SRGBColorSpace; captionTexture.anisotropy = 8; textures.add(captionTexture);
   const captionMaterial = new THREE.MeshBasicMaterial({ map: captionTexture, transparent: true, depthWrite: false, toneMapped: false }); materials.add(captionMaterial); applyVisibility(captionMaterial);
   mesh(title, new THREE.PlaneGeometry(5.6, .766), captionMaterial, 0, 2.77, -2.463);
@@ -139,23 +139,27 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     }
   };
   const surfaceAt = (x: number, z: number) => foodSurface.get(`${Math.round(x / cell)},${Math.round(z / cell)}`);
-  const strand = (parent: THREE.Object3D, points: THREE.Vector3[], radius: number, material: THREE.Material, segments = 112, onPlate = false) => {
-    const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal'), g = new THREE.TubeGeometry(curve, segments, radius, 8, false);
-    const positions = g.getAttribute('position'), colors = [], center = new THREE.Vector3();
+  const strand = (parent: THREE.Object3D, points: THREE.Vector3[], radius: number, material: THREE.Material, segments = 64, onPlate = false) => {
+    const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal'), g = new THREE.TubeGeometry(curve, segments, radius, 6, false);
+    const positions = g.getAttribute('position'), colors = new Float32Array(positions.count * 3), center = new THREE.Vector3();
     for (let j = 0; j <= segments; j++) {
       curve.getPointAt(j / segments, center);
       const taper = .92 + .055 * Math.sin(j * .23) + .025 * Math.cos(j * .71);
       if (onPlate) recordSurface(center, radius * taper);
-      for (let k = 0; k <= 8; k++) {
-        const i = j * 9 + k;
+      const warmth = .94 + .06 * Math.sin(j / segments * Math.PI * 2 + points[0].x) ** 2;
+      for (let k = 0; k <= 6; k++) {
+        const i = j * 7 + k;
         positions.setXYZ(i, center.x + (positions.getX(i) - center.x) * taper, center.y + (positions.getY(i) - center.y) * taper, center.z + (positions.getZ(i) - center.z) * taper);
-        const warmth = .94 + .06 * Math.sin(j / segments * Math.PI * 2 + points[0].x) ** 2;
-        colors.push(warmth, warmth * .99, warmth * .94);
+        colors[i * 3] = warmth; colors[i * 3 + 1] = warmth * .99; colors[i * 3 + 2] = warmth * .94;
       }
     }
+    if (onPlate) for (let j = 0; j < segments; j++) {
+      curve.getPointAt((j + .5) / segments, center);
+      recordSurface(center, radius * .94);
+    }
     const indices = Array.from(g.getIndex()!.array);
-    for (let k = 1; k < 7; k++) { const last = segments * 9; indices.push(0, k + 1, k, last, last + k, last + k + 1); }
-    g.setIndex(indices); g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); g.computeVertexNormals();
+    for (let k = 1; k < 5; k++) { const last = segments * 7; indices.push(0, k + 1, k, last, last + k, last + k + 1); }
+    g.setIndex(indices); g.setAttribute('color', new THREE.BufferAttribute(colors, 3)); g.computeVertexNormals();
     return mesh(parent, g, material);
   };
   // A broad, asymmetric nest: each strand climbs and falls across the mound rather than occupying a horizontal ring.
@@ -169,7 +173,7 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
       const height = .31 + 1.06 * Math.max(0, 1 - (Math.hypot(x, z / .9) / 1.9) ** 1.5);
       points.push(new THREE.Vector3(x, height + .065 * Math.sin(a * 2.5 + phase) + (random() - .5) * .01, z));
     }
-    strand(noodles, points, .043 + random() * .006, pasta[i % 3], 112, true);
+    strand(noodles, points, .043 + random() * .006, pasta[i % 3], 64, true);
   }
   for (let i = 0; i < 8; i++) {
     const a = i * .83, points = [];
@@ -177,7 +181,7 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
       const t = j / 28, angle = a + t * 1.5, r = 1.65 + .28 * Math.sin(t * Math.PI);
       points.push(new THREE.Vector3(Math.cos(angle) * r, .43 + .1 * Math.sin(t * Math.PI) + .03 * Math.cos(t * 8 + i), Math.sin(angle) * r * .86));
     }
-    strand(noodles, points, .043, pasta[i % 3], 64, true);
+    strand(noodles, points, .043, pasta[i % 3], 40, true);
   }
   const saucePart = part('sauce', plate);
   const plateHeight = (r: number) => {
@@ -188,11 +192,11 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     return .585;
   };
   const sauceVertices = [], sauceUvs = [], sauceIndices = [];
-  for (let ringIndex = 0; ringIndex <= 12; ringIndex++) for (let i = 0; i <= 96; i++) {
-    const a = i / 96 * Math.PI * 2, r = ringIndex / 12 * (1.82 + .065 * Math.sin(a * 5) + .04 * Math.cos(a * 9));
+  for (let ringIndex = 0; ringIndex <= 8; ringIndex++) for (let i = 0; i <= 48; i++) {
+    const a = i / 48 * Math.PI * 2, r = ringIndex / 8 * (1.82 + .065 * Math.sin(a * 5) + .04 * Math.cos(a * 9));
     const x = Math.cos(a) * r, z = Math.sin(a) * r * .85;
     sauceVertices.push(x, plateHeight(Math.hypot(x, z)) + .014, z); sauceUvs.push(x * .5, z * .5);
-    if (ringIndex < 12 && i < 96) { const k = ringIndex * 97 + i; sauceIndices.push(k, k + 97, k + 1, k + 1, k + 97, k + 98); }
+    if (ringIndex < 8 && i < 48) { const k = ringIndex * 49 + i; sauceIndices.push(k, k + 49, k + 1, k + 1, k + 49, k + 50); }
   }
   const sauceGeometry = new THREE.BufferGeometry(); sauceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(sauceVertices, 3));
   sauceGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(sauceUvs, 2)); sauceGeometry.setIndex(sauceIndices); sauceGeometry.computeVertexNormals(); mesh(saucePart, sauceGeometry, sauce);
@@ -262,10 +266,10 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
       const t = j / 56, a = phase + t * Math.PI * 2 * turns, r = .265 + .035 * Math.sin(a * 2.2 + i);
       points.push(new THREE.Vector3(Math.cos(a) * r, -.3 + t * .51 + .025 * Math.sin(a * 3), Math.sin(a) * r + .05));
     }
-    strand(fork, points, .043, pasta[i % 3], 80);
+    strand(fork, points, .043, pasta[i % 3], 44);
     const start = points[0].clone().applyMatrix4(fork.matrix), angle = -.9 + i * .47;
     const end = new THREE.Vector3(Math.cos(angle) * (.8 + i * .06), 0, Math.sin(angle) * .78 + .25); end.y = surfaceAt(end.x, end.z) ?? .85;
-    strand(lifted, [start, start.clone().add(new THREE.Vector3(.04, -.18, .06)), new THREE.Vector3(start.x * .7 + end.x * .3, Math.max(end.y + .12, start.y - .47), start.z * .6 + end.z * .4 + .16), end], .043, pasta[i % 3], 72);
+    strand(lifted, [start, start.clone().add(new THREE.Vector3(.04, -.18, .06)), new THREE.Vector3(start.x * .7 + end.x * .3, Math.max(end.y + .12, start.y - .47), start.z * .6 + end.z * .4 + .16), end], .043, pasta[i % 3], 36);
   }
 
   const stove = part('stove');

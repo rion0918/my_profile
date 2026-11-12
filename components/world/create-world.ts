@@ -169,15 +169,19 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     h: number,
     color: number | THREE.Material,
     sides = 32,
-  ) =>
-    mesh(
-      new THREE.CylinderGeometry(top, bottom, h, sides),
+  ) => {
+    const key = `cyl:${top},${bottom},${h},${sides}`;
+    if (!geometryCache.has(key))
+      geometryCache.set(key, new THREE.CylinderGeometry(top, bottom, h, sides));
+    return mesh(
+      geometryCache.get(key)!,
       typeof color === "number" ? material(color) : color,
       parent,
       x,
       y,
       z,
     );
+  };
   const sphereGeometry = new THREE.SphereGeometry(1, 16, 12);
   const sphere = (
     parent: THREE.Object3D,
@@ -212,13 +216,14 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       0,
       0,
       0,
-      r * 0.78,
-      r,
-      a.distanceTo(b),
+      0.78,
+      1,
+      1,
       color,
       8,
     );
     result.position.copy(a.add(b).multiplyScalar(0.5));
+    result.scale.set(r, a.distanceTo(b), r);
     result.quaternion.setFromUnitVectors(
       new THREE.Vector3(0, 1, 0),
       b.sub(new THREE.Vector3(...from)).normalize(),
@@ -254,18 +259,18 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     background?: string,
   ) => {
     const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 160;
+    canvas.width = 512;
+    canvas.height = 80;
     const context = canvas.getContext("2d")!;
     if (background) {
       context.fillStyle = background;
-      context.fillRect(0, 0, 1024, 160);
+      context.fillRect(0, 0, 512, 80);
     }
-    context.font = "500 76px sans-serif";
+    context.font = "500 38px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = color;
-    context.fillText(label, 512, 83, 960);
+    context.fillText(label, 256, 41, 480);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     textures.add(texture);
@@ -485,10 +490,17 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       box(group, 0, y - 0.045, d / 2 + 0.26, railWidth, 0.08, 0.25, edging, 0.018);
     }
     if (building.icon) {
-      const texture = new THREE.TextureLoader().load(hallIcons[building.icon].texture, () => {
-        if (complete && !signal.aborted) requestRender();
-      });
+      const iconPath = hallIcons[building.icon].texture;
+      const texture = new THREE.Texture();
       texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4; textures.add(texture);
+      setTimeout(() => {
+        if (signal.aborted) return;
+        new THREE.ImageLoader().load(iconPath, image => {
+          if (signal.aborted) return;
+          texture.image = image; texture.needsUpdate = true;
+          if (complete) requestRender();
+        });
+      }, 0);
       const site = hallIconSites.find(site => site.id === building.id)!;
       const icon = createHallIcon(building.icon, texture);
       icon.position.set(site.x, 0, site.z); icon.scale.setScalar(site.scale); icon.userData.detail = building.id;
@@ -627,17 +639,17 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   });
   materials.add(barkMaterial);
   const branch = (points: THREE.Vector3[], radius: number) => {
-    const geometry = new THREE.TubeGeometry(
-        new THREE.CatmullRomCurve3(points),
-        10,
+    const curve = new THREE.CatmullRomCurve3(points),
+      geometry = new THREE.TubeGeometry(
+        curve,
+        7,
         radius,
-        8,
+        6,
         false,
       ),
       position = geometry.getAttribute("position");
-    const curve = new THREE.CatmullRomCurve3(points);
     for (let i = 0; i < position.count; i++) {
-      const t = Math.floor(i / 9) / 10,
+      const t = Math.floor(i / 7) / 7,
         center = curve.getPointAt(t),
         scale = 1 - t * 0.76;
       position.setXYZ(
@@ -806,7 +818,6 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     const x = (random() - 0.5) * 86,
       z = (random() - 0.5) * 76;
     if (
-      distanceToShore({ x, z }) > -3.5 ||
       Math.hypot(x, z) < 4 ||
       ponds.some(
         (p) =>
@@ -824,19 +835,21 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     )
       continue;
     if (Math.abs(x - bikeStation.x) < bikeStation.width / 2 + 0.1 && Math.abs(z - bikeStation.z) < bikeStation.depth / 2 + 0.1) continue;
-    if (isWildlifeClearing({ x, z })) continue;
-    if (isOnsenClearing({ x, z }, .15)) continue;
-    if (isOnRoad({ x, z }, 0.35) || getHarborDeckHeight({ x, z }, -0.2) !== null) continue;
-    if (furniturePads.some((p) =>
-      Math.abs((x - p.x) * p.c - (z - p.z) * p.s) < p.width / 2 + 0.15 &&
-      Math.abs((x - p.x) * p.s + (z - p.z) * p.c) < p.depth / 2 + 0.15) ||
-      lightSupports.some((p) => Math.hypot(x - p.x, z - p.z) < 0.35)) continue;
     const localX = (x - landmark.x) * landmarkCos - (z - landmark.z) * landmarkSin,
       localZ = (x - landmark.x) * landmarkSin + (z - landmark.z) * landmarkCos;
     if (
       (localX / (landmark.width / 2 + 0.1)) ** 2 +
       (localZ / (landmark.depth / 2 + 0.1)) ** 2 < 1
     ) continue;
+    if (furniturePads.some((p) =>
+      Math.abs((x - p.x) * p.c - (z - p.z) * p.s) < p.width / 2 + 0.15 &&
+      Math.abs((x - p.x) * p.s + (z - p.z) * p.c) < p.depth / 2 + 0.15) ||
+      lightSupports.some((p) => Math.hypot(x - p.x, z - p.z) < 0.35)) continue;
+    if (isWildlifeClearing({ x, z })) continue;
+    if (getHarborDeckHeight({ x, z }, -0.2) !== null) continue;
+    if (isOnsenClearing({ x, z }, .15)) continue;
+    if (distanceToShore({ x, z }) > -3.5) continue;
+    if (isOnRoad({ x, z }, 0.35)) continue;
     const size = 0.6 + random() * 0.9;
     dummy.position.set(x, getGroundHeight({ x, z }) + 0.008, z);
     dummy.scale.set(size, size, size);
@@ -1030,15 +1043,24 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
       font,
       size: 1,
       depth: 0.34,
-      curveSegments: 10,
+      curveSegments: 6,
       bevelEnabled: true,
       bevelThickness: 0.045,
       bevelSize: 0.025,
-      bevelSegments: 3,
+      bevelSegments: 2,
     });
     geometry.computeBoundingBox();
     const bounds = geometry.boundingBox!;
     geometry.translate(-(bounds.min.x + bounds.max.x) / 2, -bounds.min.y, 0);
+    const faces: number[] = [], sides: number[] = [];
+    for (const group of geometry.groups) {
+      const indices = group.materialIndex === 0 ? faces : sides;
+      for (let i = group.start; i < group.start + group.count; i++) indices.push(i);
+    }
+    geometry.setIndex([...faces, ...sides]);
+    geometry.clearGroups();
+    geometry.addGroup(0, faces.length, 0);
+    geometry.addGroup(faces.length, sides.length, 1);
     const glyph = mesh(
       geometry,
       welcomeLetters,

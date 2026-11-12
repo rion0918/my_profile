@@ -33,9 +33,13 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
     const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),o=mesh(p,beamGeometry,m);
     o.position.copy(start).add(end).multiplyScalar(.5).sub(new THREE.Vector3(onsen.x,0,onsen.z));o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),end.clone().sub(start).normalize());o.scale.set(radius,start.distanceTo(end),radius);return o;
   };
-  const tube=(p:THREE.Object3D,points:number[][],radius:number,m:THREE.Material)=>mesh(p,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(([x,y,z])=>local(x,y,z))),40,radius,6,false),m);
-  const lathe=(p:THREE.Object3D,profile:number[][],m:THREE.Material,x:number,y:number,z:number)=>mesh(p,new THREE.LatheGeometry(profile.map(([r,h])=>new THREE.Vector2(r,h)),80),m,x,y,z);
-  const ring=(p:THREE.Object3D,x:number,y:number,z:number,r:number,t:number,m:THREE.Material)=>{const g=new THREE.TorusGeometry(r,t,r<.1?4:6,r<.1?12:72);g.rotateX(Math.PI/2);return mesh(p,g,m,x,y,z);};
+  const tube=(p:THREE.Object3D,points:number[][],radius:number,m:THREE.Material)=>mesh(p,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(([x,y,z])=>local(x,y,z))),12,radius,5,false),m);
+  const lathe=(p:THREE.Object3D,profile:number[][],m:THREE.Material,x:number,y:number,z:number)=>mesh(p,new THREE.LatheGeometry(profile.map(([r,h])=>new THREE.Vector2(r,h)),32),m,x,y,z);
+  const ring=(p:THREE.Object3D,x:number,y:number,z:number,r:number,t:number,m:THREE.Material)=>{
+    const key=`ring:${r.toFixed(4)},${t.toFixed(4)}`;
+    if(!boxes.has(key)){const g=new THREE.TorusGeometry(r,t,r<.1?4:6,r<.1?10:28);g.rotateX(Math.PI/2);boxes.set(key,g);}
+    return mesh(p,boxes.get(key)!,m,x,y,z);
+  };
   const instanced=(p:THREE.Object3D,g:THREE.BufferGeometry,m:THREE.Material,count:number)=>{
     geometries.add(g);const o=new THREE.InstancedMesh(g,m,count);o.castShadow=true;o.receiveShadow=true;p.add(o);return o;
   };
@@ -49,13 +53,13 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
     }
     const t=new THREE.DataTexture(data,size,size);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;textures.add(t);return t;
   };
-  const granite=relief(128),wood=relief(128,true);wood.repeat.set(1,3);moss.bumpMap=granite;moss.bumpScale=.055;
+  const granite=relief(64),wood=relief(64,true);wood.repeat.set(1,3);moss.bumpMap=granite;moss.bumpScale=.055;
   for(const m of [stone,darkStone,gravel]){m.bumpMap=granite;m.bumpScale=m===gravel?.035:.055;}
   for(const m of [hinoki,cedar,timber]){m.bumpMap=wood;m.bumpScale=.017;}
   const floor=part('garden'),rockwork=part('rockwork'),paths=part('paths'),entry=part('entry'),house=part('bathhouse'),roof=part('roof'),cutaway=part('cutaway');
   const potGroup=part('pot-baths'),falls=part('waterfall'),bamboo=part('bamboo'),ferns=part('ferns');
   const rockGeometries=Array.from({length:8},(_,k)=>{
-    const g=new THREE.IcosahedronGeometry(1,5),p=g.getAttribute('position'),colors=[];
+    const g=new THREE.IcosahedronGeometry(1,2),p=g.getAttribute('position'),colors=[];
     const planes=[[1,.15,.2],[-1,.12,-.1],[.12,.1,1],[-.2,.08,-1],[.1,1,.1],[-.12,-1,.16],[.7,.4,-.65],[-.6,-.1,.7]].map((v,j)=>({normal:new THREE.Vector3(...v).normalize(),distance:.72+.13*Math.sin(k*2.71+j*4.3)}));
     for(let i=0;i<p.count;i++){
       const direction=new THREE.Vector3().fromBufferAttribute(p,i).normalize(),{x,y,z}=direction;
@@ -69,8 +73,16 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
     g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.deleteAttribute('normal');g.deleteAttribute('uv');const fractured=mergeVertices(g);g.dispose();fractured.computeVertexNormals();geometries.add(fractured);return fractured;
   });
   const stoneTexture=(name:string,color=false)=>{
-    const t=new THREE.TextureLoader().load('/textures/onsen/stone-'+name+'.webp',()=>{if(!disposed)onTextureReady();});
-    t.name='onsen-stone-'+name;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;if(color)t.colorSpace=THREE.SRGBColorSpace;textures.add(t);return t;
+    const t=new THREE.Texture();
+    t.name='onsen-stone-'+name;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;if(color)t.colorSpace=THREE.SRGBColorSpace;textures.add(t);
+    setTimeout(()=>{
+      if(disposed)return;
+      new THREE.ImageLoader().load('/textures/onsen/stone-'+name+'.webp',image=>{
+        if(disposed)return;
+        t.image=image;t.needsUpdate=true;onTextureReady();
+      });
+    },0);
+    return t;
   };
   const rockMaterial=material(0xc4c4bc,1);rockMaterial.vertexColors=true;rockMaterial.map=stoneTexture('color',true);rockMaterial.normalMap=stoneTexture('normal');rockMaterial.normalScale.set(.85,.85);rockMaterial.roughnessMap=rockMaterial.aoMap=stoneTexture('arm');rockMaterial.aoMapIntensity=.8;
   const stoneCompile=rockMaterial.onBeforeCompile,stoneProgram=rockMaterial.customProgramCacheKey();
@@ -85,18 +97,17 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   rockMaterial.customProgramCacheKey=()=>stoneProgram+'|weathered-stone-v1';
   const wetCourse=new THREE.Line3(new THREE.Vector3(-30,2.5,-26.15),new THREE.Vector3(-27.7,.27,-25.05)),nearestWet=new THREE.Vector3();
   const rock=(p:THREE.Object3D,x:number,y:number,z:number,sx:number,sy:number,sz:number,k=0,rotation=k*.87)=>{
-    const g=rockGeometries[Math.abs(k)%rockGeometries.length].toNonIndexed(),o=mesh(p,g,rockMaterial,x,y,z);o.scale.set(sx,sy,sz);o.rotation.y=rotation;o.updateMatrix();
-    const positions=g.getAttribute('position'),uvs=[],wet=[],a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),normal=new THREE.Vector3();
-    for(let i=0;i<positions.count;i+=3){
-      a.fromBufferAttribute(positions,i).applyMatrix4(o.matrix);b.fromBufferAttribute(positions,i+1).applyMatrix4(o.matrix);c.fromBufferAttribute(positions,i+2).applyMatrix4(o.matrix);normal.crossVectors(b.clone().sub(a),c.clone().sub(a)).normalize();
-      for(const v of [a,b,c]){
-        v.add(root.position);const ax=Math.abs(normal.x),ay=Math.abs(normal.y),az=Math.abs(normal.z);
-        if(ay>ax&&ay>az)uvs.push(v.x*.55,v.z*.55);else if(ax>az)uvs.push(v.z*.55,v.y*.55);else uvs.push(v.x*.55,v.y*.55);
-        wetCourse.closestPointToPoint(v,true,nearestWet);const runoff=Math.exp(-v.distanceToSquared(nearestWet)*1.8);
-        wet.push(p===falls?Math.min(.95,.15+runoff*.85):p.name==='onsen-outdoor-bath'?THREE.MathUtils.clamp((.43-v.y)/.32,0,.9):0);
-      }
+    const g=rockGeometries[Math.abs(k)%rockGeometries.length].clone(),o=mesh(p,g,rockMaterial,x,y,z);o.scale.set(sx,sy,sz);o.rotation.y=rotation;o.updateMatrix();
+    const positions=g.getAttribute('position'),normals=g.getAttribute('normal'),uvs=new Float32Array(positions.count*2),wet=new Float32Array(positions.count),v=new THREE.Vector3(),normal=new THREE.Vector3();
+    for(let i=0;i<positions.count;i++){
+      v.fromBufferAttribute(positions,i).applyMatrix4(o.matrix).add(root.position);
+      normal.fromBufferAttribute(normals,i).transformDirection(o.matrix);
+      const ax=Math.abs(normal.x),ay=Math.abs(normal.y),az=Math.abs(normal.z);
+      if(ay>ax&&ay>az){uvs[i*2]=v.x*.55;uvs[i*2+1]=v.z*.55;}else if(ax>az){uvs[i*2]=v.z*.55;uvs[i*2+1]=v.y*.55;}else{uvs[i*2]=v.x*.55;uvs[i*2+1]=v.y*.55;}
+      wetCourse.closestPointToPoint(v,true,nearestWet);const runoff=Math.exp(-v.distanceToSquared(nearestWet)*1.8);
+      wet[i]=p===falls?Math.min(.95,.15+runoff*.85):p.name==='onsen-outdoor-bath'?THREE.MathUtils.clamp((.43-v.y)/.32,0,.9):0;
     }
-    g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setAttribute('stoneWetness',new THREE.Float32BufferAttribute(wet,1));return o;
+    g.setAttribute('uv',new THREE.BufferAttribute(uvs,2));g.setAttribute('stoneWetness',new THREE.BufferAttribute(wet,1));return o;
   };
   const groundShape=new THREE.Shape();onsenBoundary.forEach((p,i)=>{const x=p.x-onsen.x,z=p.z-onsen.z;if(!i)groundShape.moveTo(x,-z);else groundShape.lineTo(x,-z);});groundShape.closePath();
   const foundation=new THREE.ExtrudeGeometry(groundShape,{depth:.10,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:2,steps:1});foundation.rotateX(-Math.PI/2);mesh(floor,foundation,gravel,onsen.x,-.08,onsen.z);
@@ -253,7 +264,7 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
     vessel.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
     ring(potGroup,p.x,.11,p.z,r*.69,.018,darkStone);
     ring(potGroup,p.x,.79,p.z,r*.93,.025,darkStone);
-    water(potGroup,new THREE.CircleGeometry(r*.865,80),p.x,.66,p.z);
+    water(potGroup,new THREE.CircleGeometry(r*.865,32),p.x,.66,p.z);
     for(let j=0;j<13;j++){const a=j/13*Math.PI*2;rock(potGroup,p.x+Math.cos(a)*(r+.15),.055,p.z+Math.sin(a)*(r+.15),.15,.055,.12,j);}
     box(potGroup,p.x-.72,.13,p.z+.89,.55,.17,.35,wetStone,.06);
     box(potGroup,p.x,.88,p.z-.78,.18,.12,.38,hinoki);
@@ -292,8 +303,8 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   box(entry,-19.9,2.83,front+.68,3.38,.23,.24,timber);
   for(let i=0;i<6;i++)box(entry,-21.08+i*.47,2.18,front+.45,.435,.79,.025,linen,.008);
   const sign=(text:string,x:number,y:number,z:number,width:number,height:number,background:string,color:string)=>{
-    const canvas=document.createElement('canvas');canvas.width=1536;canvas.height=256;const c=canvas.getContext('2d')!;
-    c.fillStyle=background;c.fillRect(0,0,1536,256);c.fillStyle=color;c.font='500 150px serif';c.textAlign='center';c.textBaseline='middle';c.fillText(text,768,140,1430);
+    const canvas=document.createElement('canvas');canvas.width=768;canvas.height=128;const c=canvas.getContext('2d')!;
+    c.fillStyle=background;c.fillRect(0,0,768,128);c.fillStyle=color;c.font='500 75px serif';c.textAlign='center';c.textBaseline='middle';c.fillText(text,384,70,715);
     const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;textures.add(t);
     const m=new THREE.MeshStandardMaterial({map:t,roughness:.7,emissive:0xffdfb5,emissiveMap:t,emissiveIntensity:.25});materials.add(m);applyVisibility(m);
     mesh(entry,new THREE.PlaneGeometry(width,height),m,x,y,z);
@@ -304,6 +315,7 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   for(const x of [-21.1,-18.7]){
     box(entry,x,1.9,front+.73,.18,.52,.18,lamp);box(entry,x,2.18,front+.73,.25,.06,.25,timber);box(entry,x,1.61,front+.73,.25,.06,.25,timber);
   }
+  const tileCapGeometry=new THREE.CylinderGeometry(.071,.071,.11,8);
   const tiledRoof=(p:THREE.Group,x:number,z:number,width:number,depth:number,eave:number,rise:number)=>{
     const profile=(u:number)=>eave+rise*(1-u)+.13*u**4;
     for(const side of [-1,1]){
@@ -316,7 +328,7 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
       for(let lane=0;lane<=Math.ceil(width/.25);lane++){
         const xx=x-width/2+lane/Math.ceil(width/.25)*width,points=Array.from({length:10},(_,i)=>{const u=i/9;return[xx,profile(u)+.025,z+side*depth/2*u];});
         tube(p,points,.048,tileEdge);
-        const cap=mesh(p,new THREE.CylinderGeometry(.071,.071,.11,12),tileEdge,xx,profile(1)+.015,z+side*depth/2);cap.rotation.x=Math.PI/2;
+        const cap=mesh(p,tileCapGeometry,tileEdge,xx,profile(1)+.015,z+side*depth/2);cap.rotation.x=Math.PI/2;
       }
       for(const u of [.3,.58,.86])beam(p,[x-width/2,profile(u)+.03,z+side*depth/2*u],[x+width/2,profile(u)+.03,z+side*depth/2*u],.018,tile);
       box(p,x,profile(1)-.14,z+side*depth/2,width+.12,.18,.16,timber);
@@ -366,7 +378,7 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   const leafMatrices:THREE.Matrix4[]=[];
   for(const [index,g] of onsenBambooGroves.entries())for(let stem=0;stem<5;stem++){
     const a=stem*2.4+index,x=g.x+Math.cos(a)*.29,z=g.z+Math.sin(a)*.29,height=2.7+random()*1.45,leanX=(random()-.5)*.27,leanZ=(random()-.5)*.23;
-    const stalk=mesh(bamboo,new THREE.CylinderGeometry(.027,.05,height,10,9),culm,x+leanX/2,height/2,z+leanZ/2);stalk.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(leanX,height,leanZ).normalize());
+    const stalk=mesh(bamboo,new THREE.CylinderGeometry(.027,.05,height,8,1),culm,x+leanX/2,height/2,z+leanZ/2);stalk.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(leanX,height,leanZ).normalize());
     for(let n=1;n<=9;n++){
       const t=n/10,xx=x+leanX*t,zz=z+leanZ*t,yy=height*t;
       ring(bamboo,xx,yy,zz,.05-.02*t,.007,node);

@@ -14,8 +14,13 @@ export function createWorldMapData() {
   const path = (points: {x:number;z:number}[]) => points.map((p,i)=>{
     const {x,y}=mapPoint(p);return `${i?'L':'M'}${x.toFixed(2)},${y.toFixed(2)}`;
   }).join(' ');
+  const roundRing = (ring: [number, number][]): [number, number][] => ring.map(([x, z]) => [Math.round(x * 1000) / 1000, Math.round(z * 1000) / 1000]);
+  const rawStreets = buildStreetNetwork(roads.map((r,i)=>({curve:roadCurves[i],width:r.width})),plaza,[entrancePlaza]);
   return {
-    streets: buildStreetNetwork(roads.map((r,i)=>({curve:roadCurves[i],width:r.width})),plaza,[entrancePlaza]),
+    streets: {
+      surface: rawStreets.surface.map(poly => poly.map(roundRing)),
+      curb: rawStreets.curb.map(poly => poly.map(roundRing)),
+    },
     plazas: [plaza,entrancePlaza].map(p=>({...mapPoint(p),radius:p.radius/96*100})),
     boundary: mapPoint({x:0,z:zoneBoundary}).y,
     entrance: mapPoint(southEntrance),

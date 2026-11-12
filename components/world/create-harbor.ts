@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { createStaticGeometryCache, releaseUnusedGeometries } from "./static-geometry";
 import { harbor, harborDecks, harborRails, harborBoats, harborCargo, harborLights, getHarborDeckHeight } from "../../lib/world-harbor";
 import { getGroundHeight } from "../../lib/world-navigation";
 
@@ -8,6 +9,7 @@ export function createHarbor(scene: THREE.Scene) {
   const group = new THREE.Group(), fixed = new THREE.Group();
   scene.add(group); group.add(fixed);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures: THREE.Texture[] = [];
+  const batchGeometry = createStaticGeometryCache();
   const palette = { cream: 0xffe6c3, coral: 0xed8c80, teal: 0x43b5af, ink: 0x655976, wood: 0xc99972, gold: 0xf8c773 };
   const cached = new Map<number, THREE.MeshStandardMaterial>();
   const mat = (color: number) => {
@@ -29,9 +31,12 @@ export function createHarbor(scene: THREE.Scene) {
     if (!boxCache.has(key)) boxCache.set(key, new RoundedBoxGeometry(w, h, d, 2, Math.min(0.06, w / 5, h / 5, d / 5)));
     return mesh(parent, boxCache.get(key)!, typeof color === "number" ? mat(color) : color, x, y, z);
   };
-  const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, top: number, bottom: number, height: number, color: number | THREE.Material, sides = 24) =>
-    mesh(parent, new THREE.CylinderGeometry(top, bottom, height, sides), typeof color === "number" ? mat(color) : color, x, y, z);
-  const sphereGeometry = new THREE.SphereGeometry(1, 16, 12);
+  const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, top: number, bottom: number, height: number, color: number | THREE.Material, sides = 16) => {
+    const key = `cyl:${top},${bottom},${height},${sides}`;
+    if (!boxCache.has(key)) boxCache.set(key, new THREE.CylinderGeometry(top, bottom, height, sides));
+    return mesh(parent, boxCache.get(key)!, typeof color === "number" ? mat(color) : color, x, y, z);
+  };
+  const sphereGeometry = new THREE.SphereGeometry(1, 12, 8);
   const sphere = (parent: THREE.Object3D, x: number, y: number, z: number, r: number, color: number) => {
     const m = mesh(parent, sphereGeometry, mat(color), x, y, z); m.scale.setScalar(r); return m;
   };
@@ -292,7 +297,7 @@ export function createHarbor(scene: THREE.Scene) {
     for (const [material, objects] of buckets) {
       if (objects.length < 2) continue;
       const parts = objects.map((o) => {
-        const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+        const g = batchGeometry.clone(o.geometry);
         if (!g.getAttribute("uv")) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.getAttribute("position").count * 2), 2));
         g.applyMatrix4(inverse.clone().multiply(o.matrixWorld)); return g;
       });
@@ -301,6 +306,8 @@ export function createHarbor(scene: THREE.Scene) {
     }
   };
   batch(fixed); boats.forEach(batch);
+  batchGeometry.dispose();
+  releaseUnusedGeometries(group, geometries);
   return {
     walkSurfaces,
     updateTime(lamps: number) {

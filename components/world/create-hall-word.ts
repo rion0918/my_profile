@@ -5,8 +5,8 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 export function createHallWordGeometry(word: string, font: Font, width: number, height: number) {
   const geometry = new TextGeometry(word, {
-    font, size: 1, depth: 0.2, curveSegments: 6,
-    bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.012, bevelSegments: 2,
+    font, size: 1, depth: 0.2, curveSegments: 5,
+    bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.012, bevelSegments: 1,
   });
   geometry.computeBoundingBox();
   const bounds = geometry.boundingBox!;
@@ -37,10 +37,10 @@ export function createHallWordGlow(word: string, font: Font, geometry: BufferGeo
   geometry.computeBoundingBox();
   const bounds=geometry.boundingBox!, width=bounds.max.x-bounds.min.x, height=bounds.max.y-bounds.min.y, padding=.25;
   const shapes=font.generateShapes(word,1), raw=new Box2();
-  const paths=shapes.flatMap(shape=>[shape,...shape.holes]).map(path=>path.getPoints(12));
+  const paths=shapes.flatMap(shape=>[shape,...shape.holes]).map(path=>path.getPoints(8));
   paths.forEach(path=>path.forEach(point=>raw.expandByPoint(point)));
   const canvas=document.createElement('canvas');
-  canvas.width=768;canvas.height=Math.ceil(canvas.width*(height+padding*2)/(width+padding*2));
+  canvas.width=256;canvas.height=Math.ceil(canvas.width*(height+padding*2)/(width+padding*2));
   const context=canvas.getContext('2d')!,glowColor=new Color(color).lerp(new Color(0xffffff),.25);
   context.shadowColor=glowColor.getStyle();context.shadowBlur=canvas.width/(width+padding*2)*.11;
   context.fillStyle=glowColor.getStyle();

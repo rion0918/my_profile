@@ -40,14 +40,14 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   };
   const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, radius: number, depth: number, material: THREE.Material, axis = 'z') => {
     const key = `cylinder-${radius},${depth}`;
-    if (!cache.has(key)) cache.set(key, new THREE.CylinderGeometry(radius, radius, depth, 32));
+    if (!cache.has(key)) cache.set(key, new THREE.CylinderGeometry(radius, radius, depth, 20));
     const object = mesh(parent, cache.get(key)!, material, x, y, z);
     if (axis === 'z') object.rotation.x = Math.PI / 2;
     if (axis === 'x') object.rotation.z = Math.PI / 2;
     return object;
   };
   const tube = (parent: THREE.Object3D, points: number[][], radius: number, material: THREE.Material) =>
-    mesh(parent, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p))), 32, radius, 8, false), material);
+    mesh(parent, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p))), 18, radius, 6, false), material);
   const text = (parent: THREE.Object3D, value: string, x: number, y: number, z: number, width: number, color = '#566b74') => {
     const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 160;
     const c = canvas.getContext('2d')!; c.clearRect(0, 0, 1024, 160); c.fillStyle = color; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '600 84px sans-serif'; c.fillText(value, 512, 83, 960);
@@ -167,8 +167,9 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
 
   const fanStatics = part('fan-frames');
   const frameShape = rounded(1.74, 1.74, .11), hole = new THREE.Path(); hole.absarc(0, 0, .738, 0, Math.PI * 2, true); frameShape.holes.push(hole);
-  const frameGeometry = new THREE.ExtrudeGeometry(frameShape, { depth: .12, bevelEnabled: true, bevelSize: .018, bevelThickness: .012, bevelSegments: 2, curveSegments: 40 });
-  const ringGeometry = new THREE.TorusGeometry(.71, .047, 8, 64), ringColors: number[] = [];
+  const rawFrameGeometry = new THREE.ExtrudeGeometry(frameShape, { depth: .12, bevelEnabled: true, bevelSize: .018, bevelThickness: .012, bevelSegments: 1, curveSegments: 18 });
+  const frameGeometry = batchGeometry.clone(rawFrameGeometry); rawFrameGeometry.dispose();
+  const ringGeometry = new THREE.TorusGeometry(.71, .047, 6, 32), ringColors: number[] = [];
   const position = ringGeometry.getAttribute('position');
   for (let i = 0; i < position.count; i++) {
     const a = Math.atan2(position.getY(i), position.getX(i));
@@ -177,9 +178,9 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   ringGeometry.setAttribute('color', new THREE.Float32BufferAttribute(ringColors, 3));
   const blade = new THREE.Shape(); blade.moveTo(.12, -.04); blade.quadraticCurveTo(.34, -.17, .61, -.08);
   blade.quadraticCurveTo(.72, .05, .54, .2); blade.quadraticCurveTo(.32, .23, .12, .13); blade.closePath();
-  const bladeGeometry = new THREE.ExtrudeGeometry(blade, { depth: .038, bevelEnabled: true, bevelSize: .012, bevelThickness: .009, bevelSegments: 1, curveSegments: 8 });
+  const bladeGeometry = new THREE.ExtrudeGeometry(blade, { depth: .038, bevelEnabled: true, bevelSize: .012, bevelThickness: .009, bevelSegments: 1, curveSegments: 6 });
   const rotorParts: THREE.BufferGeometry[] = Array.from({ length: 7 }, (_, i) => bladeGeometry.clone().rotateZ(i / 7 * Math.PI * 2));
-  const hub = new THREE.CylinderGeometry(.17, .17, .1, 24); hub.rotateX(Math.PI / 2); hub.translate(0, 0, .045); rotorParts.push(hub);
+  const hub = new THREE.CylinderGeometry(.17, .17, .1, 16); hub.rotateX(Math.PI / 2); hub.translate(0, 0, .045); rotorParts.push(hub);
   const rotorTriangles = rotorParts.map(g => batchGeometry.clone(g));
   const rotorGeometry = mergeGeometries(rotorTriangles)!;
   new Set([...rotorParts, ...rotorTriangles]).forEach(g => g.dispose()); bladeGeometry.dispose();
@@ -191,7 +192,9 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   const halo = new THREE.MeshBasicMaterial({ map: glowTexture, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
   materials.add(halo); applyVisibility(halo);
   const haloGeometry = new THREE.PlaneGeometry(2.24, 2.24);
-  const fanRecess = new THREE.CircleGeometry(.7, 48);
+  const fanRecess = new THREE.CircleGeometry(.7, 24);
+  const fanTorus = new THREE.TorusGeometry(.657, .014, 5, 28);
+  const fanScrew = new THREE.CylinderGeometry(.032, .032, .028, 6); fanScrew.rotateX(Math.PI / 2);
   const fan = (name: string, x: number, y: number, z: number, orientation = 'z', scale = 1, gpu = false) => {
     const matrix = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(orientation === 'y' ? -Math.PI / 2 : 0, orientation === 'x' ? Math.PI / 2 : 0, 0));
     matrix.setPosition(x, y, z); matrix.scale(new THREE.Vector3(scale, scale, scale));
@@ -201,7 +204,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
     if (!gpu) addStatic(frameGeometry, porcelain);
     addStatic(fanRecess, dark, -.018);
     addStatic(ringGeometry, led, .15);
-    const torus = new THREE.TorusGeometry(.657, .014, 6, 56); addStatic(torus, silver, .15); torus.dispose();
+    addStatic(fanTorus, silver, .15);
     const glow = addStatic(haloGeometry, halo, .17); glow.renderOrder = 1;
     const rotor = new THREE.Mesh(rotorGeometry, white); geometries.add(rotorGeometry);
     const mount = new THREE.Group(); mount.applyMatrix4(matrix); body.add(mount); mount.add(rotor);
@@ -209,7 +212,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
     rotor.castShadow = true; rotor.receiveShadow = true;
     for (const dx of [-.72, .72]) for (const dy of [-.72, .72]) {
       if (gpu) continue;
-      const screw = new THREE.CylinderGeometry(.032, .032, .028, 8); screw.rotateX(Math.PI / 2); screw.translate(dx, dy, .15); addStatic(screw, silver); screw.dispose();
+      const screw = fanScrew.clone().translate(dx, dy, .15); addStatic(screw, silver); screw.dispose();
     }
   };
   for (let i = 0; i < 3; i++) {
@@ -218,7 +221,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
     fan('top-' + i, -2.16 + i * 2.12, 6.48, .66, 'y');
   }
   fan('rear', -3.18, 5.34, .54, 'x');
-  frameGeometry.dispose(); ringGeometry.dispose();
+  frameGeometry.dispose(); ringGeometry.dispose(); fanScrew.dispose();
 
   const radiator = part('radiator');
   box(radiator, -.04, 6.16, .66, 6.15, .32, 1.83, white);
@@ -254,10 +257,10 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   }
   const shroud = rounded(5.24, 1.55, .15);
   for (const x of [-1.53, 0, 1.53]) { const h = new THREE.Path(); h.absarc(x, 0, .594, 0, Math.PI * 2, true); shroud.holes.push(h); }
-  const shroudGeometry = new THREE.ExtrudeGeometry(shroud, { depth: .12, bevelEnabled: true, bevelSize: .025, bevelThickness: .015, bevelSegments: 2, curveSegments: 36 });
+  const shroudGeometry = new THREE.ExtrudeGeometry(shroud, { depth: .12, bevelEnabled: true, bevelSize: .025, bevelThickness: .015, bevelSegments: 1, curveSegments: 18 });
   mesh(gpu, shroudGeometry, white, -1, 2.48, 1.06);
   for (let i = 0; i < 3; i++) fan('gpu-' + i, -2.13 + i * 1.53, 2.48, 1.09, 'z', .78, true);
-  haloGeometry.dispose(); fanRecess.dispose();
+  haloGeometry.dispose(); fanRecess.dispose(); fanTorus.dispose();
   box(gpu, -1, 3.255, 1.13, 4.93, .02, .07, lilac, .008);
   const gpuLabel = text(gpu, 'RTX 3070 Ti', -.92, 3.15, 1.222, 2.2, '#516873'); gpuLabel.scale.y = .8;
   box(gpu, .8, 1.46, .6, .14, 1.38, .25, white); box(gpu, .8, .82, .6, .57, .1, .59, silver);

@@ -3,9 +3,11 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { bikeStation, bikeStart, bikeGeometry } from '../../lib/world-bike';
+import { createStaticGeometryCache, releaseUnusedGeometries } from './static-geometry.ts';
 
 export function createBike(scene: THREE.Scene) {
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Map<number, THREE.MeshStandardMaterial>();
+  const batchGeometry = createStaticGeometryCache();
   const mat = (color: number) => {
     if (!materials.has(color)) materials.set(color, new THREE.MeshStandardMaterial({ color, roughness: 0.58, metalness: color === 0xc4c5c0 ? 0.65 : 0.1 }));
     return materials.get(color)!;
@@ -23,20 +25,20 @@ export function createBike(scene: THREE.Scene) {
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), w.sub(v).normalize()); return m;
   };
   const tube = (p: THREE.Object3D, points: number[][], r: number, color: number) => mesh(p,
-    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(v => new THREE.Vector3(...v))), 32, r, 8, false), color);
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(v => new THREE.Vector3(...v))), 20, r, 6, false), color);
   const batch = (group: THREE.Group) => {
     group.updateMatrixWorld(true);
     const parts = new Map<THREE.Material, THREE.BufferGeometry[]>();
     for (const child of [...group.children]) {
       if (!(child instanceof THREE.Mesh)) continue;
-      const geo = child.geometry.index ? child.geometry.toNonIndexed() : child.geometry.clone();
-      geo.applyMatrix4(child.matrix); geometries.add(geo);
+      const geo = batchGeometry.clone(child.geometry);
+      geo.applyMatrix4(child.matrix);
       const material = child.material as THREE.Material;
       if (!parts.has(material)) parts.set(material, []);
       parts.get(material)!.push(geo); group.remove(child);
     }
     for (const [material, geos] of parts) {
-      const geo = mergeGeometries(geos, false); geometries.add(geo);
+      const geo = mergeGeometries(geos, false); geos.forEach(g => g.dispose()); geometries.add(geo);
       const m = new THREE.Mesh(geo, material); m.castShadow = true; m.receiveShadow = true; group.add(m);
     }
   };
@@ -50,7 +52,7 @@ export function createBike(scene: THREE.Scene) {
     for (const z of [-0.67, 0.67]) {
       const wheel = new THREE.Group(); wheel.position.set(0, 0.36, z); (z > 0 ? front : group).add(wheel); wheels.push(wheel);
       for (const [radius, thickness, c] of [[0.33, 0.035, 0x514b5b], [0.298, 0.018, 0xffe6c3]] as const) {
-        const tire = mesh(wheel, new THREE.TorusGeometry(radius, thickness, 8, 40), c); tire.rotation.y = Math.PI / 2;
+        const tire = mesh(wheel, new THREE.TorusGeometry(radius, thickness, 6, 28), c); tire.rotation.y = Math.PI / 2;
       }
       for (let i = 0; i < 12; i++) {
         const angle = i * Math.PI / 6;
@@ -80,7 +82,7 @@ export function createBike(scene: THREE.Scene) {
     for (let i = 0; i < 6; i++) beam(front, [-0.2 + i * 0.08, 0.9, 0.95], [-0.2 + i * 0.08, 1.1, 0.95], 0.006, 0xc99972);
     box(front, 0, 0.87, 0.92, 0.1, 0.07, 0.05, 0xffe2a3);
     box(frame, 0, 0.68, -1, 0.08, 0.045, 0.035, 0xed8c80);
-    const chain = mesh(frame, new THREE.TorusGeometry(0.105, 0.012, 6, 24), 0xc4c5c0, 0.075, 0.4, -0.02); chain.rotation.y = Math.PI / 2;
+    const chain = mesh(frame, new THREE.TorusGeometry(0.105, 0.012, 6, 20), 0xc4c5c0, 0.075, 0.4, -0.02); chain.rotation.y = Math.PI / 2;
     for (const y of [0.31, 0.49]) beam(frame, [0.075, y, -0.02], [0.075, 0.36, -0.67], 0.009, 0x655976);
     batch(frame); batch(front);
     const pedals = new THREE.Group(); pedals.position.set(0, 0.4, -0.02); group.add(pedals);
@@ -102,15 +104,17 @@ export function createBike(scene: THREE.Scene) {
   const board = new THREE.Group(); board.position.set(-0.25, 0, -1.15); board.rotation.y = Math.atan2(12, 20); station.add(board);
   beam(board, [0, 0.04, 0], [0, 1.6, 0], 0.038, 0x655976);
   box(board, 0, 1.52, 0, 1.7, 0.48, 0.08, 0x43b5af);
-  const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 192;
-  const c = canvas.getContext('2d')!; c.fillStyle = '#43b5af'; c.fillRect(0, 0, 768, 192); c.fillStyle = '#fff1d9'; c.textAlign = 'center';
-  c.font = '700 56px sans-serif'; c.fillText('RIOMARU CYCLE', 384, 84); c.font = '26px sans-serif'; c.fillText('自転車で、街をひとまわり。', 384, 146);
+  const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+  const c = canvas.getContext('2d')!; c.fillStyle = '#43b5af'; c.fillRect(0, 0, 512, 128); c.fillStyle = '#fff1d9'; c.textAlign = 'center';
+  c.font = '700 37px sans-serif'; c.fillText('RIOMARU CYCLE', 256, 56); c.font = '17px sans-serif'; c.fillText('自転車で、街をひとまわり。', 256, 97);
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
   const signMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.7 });
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.62, 0.405), signMat); geometries.add(sign.geometry); sign.position.set(0, 1.52, 0.045); board.add(sign);
   batch(station);
   const bike = build(0x43b5af); scene.add(bike.group); bike.group.userData.bike = true;
   bike.group.position.set(bikeStart.x, 0.04, bikeStart.z);
+  batchGeometry.dispose();
+  releaseUnusedGeometries(scene, geometries);
   return {
     group: bike.group,
     update(position: { x: number; z: number }, rotation: number, phase: number, distance: number, height: number, motion?: BikePose) {

@@ -1,12 +1,14 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { createStaticGeometryCache, releaseUnusedGeometries } from "./static-geometry.ts";
 import { cats, groundBirds, getBirdFlight } from "../../lib/world-wildlife.ts";
 import { getWalkingHeight } from "../../lib/world-navigation.ts";
 
 export function createWildlife(scene: THREE.Scene, shadowTexture: THREE.Texture) {
   const root = new THREE.Group(); root.name = "wildlife"; scene.add(root);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Map<number, THREE.MeshStandardMaterial>();
-  const sphere = new THREE.SphereGeometry(1, 16, 12), cone = new THREE.ConeGeometry(1, 1, 3), rod = new THREE.CylinderGeometry(1,1,1,6);
+  const batchGeometry = createStaticGeometryCache();
+  const sphere = new THREE.SphereGeometry(1, 12, 8), cone = new THREE.ConeGeometry(1, 1, 3), rod = new THREE.CylinderGeometry(1,1,1,6);
   [sphere,cone,rod].forEach(g=>geometries.add(g));
   const mat = (color: number) => {
     if(!materials.has(color)) materials.set(color,new THREE.MeshStandardMaterial({color,roughness:.78}));
@@ -29,7 +31,7 @@ export function createWildlife(scene: THREE.Scene, shadowTexture: THREE.Texture)
     group.traverse(o=>{if(o instanceof THREE.Mesh&&!Array.isArray(o.material)){const list=buckets.get(o.material)??[];list.push(o);buckets.set(o.material,list);}});
     for(const [material,objects]of buckets) {
       if(objects.length<2)continue;
-      const parts=objects.map(o=>{const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return g;});
+      const parts=objects.map(o=>{const g=batchGeometry.clone(o.geometry);g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return g;});
       const merged=mergeGeometries(parts);parts.forEach(g=>g.dispose());
       if(merged){geometries.add(merged);objects.forEach(o=>o.removeFromParent());const m=new THREE.Mesh(merged,material);m.castShadow=true;m.receiveShadow=true;group.add(m);}
     }
@@ -96,7 +98,7 @@ export function createWildlife(scene: THREE.Scene, shadowTexture: THREE.Texture)
     head.remove(eyes,...ears);batch(head);head.add(eyes,...ears);batch(eyes);batch(body);
     tail.position.set(0,.16,-.28);
     const tailCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(.06,.02,-.24),new THREE.Vector3(.34,.09,-.33),new THREE.Vector3(.43,.26,-.17),new THREE.Vector3(.34,.36,-.06)]);
-    const tailGeo=new THREE.TubeGeometry(tailCurve,28,.052,8,false);
+    const tailGeo=new THREE.TubeGeometry(tailCurve,16,.052,6,false);
     mesh(tail,tailGeo,fur,[0,0,0]);
     for(let i=0;i<3;i++){const p=tailCurve.getPoint(.65+i*.12);oval(tail,stripe,p.toArray(),[.055,.055,.055]);}batch(tail);
     paw.position.set(.105,.43,.18);paw.visible=data.pose==='groom';
@@ -150,6 +152,8 @@ export function createWildlife(scene: THREE.Scene, shadowTexture: THREE.Texture)
     const model=birdModel(true,true),flock=Math.floor(index/3),member=index%3;
     model.group.name=`flying-bird-${flock}-${member}`;root.add(model.group);model.group.visible=false;return {...model,flock,member};
   });
+  batchGeometry.dispose();
+  releaseUnusedGeometries(root, geometries);
   let started: number | null=null;
   let elapsed=0,petting:{index:number;time:number}|null=null;
   return {

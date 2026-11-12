@@ -4,11 +4,13 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { areaGate } from '../../lib/world-zones.ts';
 import { createHallWordGeometry } from './create-hall-word.ts';
+import { createStaticGeometryCache, releaseUnusedGeometries } from './static-geometry.ts';
 
 export function createAreaGate(scene: THREE.Scene, applyVisibility: (material: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial) => void, font: Font) {
   const root = new THREE.Group();
   root.name = 'area-gate'; root.position.set(areaGate.x, 0, areaGate.z); scene.add(root);
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>();
+  const batchGeometry = createStaticGeometryCache();
   const metal = new THREE.MeshStandardMaterial({ color: 0xbbb8a5, metalness: .4, roughness: .32 });
   const plinth = new THREE.MeshStandardMaterial({ color: 0x384b4c, roughness: .55, metalness: .3 });
   const edge = new THREE.LineBasicMaterial({ color: 0xd6f5ec, transparent: true, opacity: .42, depthWrite: false, toneMapped: false });
@@ -88,15 +90,15 @@ export function createAreaGate(scene: THREE.Scene, applyVisibility: (material: T
       material.opacity = (cameraPosition.z - areaGate.z) * sign >= 0 ? 1 : 0;
     };
 
-    const canvas = document.createElement('canvas'); canvas.width = 2048; canvas.height = 256;
+    const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 128;
     const context = canvas.getContext('2d')!;
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.textAlign = 'left'; context.textBaseline = 'middle'; context.fillStyle = '#fff7e6';
-    context.font = '500 130px "Hiragino Sans", "Yu Gothic", sans-serif';
-    context.fillText(title, 64, 122, direction === 'north' ? 650 : 1110);
+    context.font = '500 65px "Hiragino Sans", "Yu Gothic", sans-serif';
+    context.fillText(title, 32, 61, direction === 'north' ? 325 : 555);
     context.textAlign = 'right'; context.fillStyle = '#d8eee5';
-    context.font = '500 90px "Hiragino Sans", "Yu Gothic", sans-serif';
-    context.fillText(other, 1984, 132, direction === 'north' ? 1180 : 750);
+    context.font = '500 45px "Hiragino Sans", "Yu Gothic", sans-serif';
+    context.fillText(other, 992, 66, direction === 'north' ? 590 : 375);
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4; textures.add(texture);
     const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false });
     applyVisibility(material); materials.add(material);
@@ -110,7 +112,7 @@ export function createAreaGate(scene: THREE.Scene, applyVisibility: (material: T
     const parts: THREE.BufferGeometry[] = [];
     for (const object of [...root.children]) {
       if (!(object instanceof THREE.Mesh) || object.material !== material) continue;
-      const part = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
+      const part = batchGeometry.clone(object.geometry);
       parts.push(part.applyMatrix4(object.matrix)); object.removeFromParent();
     }
     const merged = mergeGeometries(parts); parts.forEach(g => g.dispose());
@@ -126,6 +128,8 @@ export function createAreaGate(scene: THREE.Scene, applyVisibility: (material: T
     geometries.add(edgeGeometry);
     const outline = new THREE.LineSegments(edgeGeometry, edge); outline.renderOrder = 2; root.add(outline);
   }
+  batchGeometry.dispose();
+  releaseUnusedGeometries(root, geometries);
   return {
     dispose() {
       root.removeFromParent();

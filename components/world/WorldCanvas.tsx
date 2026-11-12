@@ -1015,12 +1015,14 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
     document.addEventListener("visibilitychange", visibility);
     reduced.addEventListener("change", motionPreferenceChanged);
     resize();
-    characterReady
-      .then(() => {
-        if (!disposed) return renderer.compileAsync(world.scene, camera);
-      })
+    const sceneCompileReady = renderer
+      .compileAsync(world.scene, camera)
       .then(() => {
         if (!disposed) return world.prepareReflections(renderer, camera);
+      });
+    Promise.all([characterReady, sceneCompileReady])
+      .then(() => {
+        if (!disposed) return renderer.compileAsync(person, camera, world.scene);
       })
       .then(() => {
         if (disposed) return;
