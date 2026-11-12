@@ -25,22 +25,25 @@
 .modeBarDark .wordmark, .modeBarDark .modeSwitch > :is(a, span) { min-height: 44px; }
 .modeBarDark .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; }
 .modeBarDark .wordmark {
-  color: #4c3557;
-  text-shadow: 0 1px 3px #fff7;
+  color: #000000;
+  text-shadow: none;
+  font-weight: 300;
 }
 .modeBarDark .modeSwitch {
-  border-color: #fff8edb3;
-  background: #fff7eaeF;
-  box-shadow: 0 3px 16px #55493812;
-  border-radius: 12px;
+  border: 1px solid #000000;
+  background: #ffffff;
+  box-shadow: none;
+  border-radius: 0px;
 }
 .modeBarDark .modeSwitch > :is(a, span) {
-  color: #596159;
-  border-radius: 8px;
+  color: #000000;
+  border-radius: 0px;
+  font-weight: 300;
+  font-size: 12px;
 }
 .modeBarDark .modeSwitch > :is(a, span)[aria-current="page"] {
-  background: #347d78;
-  color: #fff7e8;
+  background: #000000;
+  color: #ffffff;
 }
 .worldMain {
   position: relative;

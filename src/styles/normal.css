@@ -35,33 +35,50 @@
   top: 104px;
 }
 :root {
-  --control-ink: #294b3e;
-  --control-paper: #fffaf3;
-  --control-line: #bbc9bb;
-  --control-hover: #edf3e9;
-  --control-selected: #e2eddf;
-  --control-primary: #294f42;
-  --control-focus: #34716c;
+  --control-ink: #000000;
+  --control-paper: #ffffff;
+  --control-line: #e5e5e5;
+  --control-hover: #f0f0f0;
+  --control-selected: #000000;
+  --control-primary: #000000;
+  --control-focus: #000000;
 }
 .modeSwitch a,
 .modeSwitch > span[aria-current="page"] {
   min-width: 44px;
   min-height: 44px;
-  border-radius: 10px;
+  border-radius: 0px;
   touch-action: manipulation;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 .modeSwitch a:focus-visible {
-  outline: 3px solid var(--control-focus);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 2px var(--control-paper);
+  outline: 2px solid var(--control-focus);
+  outline-offset: 2px;
 }
 .modeBar .modeSwitch { gap: 8px; padding: 0; border: 0; background: transparent; box-shadow: none; }
-.modeBar .modeSwitch > :is(a, span) { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--control-paper); color: var(--control-ink); box-shadow: 0 3px 12px #163c2420; font-size: 13px; font-weight: 550; }
-.modeBar .modeSwitch > :is(a, span)[aria-current="page"] { border-color: #62856c; background: var(--control-selected); color: #214b36; }
+.modeBar .modeSwitch > :is(a, span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--control-line);
+  border-radius: 0px;
+  background: var(--control-paper);
+  color: var(--control-ink);
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+.modeBar .modeSwitch > :is(a, span)[aria-current="page"] {
+  border-color: #000000;
+  background: #000000;
+  color: #ffffff;
+}
 @media (hover: hover) and (pointer: fine) {
   .modeBar .modeSwitch a:hover {
-    border-color: #738d78;
+    border-color: #000000;
     background: var(--control-hover);
     color: var(--control-ink);
   }

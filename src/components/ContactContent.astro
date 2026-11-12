@@ -1,20 +1,106 @@
 ---
 const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfFQ_8CB_A13XxTq1G7VGVpJ3BggbiJxdHN8--r1TL5TuQyoQ/viewform";
+const formActionUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfFQ_8CB_A13XxTq1G7VGVpJ3BggbiJxdHN8--r1TL5TuQyoQ/formResponse";
 ---
 
 <div class="contactContent">
-  <p class="contactLead">お仕事のご相談やご質問など、お気軽にお問い合わせください。</p>
-  <p class="contactNote">送信内容はGoogleフォームで受け付けられ、問い合わせへの返信に使用します。</p>
-  <div class="contactForm">
-    <iframe
-      class="contactFormEmbed"
-      src={`${formUrl}?embedded=true`}
-      title="橋本怜苑へのお問い合わせフォーム"
-      width="640"
-      height="878"
-      loading="lazy"
-      referrerpolicy="no-referrer"
-    ></iframe>
-    <a class="contactFormLink" href={formUrl} target="_blank" rel="noreferrer">フォームを別のタブで開く ↗</a>
+  <div class="contactHeader">
+    <p class="contactLead">お仕事のご相談やご質問など、お気軽にお問い合わせください。</p>
+    <p class="contactNote">送信内容はGoogleフォーム経由で安全に集約され、内容確認後にご返信いたします。</p>
+  </div>
+
+  <form
+    class="contactForm"
+    action={formActionUrl}
+    method="POST"
+    target="_blank"
+  >
+    <div class="formGrid">
+      <div class="formField">
+        <label for="contact-name">
+          <span class="fieldMeta">
+            <span class="fieldIndex">01</span>
+            <span class="fieldLabel">お名前</span>
+          </span>
+          <span class="fieldTag">REQUIRED</span>
+        </label>
+        <input
+          id="contact-name"
+          type="text"
+          name="entry.2123273083"
+          required
+          placeholder="山田 太郎"
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="formField formFieldRight">
+        <label for="contact-email">
+          <span class="fieldMeta">
+            <span class="fieldIndex">02</span>
+            <span class="fieldLabel">メールアドレス</span>
+          </span>
+          <span class="fieldTag">REQUIRED</span>
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          name="entry.364583737"
+          required
+          placeholder="name@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="formField formFieldFull">
+        <label for="contact-subject">
+          <span class="fieldMeta">
+            <span class="fieldIndex">03</span>
+            <span class="fieldLabel">件名</span>
+          </span>
+          <span class="fieldTag fieldTagOptional">OPTIONAL</span>
+        </label>
+        <input
+          id="contact-subject"
+          type="text"
+          name="entry.708870586"
+          placeholder="ご相談内容の概要"
+        />
+      </div>
+
+      <div class="formField formFieldFull">
+        <label for="contact-message">
+          <span class="fieldMeta">
+            <span class="fieldIndex">04</span>
+            <span class="fieldLabel">お問い合わせ内容</span>
+          </span>
+          <span class="fieldTag">REQUIRED</span>
+        </label>
+        <textarea
+          id="contact-message"
+          name="entry.905748020"
+          rows="5"
+          required
+          placeholder="お問い合わせ内容をご記入ください..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="formFooter">
+      <button type="submit" class="submitButton">
+        <span>SEND MESSAGE</span>
+        <span class="buttonArrow">↗</span>
+      </button>
+      <span class="formSecurity">
+        PROTECTED BY GOOGLE FORMS // NEW TAB DISPATCH
+      </span>
+    </div>
+  </form>
+
+  <div class="contactFallback">
+    <span class="fallbackHint">直接開く場合はこちら：</span>
+    <a class="contactFormLink" href={formUrl} target="_blank" rel="noreferrer">
+      Googleフォームを直接開く ↗
+    </a>
   </div>
 </div>

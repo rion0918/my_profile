@@ -1,13 +1,15 @@
 :root {
-  --bg: #f6f7f2;
-  --panel: rgba(255, 255, 251, 0.76);
-  --ink: #171914;
-  --muted: #6e7369;
-  --line: rgba(23, 25, 20, 0.14);
-  --line-strong: rgba(23, 25, 20, 0.28);
-  --blue: #557e96;
-  --green: #7f9f76;
-  --orange: #c9904b;
+  --bg: #f6f8f7;
+  --panel: #ffffff;
+  --ink: #000000;
+  --carbon: #0f0e12;
+  --muted: #737373;
+  --line: #e5e5e5;
+  --line-strong: #000000;
+  --blue: #000000;
+  --green: #000000;
+  --orange: #ff9900;
+  --amber: #ff9900;
 }
 
 * {
@@ -17,31 +19,14 @@
 html {
   scroll-behavior: smooth;
   background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    radial-gradient(
-      circle at 18% 10%,
-      rgba(85, 126, 150, 0.16),
-      transparent 24rem
-    ),
-    radial-gradient(
-      circle at 88% 22%,
-      rgba(127, 159, 118, 0.14),
-      transparent 22rem
-    ),
-    linear-gradient(rgba(23, 25, 20, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 25, 20, 0.035) 1px, transparent 1px),
-    var(--bg);
-  background-size:
-    auto,
-    auto,
-    36px 36px,
-    36px 36px,
-    auto;
+  background: var(--bg);
   font-family:
     Inter,
     ui-sans-serif,
@@ -49,10 +34,10 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     "Hiragino Sans",
-    "Yu Gothic",
-    "YuGothic",
     "Noto Sans JP",
     sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
 }
 
 a {

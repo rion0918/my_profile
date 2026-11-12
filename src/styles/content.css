@@ -21,15 +21,16 @@
   grid-template-columns: 28px auto;
   align-items: center;
   gap: 8px;
-  color: rgba(23, 25, 20, 0.5);
+  color: var(--muted);
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0;
+  font-weight: 300;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .sideIndex span {
-  color: var(--blue);
+  color: var(--ink);
+  font-family: ui-monospace, monospace;
 }
 
 .sideIndex a:hover {
@@ -50,26 +51,37 @@
   aspect-ratio: 1;
   display: block;
   overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
+  border: 1px solid var(--line);
+  border-radius: 0px;
   background: var(--panel);
-  box-shadow: 0 24px 70px rgba(23, 25, 20, 0.08);
+  box-shadow: none;
 }
 
-.worldPreview { display: flex; align-items: center; gap: 24px; margin: -20px 0 56px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
-.worldPreview img { display: block; width: 180px; height: 110px; object-fit: cover; border-radius: 8px; }
-.worldPreviewCopy { display: grid; gap: 8px; }
-.worldPreviewCopy strong { font-size: 20px; font-weight: 650; }
-.worldPreviewCopy > span { color: var(--muted); font-size: 13px; line-height: 1.7; }
-.worldPreviewArrow { margin-left: auto; padding: 12px; font-size: 24px; color: #294f42; }
-.worldPreview:hover { border-color: #7f9f76; background: #f0f3e9; }
-.worldPreview:focus-visible { outline: 3px solid #427e7b; outline-offset: 4px; }
+.worldPreview {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: -20px 0 56px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 0px;
+  background: var(--panel);
+  box-shadow: none;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.worldPreview img { display: block; width: 180px; height: 110px; object-fit: cover; border-radius: 0px; }
+.worldPreviewCopy { display: grid; gap: 6px; }
+.worldPreviewCopy strong { font-size: 19px; font-weight: 300; letter-spacing: -0.01em; }
+.worldPreviewCopy > span { color: var(--muted); font-size: 13px; line-height: 1.6; font-weight: 300; }
+.worldPreviewArrow { margin-left: auto; padding: 12px; font-size: 20px; color: var(--ink); }
+.worldPreview:hover { border-color: var(--ink); background: #ffffff; }
+.worldPreview:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 @media (max-width: 600px) {
   .worldPreview { gap: 14px; padding: 12px; margin-bottom: 40px; }
   .worldPreview img { width: 100px; height: 86px; }
   .worldPreviewCopy strong { font-size: 16px; }
   .worldPreviewCopy > span { font-size: 11px; }
-  .worldPreviewArrow { padding: 0 4px 0 0; font-size: 20px; }
+  .worldPreviewArrow { padding: 0 4px 0 0; font-size: 18px; }
 }
 
 .avatar img {
@@ -88,8 +100,9 @@
 .role {
   margin: 0;
   color: var(--muted);
-  font-size: clamp(15px, 1.8vw, 20px);
-  font-weight: 700;
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
 }
 
 h1,
@@ -101,14 +114,15 @@ p {
 
 h1 {
   margin: 6px 0 8px;
-  font-size: clamp(42px, 6.6vw, 78px);
-  line-height: 0.96;
-  letter-spacing: 0;
+  font-size: clamp(38px, 6vw, 68px);
+  line-height: 1.05;
+  font-weight: 300;
+  letter-spacing: -0.025em;
 }
 
 nav {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -118,25 +132,26 @@ nav a,
 .pillList span,
 .miniTags span {
   border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 251, 0.68);
+  border-radius: 0px;
+  background: var(--panel);
 }
 
 nav a {
-  padding: 10px 14px;
+  padding: 8px 12px;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   transition:
-    border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 nav a:hover {
   color: var(--ink);
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
+  border-color: var(--ink);
+  transform: none;
 }
 
 .section {
@@ -145,7 +160,7 @@ nav a:hover {
   grid-template-columns: 210px minmax(0, 1fr);
   gap: clamp(28px, 5vw, 58px);
   padding: clamp(52px, 7vw, 82px) 0;
-  border-top: 1px solid var(--line-strong);
+  border-top: 1px solid var(--line);
   scroll-margin-top: 24px;
 }
 
@@ -168,16 +183,19 @@ nav a:hover {
 .sectionHead span {
   display: block;
   margin-bottom: 12px;
-  color: var(--blue);
-  font-size: 12px;
-  font-weight: 900;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 h2 {
   margin: 0;
-  font-size: clamp(28px, 4.2vw, 48px);
-  line-height: 1;
-  letter-spacing: 0;
+  font-size: clamp(26px, 3.8vw, 42px);
+  line-height: 1.12;
+  font-weight: 300;
+  letter-spacing: -0.015em;
 }
 
 .aboutGrid {
@@ -196,14 +214,17 @@ h2 {
 .factRow p {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .factRow h3 {
   margin: 0;
-  font-size: clamp(18px, 2.2vw, 27px);
+  font-size: clamp(17px, 2vw, 24px);
   line-height: 1.35;
+  font-weight: 300;
   letter-spacing: 0;
 }
 
@@ -217,14 +238,17 @@ h2 {
   min-height: 156px;
   padding: 22px;
   border: 1px solid var(--line);
+  border-radius: 0px;
   background: var(--panel);
-  backdrop-filter: blur(16px);
 }
 
 .techGroup h3 {
   margin-bottom: 24px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .pillList,
@@ -235,9 +259,10 @@ h2 {
 }
 
 .pillList span {
-  padding: 10px 13px;
-  font-size: clamp(15px, 1.5vw, 18px);
-  font-weight: 800;
+  padding: 8px 12px;
+  font-size: clamp(13px, 1.3vw, 15px);
+  font-weight: 300;
+  border-radius: 0px;
   overflow-wrap: anywhere;
 }
 
@@ -256,7 +281,7 @@ h2 {
   bottom: 16px;
   left: 16px;
   width: 1px;
-  background: var(--line-strong);
+  background: var(--line);
 }
 
 .careerItem {
@@ -272,18 +297,18 @@ h2 {
 .careerItem:not(:last-child)::after {
   content: "↑";
   position: absolute;
-  left: -52px;
-  bottom: -17px;
-  width: 28px;
-  height: 28px;
+  left: -48px;
+  bottom: -13px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 50%;
-  background: rgba(255, 255, 251, 0.86);
-  color: var(--blue);
-  font-size: 16px;
-  font-weight: 900;
+  border-radius: 0px;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 300;
   line-height: 1;
 }
 
@@ -297,26 +322,29 @@ h2 {
 .flowMeta::before {
   content: "";
   position: absolute;
-  left: -46px;
-  top: 2px;
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--bg);
-  box-shadow: inset 0 0 0 5px rgba(85, 126, 150, 0.16);
+  left: -42px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink);
+  border-radius: 0px;
+  background: var(--ink);
+  box-shadow: none;
 }
 
 .flowMeta span {
-  color: var(--orange);
+  color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .careerItem time {
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 900;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 300;
+  font-family: ui-monospace, monospace;
 }
 
 .flowMeta .periodNote {
@@ -328,8 +356,9 @@ h2 {
 
 .careerItem h3 {
   margin-bottom: 8px;
-  font-size: clamp(22px, 3vw, 36px);
+  font-size: clamp(20px, 2.6vw, 32px);
   line-height: 1.15;
+  font-weight: 300;
 }
 
 .careerItem h3 small {
@@ -338,6 +367,7 @@ h2 {
   color: var(--muted);
   font-size: 0.54em;
   line-height: 1.35;
+  font-weight: 300;
 }
 
 .careerItem h3 small:last-child {
@@ -348,15 +378,17 @@ h2 {
 .careerItem p {
   margin-bottom: 16px;
   color: var(--muted);
-  line-height: 1.8;
-  font-weight: 650;
+  line-height: 1.7;
+  font-weight: 300;
+  font-size: 13px;
 }
 
 .miniTags span {
-  padding: 7px 10px;
+  padding: 6px 9px;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 300;
+  border-radius: 0px;
 }
 
 .socialList {
@@ -365,80 +397,252 @@ h2 {
 }
 
 .socialList a {
-  min-height: 78px;
+  min-height: 72px;
   display: grid;
   grid-template-columns: minmax(130px, 0.28fr) minmax(0, 1fr);
   gap: 18px;
   align-items: center;
   border-bottom: 1px solid var(--line);
-  transition:
-    color 180ms ease,
-    transform 180ms ease;
+  transition: color 140ms ease;
 }
 
 .socialList a:hover {
-  color: var(--blue);
-  transform: translateX(6px);
+  color: var(--ink);
+  transform: none;
 }
 
 .socialList span {
-  font-size: clamp(20px, 2.7vw, 32px);
-  font-weight: 900;
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 300;
 }
 
 .socialList small {
   min-width: 0;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 300;
+  font-family: ui-monospace, monospace;
   overflow-wrap: anywhere;
 }
 
 .contactContent {
   display: grid;
-  gap: 24px;
+  gap: 28px;
+}
+
+.contactHeader {
+  display: grid;
+  gap: 6px;
 }
 
 .contactLead {
   margin: 0;
-  color: var(--muted);
-  font-weight: 650;
-  line-height: 1.8;
-}
-
-.contactForm {
-  display: grid;
-  gap: 12px;
-}
-
-.contactFormEmbed {
-  display: block;
-  width: 100%;
-  height: 940px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--panel);
-}
-
-.contactFormLink {
-  justify-self: start;
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.6;
+  font-size: 14px;
 }
 
 .contactNote {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
-  line-height: 1.7;
+  font-weight: 300;
+  line-height: 1.6;
 }
 
-@media (max-width: 760px) {
-  .contactFormEmbed {
-    height: 1050px;
+.contactForm {
+  border: 1px solid var(--line);
+  border-radius: 0px;
+  background: #ffffff;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.formField {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  background: #ffffff;
+}
+
+.formField:not(.formFieldRight):not(.formFieldFull) {
+  border-right: 1px solid var(--line);
+}
+
+.formFieldFull {
+  grid-column: 1 / -1;
+}
+
+.formField label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.fieldMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fieldIndex {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.fieldTag {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  padding: 2px 6px;
+  border-radius: 0px;
+  letter-spacing: 0.04em;
+}
+
+.fieldTagOptional {
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+.formField input,
+.formField textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0px;
+  background: var(--bg);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.formField textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.formField input::placeholder,
+.formField textarea::placeholder {
+  color: #a3a3a3;
+  font-weight: 300;
+}
+
+.formField input:focus-visible,
+.formField textarea:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+  background: #ffffff;
+  border-color: var(--ink);
+}
+
+.formFooter {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--bg);
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--ink);
+  border-radius: 0px;
+  background: var(--ink);
+  color: #ffffff;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.submitButton:hover {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.buttonArrow {
+  font-size: 14px;
+  transition: transform 140ms ease;
+}
+
+.submitButton:hover .buttonArrow {
+  transform: translate(2px, -2px);
+}
+
+.formSecurity {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.contactFallback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.fallbackHint {
+  font-weight: 300;
+}
+
+.contactFormLink {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 300;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .formField:not(.formFieldRight):not(.formFieldFull) {
+    border-right: none;
+  }
+  .formFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .submitButton {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -539,15 +743,15 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 :focus-visible {
-  outline: 3px solid #b87939;
-  outline-offset: 5px;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .modeBar {
   position: sticky;
   top: 0;
   z-index: 2;
   background: var(--bg);
-  height: 76px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -559,27 +763,32 @@ a {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 23px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
 }
 .wordmark > span {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .modeSwitch {
   display: flex;
   flex-wrap: nowrap;
   gap: 2px;
-  padding: 4px;
+  padding: 2px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 0px;
 }
 .modeSwitch > :is(a, span) {
   border: 0;
-  border-radius: 3px;
+  border-radius: 0px;
   background: transparent;
-  padding: 9px 15px;
+  padding: 8px 14px;
   font-size: 12px;
+  font-weight: 300;
   white-space: nowrap;
 }
 .modeSwitch > :is(a, span)[aria-current="page"] {
@@ -603,24 +812,31 @@ a {
   padding-top: 0;
 }
 .productNumber {
-  color: var(--blue);
-  font-size: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 300;
+  font-family: ui-monospace, monospace;
   padding-top: 8px;
 }
 .productLink h3 {
-  font-size: 30px;
-  margin-bottom: 12px;
+  font-size: clamp(22px, 2.8vw, 30px);
+  font-weight: 300;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 .productLink p {
   color: var(--muted);
-  line-height: 1.8;
+  line-height: 1.7;
+  font-weight: 300;
+  font-size: 13px;
 }
 .textLink {
   display: inline-block;
-  color: #476d80;
-  font-size: 13px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 300;
   text-decoration: underline;
-  text-underline-offset: 5px;
+  text-underline-offset: 4px;
 }
 .detailPage {
   width: min(100% - 40px, 860px);
@@ -628,28 +844,34 @@ a {
   padding: 54px 0 96px;
 }
 .detailPage h1 {
-  font-size: clamp(32px, 6vw, 62px);
+  font-size: clamp(32px, 5.5vw, 56px);
+  font-weight: 300;
   margin: 40px 0;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .productDetail {
-  line-height: 1.9;
+  line-height: 1.8;
+  font-weight: 300;
 }
 .productLinks { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
 .productLinks .textLink { display: inline-flex; align-items: center; min-height: 44px; }
 .productDetail .productLead {
-  font-size: clamp(19px, 2.5vw, 24px);
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 300;
+  line-height: 1.6;
   color: var(--ink);
 }
 .productDetail section {
   margin-top: 32px;
 }
 .productDetail h3 {
-  font-size: 19px;
+  font-size: 18px;
+  font-weight: 300;
   margin-bottom: 8px;
 }
 .productDetail p {
-  color: #62675e;
+  color: var(--muted);
 }
 .productDetail img {
   max-width: 100%;
@@ -666,22 +888,26 @@ a {
   margin-bottom: 42px;
 }
 .productIntroduction .productLead {
-  font-size: clamp(21px, 2.2vw, 28px);
-  line-height: 1.7;
-  letter-spacing: -.025em;
+  font-size: clamp(19px, 2.2vw, 26px);
+  line-height: 1.6;
+  font-weight: 300;
+  letter-spacing: -.02em;
 }
 .productIntroduction .productPlatform {
-  color: #3b7471;
-  font-size: 12px;
+  color: var(--muted);
+  font-size: 11px;
   margin-top: 24px;
-  font-weight: 600;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .productIntroduction .productMediaNote {
-  color: #626c5f;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.7;
   margin-top: 12px;
   max-width: 28em;
+  font-weight: 300;
 }
 .productDetail .productShowcase {
   margin: 0;
@@ -689,12 +915,13 @@ a {
   align-items: flex-start;
   gap: 16px;
   padding: 24px 18px 16px;
-  background: #e7e3ee;
-  border-radius: 24px;
+  background: #f0f0f0;
+  border: 1px solid var(--line);
+  border-radius: 0px;
   min-width: 0;
 }
 .product-yoin .productShowcase {
-  background: #dce7e7;
+  background: #f0f0f0;
 }
 .productShowcase figure {
   flex: 1;
@@ -704,27 +931,27 @@ a {
 .productShowcase figure:nth-child(2) { padding-top: 32px; }
 .productScreen {
   display: block;
-  border: 5px solid #26383d;
-  border-radius: 18px;
-  box-shadow: 0 10px 25px #26383d20;
+  border: 1px solid var(--line-strong);
+  border-radius: 0px;
+  box-shadow: none;
   overflow: hidden;
-  background: #0d1115;
-  transition: transform .2s ease;
+  background: #000000;
+  transition: border-color .14s ease;
 }
-.product-pop-reminder .productScreen { border-color: #fcf9f4; background: #f5f2ff; }
-.productScreen:hover { transform: translateY(-4px); }
+.product-pop-reminder .productScreen { border-color: var(--line-strong); background: #000000; }
+.productScreen:hover { transform: none; border-color: var(--ink); }
 .productDetail .productScreen img { display: block; width: 100%; height: auto; }
-.productShowcase figcaption { color: #3d5757; font-size: 11px; line-height: 1.7; margin-top: 12px; }
+.productShowcase figcaption { color: var(--muted); font-size: 11px; line-height: 1.7; margin-top: 12px; font-weight: 300; }
 .productLink:has(.productListPreview) { grid-template-columns: 36px minmax(0, 1fr) 136px; align-items: center; }
-.productListPreview { height: 170px; overflow: hidden; border-radius: 16px; background: #dce7e7; padding: 14px 22px 0; }
-.productListPreview.product-pop-reminder { background: #e7e3ee; }
-.productListPreview img { width: 100%; display: block; border: 3px solid #26383d; border-radius: 12px; }
+.productListPreview { height: 170px; overflow: hidden; border-radius: 0px; background: #f0f0f0; border: 1px solid var(--line); padding: 14px 22px 0; }
+.productListPreview.product-pop-reminder { background: #f0f0f0; }
+.productListPreview img { width: 100%; display: block; border: 1px solid var(--line-strong); border-radius: 0px; }
 @media (max-width: 760px) {
   .productHero { grid-template-columns: 1fr; gap: 24px; }
   .productDetail .productShowcase { padding: 22px 14px 14px; gap: 14px; }
   .productLink:has(.productListPreview) { grid-template-columns: 25px minmax(0,1fr) 80px; gap: 12px; }
-  .productListPreview { padding: 10px 10px 0; height: 130px; border-radius: 12px; }
-  .productScreen { border-width: 4px; border-radius: 14px; }
+  .productListPreview { padding: 10px 10px 0; height: 130px; border-radius: 0px; }
+  .productScreen { border-width: 1px; border-radius: 0px; }
 }
 .productDetail dd {
   margin: 4px 0;
