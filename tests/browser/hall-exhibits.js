@@ -4,7 +4,7 @@ async page=>{
   const c=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});
   try{
    await c.addInitScript(()=>sessionStorage.setItem('portfolio-welcome-v4','seen'));
-   await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
+   await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.riomaru.jp|play.google.com)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External destination</title>'}));
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
    await p.goto(origin+'/?detail=history');await p.getByRole('dialog',{name:'Background',exact:true}).waitFor({state:'visible'});
    await p.locator('.hallIntroduction').getByRole('heading',{name:'Background',exact:true}).waitFor({state:'visible',timeout:2500});
@@ -18,6 +18,12 @@ async page=>{
    for(const [id,name,featureCount] of [['yoin','Yoin',2],['pop-reminder','ふわっと。',3]]){
     await p.goto(origin+'/?detail='+id);const hall=p.getByRole('dialog',{name:name+'館',exact:true});await hall.waitFor({state:'visible'});
     const controls=await hall.locator('.hallChapterNav button,.hallDialogHeader a,.hallDialogHeader button').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {name:e.textContent,width:r.width,height:r.height};}));if(controls.some(r=>r.width<44||r.height<44))throw Error('hall button target smaller than 44px '+JSON.stringify(controls));
+    if(id==='pop-reminder'){
+     const headerSite=hall.locator('.hallDialogHeader a.hallHeaderExternal');
+     if(await headerSite.getAttribute('href')!=='https://fuwatto.riomaru.jp/'||await headerSite.getAttribute('target')!=='_blank')throw Error('missing header official site CTA');
+     const heroSite=hall.locator('.hallProductHeroActions .hallAction'),heroPlay=hall.locator('.hallProductHeroActions .hallActionSecondary');
+     if(await heroSite.getAttribute('href')!=='https://fuwatto.riomaru.jp/'||await heroPlay.getAttribute('href')!=='https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja')throw Error('missing hero CTAs');
+    }
     const history=await p.evaluate(()=>window.history.length),url=p.url(),gallery=p.getByRole('region',{name:name+'の実画面',exact:true});
     await p.waitForFunction(()=>document.querySelector('.hallGalleryMain img')?.complete&&document.querySelector('.hallGalleryMain img').naturalWidth>300);
     const firstAlt=await gallery.locator('.hallGalleryMain img').getAttribute('alt');
@@ -42,9 +48,9 @@ async page=>{
     if(scroll<50||await hall.evaluate(e=>e.scrollTop)!==0)throw Error('only the content body should scroll');
     if(p.url()!==url||await p.evaluate(()=>window.history.length)!==history)throw Error('gallery or chapter added history');
     if(id==='pop-reminder'){
-     const a=hall.getByRole('link',{name:/公式サイトを見る/});await a.scrollIntoViewIfNeeded();const before=await hall.locator('.hallDialogBody').evaluate(e=>e.scrollTop);
+     const a=hall.locator('.hallProductLinks').getByRole('link',{name:/公式サイトを見る/});await a.scrollIntoViewIfNeeded();const before=await hall.locator('.hallDialogBody').evaluate(e=>e.scrollTop);
      const popupPromise=p.waitForEvent('popup');await a.click();const popup=await popupPromise;await popup.waitForLoadState('domcontentloaded');
-     if(popup.url()!=='https://fuwatto.pages.dev/'||await a.getAttribute('target')!=='_blank')throw Error('incorrect official site destination');await popup.close();
+     if(popup.url()!=='https://fuwatto.riomaru.jp/'||await a.getAttribute('target')!=='_blank')throw Error('incorrect official site destination');await popup.close();
      if(!await hall.isVisible()||await hall.locator('.hallDialogBody').evaluate(e=>e.scrollTop)!==before)throw Error('external link lost hall position');
     }
     await hall.getByRole('button',{name:'概要へ移動',exact:true}).click();

@@ -893,6 +893,17 @@ a {
   font-weight: 300;
   letter-spacing: -.02em;
 }
+.productIntroduction .productStatus {
+  display: inline-block;
+  margin: 18px 0 0;
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.5;
+}
 .productIntroduction .productPlatform {
   color: var(--muted);
   font-size: 11px;

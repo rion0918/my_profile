@@ -1,7 +1,7 @@
 async(page)=>{
  const origin='http://localhost:3001',results=[],errors=[];
  const stops=[['history','Background'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
- const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','pop-reminder':'https://fuwatto.pages.dev/'};
+ const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','pop-reminder':'https://fuwatto.riomaru.jp/'};
  const browser=page.context().browser();
  const setup=async c=>{
   await c.addInitScript(()=>{
@@ -15,7 +15,7 @@ async(page)=>{
  const c=await browser.newContext({viewport:{width:1440,height:900},timezoneId:'Asia/Tokyo'});
  try{
   await setup(c);await c.addInitScript(()=>{sessionStorage.setItem('portfolio-position-v4',JSON.stringify({version:4,x:-7,z:8}));sessionStorage.setItem('portfolio-welcome-v3','seen');});
-  await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.pages.dev)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
+  await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.riomaru.jp)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
   const html=await(await p.request.get(origin)).text();if(!html.includes('街の入口')||!html.includes('通常表示で読む'))throw Error('missing initial HTML');
   await p.goto(origin+'/world');await ready(p);const spawn=await position(p);if(Math.hypot(spawn[0],spawn[2]-31)>.01)throw Error('old position restored '+spawn);

@@ -48,7 +48,7 @@ async(page)=>{
     }else if(id==='yoin'){
      if(await link.getAttribute('href')!=='/projects/yoin'||await p.locator('.productShowcase img').count()!==2)throw Error('Yoin contents changed');
     }else if(id==='pop-reminder'){
-     if(await link.getAttribute('href')!=='https://fuwatto.pages.dev/'||await link.getAttribute('target')!=='_blank'||await p.locator('.productShowcase img').count()!==2)throw Error('Fuwatto contents changed');
+     if(await link.getAttribute('href')!=='https://fuwatto.riomaru.jp/'||await link.getAttribute('target')!=='_blank'||await p.locator('.productShowcase img').count()!==2)throw Error('Fuwatto contents changed');
     }else if(await link.getAttribute('target')!=='_blank'||!await link.getAttribute('href').then(h=>h===(id==='github'?'https://github.com/rion0918':'https://zenn.dev/riozenn')))throw Error('hall lost its profile link');
     await p.keyboard.press('Escape');await p.getByRole('dialog').waitFor({state:'hidden'});
     results.push({id,width,height,sign,entry:true,sameLowGeometry:true});

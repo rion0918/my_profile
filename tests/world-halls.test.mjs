@@ -26,11 +26,13 @@ test('external link doors target the owner profiles and the real Fuwatto site',(
   assert.equal(halls.find(h=>h.id==='github').external.href,'https://github.com/rion0918');
   assert.equal(halls.find(h=>h.id==='zenn').external.href,'https://zenn.dev/riozenn');
   assert.equal(halls.find(h=>h.id==='x').external.href,'https://x.com/rioi7_0918');
-  assert.equal(halls.find(h=>h.id==='pop-reminder').external.href,'https://fuwatto.pages.dev/');
+  assert.equal(halls.find(h=>h.id==='pop-reminder').external.href,'https://fuwatto.riomaru.jp/');
   assert.equal(halls.find(h=>h.id==='yoin').external,undefined);
   const product=products.find(p=>p.slug==='pop-reminder');
   assert.equal(product.name,'ふわっと。');
-  assert.ok(product.links.some(l=>l.href==='https://fuwatto.pages.dev/'));
+  assert.ok(product.status?.includes('Google Play'));
+  assert.ok(product.links.some(l=>l.href==='https://fuwatto.riomaru.jp/'));
+  assert.ok(product.links.some(l=>l.href==='https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja'));
 });
 
 test('legacy detail identifiers and article paths remain available alongside new halls',()=>{

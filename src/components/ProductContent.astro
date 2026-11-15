@@ -9,7 +9,7 @@ const { product } = Astro.props;
       <div class="productHero">
         <div class="productIntroduction">
           <p class="productLead">{product.summary}</p>
-          {product.status && <p>{product.status}</p>}
+          {product.status && <p class="productStatus">{product.status}</p>}
           <p class="productPlatform">{product.technologies.slice(1, 3).join(" / ")}</p>
           {product.mediaNote && <p class="productMediaNote">{product.mediaNote}</p>}
         </div>

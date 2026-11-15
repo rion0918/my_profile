@@ -45,11 +45,13 @@ export const products: Product[] = [
   {
     slug: "pop-reminder",
     name: "ふわっと。",
+    status: "Android向けに正式リリース · Google Play 配信中",
     links: [
-      { label: "公式サイトを見る", href: "https://fuwatto.pages.dev/" },
+      { label: "公式サイトを見る", href: "https://fuwatto.riomaru.jp/" },
+      { label: "Google Playで入手", href: "https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja" },
       { label: "GitHubでコードを見る", href: "https://github.com/rion0918/pop-reminder" },
     ],
-    summary: "忘れたくないことを、ふわっと泡にして残せるリマインダーアプリ。",
+    summary: "傾けて話すだけ。小さな用事を「泡」にして残せる、Android向けリマインダーアプリ。",
     media: [
       { src: "/images/projects/pop-reminder/home.png", alt: "ふわっと。のAndroid画面。牛乳を買うなどのデモ予定が泡として浮かぶ", caption: "ホーム画面" },
       { src: "/images/projects/pop-reminder/add.png", alt: "ふわっと。のAndroid画面。タイトルと日付、時間帯を選んで予定を追加する", caption: "予定の追加画面" },
@@ -64,19 +66,19 @@ export const products: Product[] = [
     ],
     features: [
       {
-        title: "泡の表示・操作",
+        title: "傾けて話す音声入力と泡のUI",
         description:
-          "浮遊する泡のUIと、削除時のアニメーション・触覚フィードバック。4つの時間帯プリセットから予定を追加できます。",
+          "端末を傾けて話すだけで日時まで自動で「泡」に登録。期限が近づくほど泡の色が変わり、用事が済んだらタップで割れます。",
       },
       {
-        title: "通知・ウィジェット",
+        title: "通知・ホーム画面ウィジェット",
         description:
-          "予定時刻と事前のローカル通知に対応。Androidのホーム画面ウィジェットからも確認・完了できます。",
+          "前夜と当日の2回通知や事前通知に対応。Androidのホーム画面ウィジェットからも、アプリを開かずに予定を確認・完了できます。",
       },
       {
-        title: "端末内への保存",
+        title: "広告なし・端末内への保存",
         description:
-          "リマインダーはSQLiteに保存。ローカルでの永続化にDrizzle ORMを使用しています。",
+          "アカウント登録不要・広告なしで、有効6件まで無料（Pro版買い切り）。予定や音声はSQLiteとDrizzle ORMで端末内に保存します。",
       },
     ],
   },

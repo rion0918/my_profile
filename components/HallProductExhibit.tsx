@@ -74,6 +74,7 @@ export function HallProductExhibit({ product }: { product: Product }) {
     target?.focus({ preventScroll: true });
   };
   const facts = [['想定ユーザー', product.audience], ['開発期間', product.period], ['開発体制', product.team], ['担当範囲', product.role]].filter(([, value]) => value);
+  const heroLinks = (product.links ?? []).filter(link => !link.href.startsWith('https://github.com/'));
   return <div className={`hallProductExhibit product-${product.slug}`}>
     <nav className="hallChapterNav" aria-label="館内の展示">
       {[['概要', overviewId], ['画面と機能', featuresId], ['使用技術', techId]].map(([label, id]) => <button key={id} onClick={() => jumpTo(id)} aria-label={`${label}へ移動`}>{label}</button>)}
@@ -81,8 +82,11 @@ export function HallProductExhibit({ product }: { product: Product }) {
     <section id={overviewId} className="hallProductHero" tabIndex={-1} aria-label={`${product.name}の概要`}>
       <div className="hallProductIntroduction">
         <h3>{product.name}</h3>
+        {product.status && <p className="hallProductStatus">{product.status}</p>}
         <p className="hallProductSummary">{product.summary}</p>
-        {product.status && <p>{product.status}</p>}
+        {heroLinks.length > 0 && <div className="hallProductHeroActions">
+          {heroLinks.map((link, linkIndex) => <a className={linkIndex === 0 ? 'hallAction' : 'hallActionSecondary'} href={link.href} key={link.href} target="_blank" rel="noopener noreferrer">{link.label} <span aria-hidden="true">↗</span></a>)}
+        </div>}
       </div>
       {product.media?.length ? <ProductGallery product={product} /> : null}
       <div className="hallProductContext"><p className="hallProductPlatform">{product.technologies.slice(1, 3).join(' / ')}</p>{product.mediaNote && <p className="hallProductMediaNote">{product.mediaNote}</p>}</div>
@@ -97,7 +101,11 @@ export function HallProductExhibit({ product }: { product: Product }) {
       {facts.length > 0 && <dl className="hallProductFacts">{facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
       {product.decisions && <div className="hallProductNotes"><h4>設計の考え方</h4>{product.decisions.map(text => <p key={text}>{text}</p>)}</div>}
       {product.outcomes && <div className="hallProductNotes"><h4>成果と学び</h4>{product.outcomes.map(text => <p key={text}>{text}</p>)}</div>}
-      <div className="hallProductLinks">{product.links?.map(link => <a className="hallAction" href={link.href} key={link.href} target="_blank" rel="noopener noreferrer">{link.label} <span aria-hidden="true">↗</span></a>)}<a className="textLink" href="/tech">技術スタックの一覧を見る ↗</a></div>
+      <div className="hallProductLinks">{product.links?.map((link, linkIndex) => {
+        const isRepoWithPrimary = linkIndex > 0 && link.href.startsWith('https://github.com/');
+        const linkClass = linkIndex === 0 ? 'hallAction' : isRepoWithPrimary ? 'textLink' : 'hallActionSecondary';
+        return <a className={linkClass} href={link.href} key={link.href} target="_blank" rel="noopener noreferrer">{link.label} <span aria-hidden="true">↗</span></a>;
+      })}<a className="textLink" href="/tech">技術スタックの一覧を見る ↗</a></div>
       {product.links?.length ? <p className="hallExternalNote">外部サイトは別タブで開きます。</p> : null}
     </section>
   </div>;

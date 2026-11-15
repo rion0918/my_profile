@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { halls } from "../../lib/world-halls";
+import { products } from "../../lib/products";
 import { welcomeStorageKey } from "../../lib/world-zones";
 import WorldAudio from "./WorldAudio";
 import WorldGuide from "./WorldGuide";
@@ -354,6 +355,17 @@ export default function WorldExperience({
       >
         {currentHall && <header className="hallDialogHeader">
           <h2 id="detail-title" tabIndex={-1}>{currentHall.name}</h2>
+          {currentHall.external && products.some(product => product.slug === currentHall.id) && (
+            <a
+              className="hallHeaderExternal"
+              href={currentHall.external.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${currentHall.external.label} ↗`}
+            >
+              公式サイト <span aria-hidden="true">↗</span>
+            </a>
+          )}
           <a href={currentHall.href} onClick={rememberWorldModeChoice} aria-label="通常表示で読む ↗">通常表示 <span aria-hidden="true">↗</span></a>
           <button onClick={close} aria-label={guided ? '案内を離れて探索' : '詳細を閉じる'}>街へ戻る <span aria-hidden="true">×</span></button>
         </header>}
