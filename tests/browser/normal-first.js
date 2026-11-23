@@ -39,8 +39,8 @@ async page => {
       await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       await p.goForward(); await p.locator('#career').waitFor();
       await p.waitForFunction(y => Math.abs(scrollY - y) < 3, readY);
-      await p.goto('http://localhost:3001/?detail=yoin');
-      await p.getByRole('dialog', { name: 'Yoin館', exact: true }).waitFor();
+      await p.goto('http://localhost:3001/?detail=idea-boost');
+      await p.getByRole('dialog', { name: 'Idea Boost館', exact: true }).waitFor();
       await p.getByRole('button', { name: '詳細を閉じる', exact: true }).click();
       await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       if (new URL(p.url()).pathname !== '/world' || !await p.locator('.worldPage').isVisible()) throw Error('Closing a direct detail left the world');

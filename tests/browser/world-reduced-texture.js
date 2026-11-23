@@ -6,9 +6,9 @@ async(page)=>{
    const draw=WebGL2RenderingContext.prototype.drawElements;window.__drawCalls=0;WebGL2RenderingContext.prototype.drawElements=function(...args){window.__drawCalls++;return draw.apply(this,args);};
   });
   let release;const gate=new Promise(resolve=>release=resolve);
-  await p.route('**/images/projects/yoin/library.jpg',async route=>{await gate;await route.continue();});
+  await p.route('**/images/projects/idea-boost/board.png',async route=>{await gate;await route.continue();});
   await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});await p.waitForTimeout(300);const before=await p.evaluate(()=>window.__drawCalls);
-  const loaded=p.waitForResponse(r=>r.url().includes('/images/projects/yoin/library.jpg'));release();await loaded;await p.waitForTimeout(250);const after=await p.evaluate(()=>window.__drawCalls);
+  const loaded=p.waitForResponse(r=>r.url().includes('/images/projects/idea-boost/board.png'));release();await loaded;await p.waitForTimeout(250);const after=await p.evaluate(()=>window.__drawCalls);
   if(after<=before)throw Error('the project texture loaded but the reduced-motion scene never repainted');
   return {before,after,repainted:true};
  }finally{await c.close();}

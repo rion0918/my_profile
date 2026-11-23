@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { createStaticGeometryCache, releaseUnusedGeometries } from "./static-geometry";
 import { harbor, harborDecks, harborRails, harborBoats, harborCargo, harborLights, getHarborDeckHeight } from "../../lib/world-harbor";
@@ -28,7 +28,7 @@ export function createHarbor(scene: THREE.Scene) {
   const boxCache = new Map<string, THREE.BufferGeometry>();
   const box = (parent: THREE.Object3D, x: number, y: number, z: number, w: number, h: number, d: number, color: number | THREE.Material) => {
     const key = `${w},${h},${d}`;
-    if (!boxCache.has(key)) boxCache.set(key, new RoundedBoxGeometry(w, h, d, 2, Math.min(0.06, w / 5, h / 5, d / 5)));
+    if (!boxCache.has(key)) boxCache.set(key, createRoundedBox(w, h, d, 2, Math.min(0.06, w / 5, h / 5, d / 5)));
     return mesh(parent, boxCache.get(key)!, typeof color === "number" ? mat(color) : color, x, y, z);
   };
   const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, top: number, bottom: number, height: number, color: number | THREE.Material, sides = 16) => {

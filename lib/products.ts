@@ -1,3 +1,5 @@
+type ProductLink = { label: string; href: string };
+
 export type Product = {
   slug: string;
   name: string;
@@ -12,51 +14,26 @@ export type Product = {
   role?: string;
   decisions?: string[];
   outcomes?: string[];
-  links?: { label: string; href: string }[];
+  primaryLink: ProductLink;
+  officialSite?: ProductLink;
+  sourceLink?: ProductLink;
   media?: { src: string; alt: string; caption: string }[];
   mediaNote?: string;
 };
 
 export const products: Product[] = [
   {
-    slug: "yoin",
-    name: "Yoin",
-    links: [{ label: "GitHubでコードを見る", href: "https://github.com/rion0918/Yoin" }],
-    summary:
-      "会話から生まれた曲を、日時・場所・元の会話と一緒に聴き返すアプリ。",
-    technologies: ["TypeScript", "React Native", "Expo", "SQLite"],
-    media: [
-      { src: "/images/projects/yoin/library.jpg", alt: "Yoinのライブラリ。歌詞の一節と日時から思い出の曲を選ぶ画面", caption: "ライブラリ画面" },
-      { src: "/images/projects/yoin/music.jpg", alt: "Yoinの曲詳細。歌詞と元の会話をたどり、曲を再生する画面", caption: "曲の詳細画面" },
-    ],
-    mediaNote: "本実装の画面コンポーネントを、サンプルデータで表示しています。",
-    features: [
-      {
-        title: "曲・会話・日時・場所の記録",
-        description:
-          "曲だけでなく、そのときの会話や日時、場所を一緒に残す体験。",
-      },
-      {
-        title: "端末での録音と取り込み",
-        description: "Android版で録音・端末ファイルの取り込みに対応。",
-      },
-    ],
-  },
-  {
     slug: "pop-reminder",
     name: "ふわっと。",
-    status: "Android向けに正式リリース · Google Play 配信中",
-    links: [
-      { label: "公式サイトを見る", href: "https://fuwatto.riomaru.jp/" },
-      { label: "Google Playで入手", href: "https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja" },
-      { label: "GitHubでコードを見る", href: "https://github.com/rion0918/pop-reminder" },
-    ],
-    summary: "傾けて話すだけ。小さな用事を「泡」にして残せる、Android向けリマインダーアプリ。",
+    status: "Android",
+    primaryLink: { label: "Google Playで入手", href: "https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja" },
+    officialSite: { label: "公式サイトを見る", href: "https://fuwatto.riomaru.jp/" },
+    sourceLink: { label: "GitHubでコードを見る", href: "https://github.com/rion0918/fuwatto" },
+    summary: "数秒話すだけで、思いついた用事を残せるリマインダー。",
     media: [
       { src: "/images/projects/pop-reminder/home.png", alt: "ふわっと。のAndroid画面。牛乳を買うなどのデモ予定が泡として浮かぶ", caption: "ホーム画面" },
       { src: "/images/projects/pop-reminder/add.png", alt: "ふわっと。のAndroid画面。タイトルと日付、時間帯を選んで予定を追加する", caption: "予定の追加画面" },
     ],
-    mediaNote: "Androidの実画面（デモ予定）です。",
     technologies: [
       "TypeScript",
       "React Native",
@@ -65,21 +42,25 @@ export const products: Product[] = [
       "Drizzle ORM",
     ],
     features: [
-      {
-        title: "傾けて話す音声入力と泡のUI",
-        description:
-          "端末を傾けて話すだけで日時まで自動で「泡」に登録。期限が近づくほど泡の色が変わり、用事が済んだらタップで割れます。",
-      },
-      {
-        title: "通知・ホーム画面ウィジェット",
-        description:
-          "前夜と当日の2回通知や事前通知に対応。Androidのホーム画面ウィジェットからも、アプリを開かずに予定を確認・完了できます。",
-      },
-      {
-        title: "広告なし・端末内への保存",
-        description:
-          "アカウント登録不要・広告なしで、有効6件まで無料（Pro版買い切り）。予定や音声はSQLiteとDrizzle ORMで端末内に保存します。",
-      },
+      { title: "傾けて話す", description: "「明日の朝」のような日時も、声で登録。" },
+      { title: "タップで完了", description: "期限が近づくと泡の色が変わり、用事が済んだらタップで割れます。" },
+    ],
+  },
+  {
+    slug: "idea-boost",
+    name: "Idea Boost",
+    team: "チーム開発",
+    summary: "使う人が本当に欲しいものを、誰でも迷わず考えられるアイデアボード。",
+    primaryLink: { label: "Idea Boostを開く", href: "https://ideaboost.dev/" },
+    sourceLink: { label: "GitHubでコードを見る", href: "https://github.com/engineer-first/idea-boost" },
+    media: [
+      { src: "/images/projects/idea-boost/board.png", alt: "Idea Boostの評価ボード。色分けされた12枚の案を、価値と実現のしやすさの2軸に並べた画面", caption: "価値と実現のしやすさで、案を比べる" },
+      { src: "/images/projects/idea-boost/outcome.png", alt: "Idea Boostの成果画面。採用したアイデアと、そのもとになった課題・問いを振り返る画面", caption: "チームで決めた一案を持ち帰る" },
+    ],
+    technologies: ["TypeScript", "Next.js", "Cloudflare Workers", "Durable Objects", "D1"],
+    features: [
+      { title: "問いをつくる", description: "身近な困りごとから、チームで考えたい問いを選びます。" },
+      { title: "案を絞る", description: "付箋を並べて案を比べ、投票を参考に一案を選びます。" },
     ],
   },
 ];

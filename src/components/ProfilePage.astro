@@ -1,8 +1,8 @@
 ---
 import { socials } from "../../lib/portfolio";
 import AboutContent from "./AboutContent.astro";
-import TechContent from "./TechContent.astro";
 import CareerContent from "./CareerContent.astro";
+import ActivitiesContent from "./ActivitiesContent.astro";
 import SocialContent from "./SocialContent.astro";
 import ContactContent from "./ContactContent.astro";
 import ProductList from "./ProductList.astro";
@@ -12,8 +12,8 @@ import { Image } from "astro:assets";
 import avatar from "../../public/images/33CEE35D-5EBF-4A83-BAC5-3669ACB35CB2.JPG";
 const sections = [
   ["01", "About", "#about"],
-  ["02", "Tech Stack", "#tech"],
-  ["03", "Career", "#career"],
+  ["02", "Career", "#career"],
+  ["03", "Activities", "#activities"],
   ["04", "Social", "#social"],
   ["05", "Products", "#products"],
   ["06", "Contact", "#contact"],
@@ -68,20 +68,20 @@ const sections = [
             <AboutContent />
           </section>
 
-          <section class="section" id="tech" aria-label="Tech Stack">
-            <div class="sectionHead">
-              <span>02</span>
-              <h2>Tech Stack</h2>
-            </div>
-            <TechContent />
-          </section>
-
           <section class="section" id="career" aria-label="Career">
             <div class="sectionHead">
-              <span>03</span>
+              <span>02</span>
               <h2>Career</h2>
             </div>
             <CareerContent />
+          </section>
+
+          <section class="section" id="activities" aria-label="Activities">
+            <div class="sectionHead">
+              <span>03</span>
+              <h2>Activities</h2>
+            </div>
+            <ActivitiesContent />
           </section>
 
           <section class="section social" id="social" aria-label="Social">

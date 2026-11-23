@@ -52,7 +52,7 @@ test('the architecture fits the existing plots and leaves every doorway open',()
 });
 
 test('the visible exhibits retain the existing career, activity and account facts',()=>{
- const expected={history:['上宮高校','神戸電子','DMM・27卒内定'],experience:['Sky / We部'],github:['rion0918'],zenn:['riozenn'],x:['rioi7_0918']};
+ const expected={history:['上宮高校','神戸電子','Sky株式会社','DMM・27卒内定'],experience:['Webu（We部）'],github:['rion0918'],zenn:['riozenn'],x:['rioi7_0918']};
  for(const [id,words] of Object.entries(expected)){
   const group=createHallArchitecture(buildings.find(b=>b.id===id),label);
   try{const texts=[];group.traverse(o=>{if(o.userData.text)texts.push(o.userData.text);});for(const word of words)assert.ok(texts.includes(word),id+' retains '+word);}

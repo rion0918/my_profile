@@ -2,7 +2,7 @@ async page=>{
  const browser=page.context().browser(),results=[],errors=[];
  for(const [id,x,z,width,height,reduced] of [
   ['experience',7,18,1440,900,false],['history',-9,17.5,1440,900,true],
-  ['yoin',-9,.3,1440,900,true],['pop-reminder',7,.3,1440,900,true],
+  ['idea-boost',-9,.3,1440,900,true],['pop-reminder',7,.3,1440,900,true],
   ['github',-23,8,1440,900,true],['zenn',21,9,1440,900,true],['x',-33,1.5,1440,900,true],
   ['experience',7,18,390,844,false]
  ]){

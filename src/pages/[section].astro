@@ -2,16 +2,16 @@
 import Layout from "../layouts/Layout.astro";
 import ModeBar from "../components/ModeBar.astro";
 import AboutContent from "../components/AboutContent.astro";
-import TechContent from "../components/TechContent.astro";
 import CareerContent from "../components/CareerContent.astro";
+import ActivitiesContent from "../components/ActivitiesContent.astro";
 import SocialContent from "../components/SocialContent.astro";
 import { sections } from "../../lib/sections";
 import "../styles/normal.css";
 
 export function getStaticPaths() {
-  return ["about", "tech", "career", "social"].map(section => ({ params: { section } }));
+  return ["about", "career", "activities", "social"].map(section => ({ params: { section } }));
 }
-const content = { about: AboutContent, tech: TechContent, career: CareerContent, social: SocialContent };
+const content = { about: AboutContent, career: CareerContent, activities: ActivitiesContent, social: SocialContent };
 const section = Astro.params.section as keyof typeof content;
 const Content = content[section];
 const title = sections.find(item => item.id === section)!.title;

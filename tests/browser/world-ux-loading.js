@@ -9,7 +9,7 @@ async page=>{
     window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene){window.__loading.scene=e.detail;if(window.__loseDuringBuild)setTimeout(()=>{window.__loading.lossHallCount=e.detail.children.filter(o=>o.name.startsWith('hall-')).length;window.__loading.renderer.forceContextLoss();},0);}if(e.detail.isWebGLRenderer)window.__loading.renderer=e.detail;});
    });
    if(mode==='context-loss')await c.addInitScript(()=>{window.__loseDuringBuild=true;});
-   if(mode==='character-failure')await c.route('**/models/rion-walker.glb',r=>r.abort());
+   if(mode==='character-failure')await c.route('**/models/rion-walker.glb.gz',r=>r.abort());
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);await client.send('Emulation.setCPUThrottlingRate',{rate:4});
    await p.goto('http://localhost:3001/world');
    if(mode==='context-loss'){
@@ -24,8 +24,8 @@ async page=>{
    }else{
     await p.waitForFunction(()=>window.__loading.scene);
     await p.locator('.worldGuide > summary').tap();
-    await p.getByRole('link',{name:'経験館 Skyでのインターンと、We部の立ち上げ',exact:true}).tap();await p.getByRole('dialog').waitFor({state:'visible'});
-    const title=await p.locator('#detail-title').innerText();if(title!=='経験館')throw Error('cannot read during loading');
+    await p.locator('.worldDirectory a').filter({hasText:'Activities'}).tap();await p.getByRole('dialog').waitFor({state:'visible'});
+    const title=await p.locator('#detail-title').innerText();if(title!=='Activities')throw Error('cannot read during loading');
     await p.keyboard.press('Escape');await p.getByRole('dialog').waitFor({state:'hidden'});
     await p.locator('.worldGuide > summary').tap();
     await p.getByLabel('画質・BGM設定').tap();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').tap();

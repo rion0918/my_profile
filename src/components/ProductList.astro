@@ -1,25 +1,22 @@
 ---
 import { products } from "../../lib/products";
 import OptimizedImage from "./OptimizedImage.astro";
+import ProductActions from "./ProductActions.astro";
 ---
-
-    <div class="productList">
-      {products.map((product, index) => (
-        <a
-          class="productLink"
-          href={`/projects/${product.slug}`}
-        >
-          <span class="productNumber">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          <div>
-            <h3>{product.name}</h3>
-            <p>{product.summary}</p>
-            <span class="textLink">作品を読む ↗</span>
-          </div>
-          {product.media?.[0] && <div class={`productListPreview product-${product.slug}`} aria-hidden="true">
-            <OptimizedImage src={product.media[0].src} alt="" widths={[100, 200, 300]} sizes="(max-width: 760px) 60px, 92px" />
-          </div>}
-        </a>
-      ))}
-    </div>
+<div class="productList">
+  {products.map(product => (
+    <article class={`productFeature product-${product.slug}`}>
+      <div>
+        {(product.team || product.status) && <p class="productByline">{product.team ?? product.status}</p>}
+        <h3>{product.name}</h3>
+        <p class="productSummary">{product.summary}</p>
+        <ProductActions product={product} showDetails />
+      </div>
+      <div class="productListPreview">
+        {product.media?.slice(0, product.slug === "pop-reminder" ? 2 : 1).map(media =>
+          <OptimizedImage src={media.src} alt={media.alt} widths={[180, 360, 640, 960]} sizes={product.slug === "pop-reminder" ? "120px" : "(max-width: 760px) 90vw, 440px"} />
+        )}
+      </div>
+    </article>
+  ))}
+</div>

@@ -1,9 +1,11 @@
 // node scripts/build-character.mjs /path/to/Casual_2.gltf /path/to/Casual_Hoodie.gltf
 // CC0 source and exact download provenance: public/models/LICENSE.md
+import { createStudentPortrait } from "./student-portrait.mjs";
 import fs from "node:fs/promises";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 globalThis.ProgressEvent = class ProgressEvent {
   constructor(type, init) {
@@ -43,119 +45,91 @@ jacket.traverse((o) => {
 const oldBody = scene.getObjectByName("Casual2_Body");
 oldBody.parent.add(jacket);
 oldBody.removeFromParent();
+scene.getObjectByName("Casual2_Head").removeFromParent();
 const palette = {
-  Skin: 0xd7a783,
-  Skin_Darker: 0xb78062,
-  Hair: 0x30352f,
-  Eyebrows: 0x30352f,
-  Red_Dark: 0x536e69,
-  LightBrown: 0xbe784d,
-  Purple: 0xc88051,
-  White: 0xeee4cb,
-  LightBlue: 0x354b53,
+  Skin: 0xf3c2a0,
+  Red_Dark: 0x487b7e,
+  Purple: 0x4f70a6,
+  White: 0xf3e9d5,
+  LightBlue: 0x333e53,
 };
-scene.traverse((object) => {
-  if (object.isMesh) {
-    for (const m of Array.isArray(object.material)
-      ? object.material
-      : [object.material]) {
-      if (m.name === "Hair") {
-        const geometry = object.geometry,
-          position = geometry.getAttribute("position");
-        const source = geometry.index
-            ? Array.from(geometry.index.array)
-            : Array.from({ length: position.count }, (_, i) => i),
-          indices = [];
-        for (let i = 0; i < source.length; i += 3) {
-          const face = source.slice(i, i + 3);
-          const y = face.reduce((v, j) => v + position.getY(j), 0) / 3,
-            z = face.reduce((v, j) => v + position.getZ(j), 0) / 3;
-          if (!(y < 1.69 && z < -0.065)) indices.push(...face);
-        }
-        geometry.setIndex(indices);
-      }
-      if (palette[m.name]) m.color.setHex(palette[m.name]);
-      m.roughness = 0.85;
-      m.side = THREE.FrontSide;
-    }
+scene.traverse(object => {
+  if (!object.isMesh) return;
+  for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+    if (palette[material.name]) material.color.setHex(palette[material.name]);
+    material.roughness = .85;
+    material.side = THREE.FrontSide;
   }
 });
 const head = scene.getObjectByName("Head");
-head.scale.setScalar(1.45);
-const clips = gltf.animations.filter((c) =>
-  ["Idle", "Walk", "Run"].includes(c.name),
-);
-for (const clip of clips)
-  clip.tracks = clip.tracks.filter((t) => t.name !== "Head.scale");
-// The backpack follows the chest bone, including shoulder and breathing motion.
+const portrait = createStudentPortrait();
+scene.add(portrait);
+portrait.position.copy(head.getWorldPosition(new THREE.Vector3()));
+portrait.position.y -= .044;
+head.attach(portrait);
+const clips = gltf.animations.filter(c => ["Idle", "Walk", "Run"].includes(c.name));
+for (const clip of clips) clip.optimize();
 const chest = scene.getObjectByName("Chest");
-scene.updateMatrixWorld(true);
-console.log(
-  "source bounds",
-  new THREE.Box3().setFromObject(scene).getSize(new THREE.Vector3()).toArray(),
-);
-console.log(
-  "chest",
-  chest.getWorldPosition(new THREE.Vector3()).toArray(),
-  "head",
-  head.getWorldPosition(new THREE.Vector3()).toArray(),
-);
 const bag = new THREE.Group();
 bag.name = "AtelierBag";
 const bagMaterial = new THREE.MeshStandardMaterial({
-  color: 0x526d65,
+  color: 0xc99048,
   roughness: 0.9,
 });
-const body = new THREE.Mesh(
-  new RoundedBoxGeometry(0.38, 0.46, 0.22, 3, 0.055),
-  bagMaterial,
-);
-bag.add(body);
-const pocket = new THREE.Mesh(
-  new RoundedBoxGeometry(0.29, 0.19, 0.065, 2, 0.025),
-  new THREE.MeshStandardMaterial({ color: 0x9aaf98, roughness: 0.9 }),
-);
-pocket.position.set(0, -0.08, -0.13);
-bag.add(pocket);
+function bagPanel(w, h, d, radius, material, x, y, z) {
+  const blank = new RoundedBoxGeometry(w, h, d, 2, radius);
+  blank.deleteAttribute("uv");
+  const panel = new THREE.Mesh(mergeVertices(blank), material);
+  panel.position.set(x, y, z);
+  bag.add(panel);
+}
+const canvasTrim = new THREE.MeshStandardMaterial({ color: 0xf2c47d, roughness: .9 });
+const webbing = new THREE.MeshStandardMaterial({ color: 0x665441, roughness: .95 });
+bagPanel(.36, .43, .20, .062, bagMaterial, 0, 0, 0);
+bagPanel(.285, .155, .060, .030, canvasTrim, 0, -.083, -.100);
+bagPanel(.21, .012, .007, .003, webbing, 0, -.028, -.131);
+bagPanel(.030, .025, .008, .004, canvasTrim, .075, -.035, -.136);
 scene.add(bag);
-bag.position
-  .copy(chest.getWorldPosition(new THREE.Vector3()))
-  .add(new THREE.Vector3(0, -0.07, -0.22));
+bag.position.copy(chest.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0, -.072, -.196));
 chest.attach(bag);
-// Add a zipper, patch pockets and shoulder straps to make the outer layer legible.
+
 const tailoring = new THREE.Group();
 tailoring.name = "JacketDetails";
 scene.add(tailoring);
-const detailMaterial = new THREE.MeshStandardMaterial({
-  color: 0x805439,
-  roughness: 0.9,
-});
-function detail(x, y, z, w, h, d) {
-  const m = new THREE.Mesh(
-    new RoundedBoxGeometry(w, h, d, 2, 0.006),
-    detailMaterial,
-  );
-  m.position.set(x, y, z);
-  tailoring.add(m);
-  return m;
-}
-detail(0, 1.28, 0.207, 0.014, 0.45, 0.012);
+const cotton = new THREE.MeshStandardMaterial({ color: 0xf5e4cd, roughness: .97 });
 for (const side of [-1, 1]) {
-  detail(side * 0.12, 1.12, 0.203, 0.12, 0.085, 0.018);
-  const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(side * 0.17, 1.2, 0.19),
-    new THREE.Vector3(side * 0.18, 1.43, 0.17),
-    new THREE.Vector3(side * 0.19, 1.52, 0.02),
-    new THREE.Vector3(side * 0.18, 1.4, -0.14),
+  const route = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(side * .120, 1.436, -.095),
+    new THREE.Vector3(side * .159, 1.50, .035),
+    new THREE.Vector3(side * .164, 1.445, .145),
+    new THREE.Vector3(side * .157, 1.286, .184),
+    new THREE.Vector3(side * .192, 1.191, .117),
+    new THREE.Vector3(side * .191, 1.151, -.023),
+    new THREE.Vector3(side * .148, 1.136, -.112),
   ]);
-  tailoring.add(
-    new THREE.Mesh(
-      new THREE.TubeGeometry(curve, 18, 0.025, 6, false),
-      bagMaterial,
-    ),
-  );
+  const strap = new THREE.TubeGeometry(route, 18, .011, 6, false);
+  const position = strap.attributes.position;
+  for (let ring = 0; ring <= 18; ring++) {
+    const center = route.getPointAt(ring / 18);
+    for (let j = 0; j <= 6; j++) {
+      const i = ring * 7 + j;
+      position.setX(i, center.x + (position.getX(i) - center.x) * 2.15);
+    }
+  }
+  strap.computeVertexNormals();
+  tailoring.add(new THREE.Mesh(strap, bagMaterial));
+  const cord = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(side * .045, 1.472, .162),
+    new THREE.Vector3(side * .041, 1.425, .185),
+    new THREE.Vector3(side * .052, 1.380 + side * .01, .191),
+  ]);
+  tailoring.add(new THREE.Mesh(new THREE.TubeGeometry(cord, 6, .004, 5, false), cotton));
 }
 chest.attach(tailoring);
+// The walker uses solid materials throughout and needs no texture coordinates.
+scene.traverse(object => {
+  if (object.isMesh) object.geometry.deleteAttribute("uv");
+});
 const buffer = await new GLTFExporter().parseAsync(scene, {
   binary: true,
   animations: clips,

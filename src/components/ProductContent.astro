@@ -1,6 +1,7 @@
 ---
 import type { Product } from "../../lib/products";
 import OptimizedImage from "./OptimizedImage.astro";
+import ProductActions from "./ProductActions.astro";
 interface Props { product: Product; }
 const { product } = Astro.props;
 ---
@@ -8,15 +9,15 @@ const { product } = Astro.props;
     <div class={`productDetail product-${product.slug}`}>
       <div class="productHero">
         <div class="productIntroduction">
+          {(product.team || product.status) && <p class="productByline">{product.team ?? product.status}</p>}
           <p class="productLead">{product.summary}</p>
-          {product.status && <p class="productStatus">{product.status}</p>}
-          <p class="productPlatform">{product.technologies.slice(1, 3).join(" / ")}</p>
+          <ProductActions product={product} />
           {product.mediaNote && <p class="productMediaNote">{product.mediaNote}</p>}
         </div>
         {product.media && <section class="productShowcase" aria-label={`${product.name}のアプリ画面`}>
           {product.media.map((media) => <figure>
             <a href={media.src} target="_blank" rel="noopener noreferrer" class="productScreen" aria-label={`${media.alt}。画像を拡大する`}>
-              <OptimizedImage src={media.src} alt={media.alt} widths={[240, 480, 720]} sizes="(max-width: 760px) 40vw, 180px" />
+              <OptimizedImage src={media.src} alt={media.alt} widths={[240, 480, 720, 1280]} sizes={product.slug === "pop-reminder" ? "(max-width: 760px) 36vw, 155px" : "(max-width: 760px) 86vw, 440px"} />
             </a>
             <figcaption>{media.caption}</figcaption>
           </figure>)}
@@ -36,12 +37,11 @@ const { product } = Astro.props;
           ))}
         </div>
       </section>
-      {(product.audience || product.period || product.team || product.role) && (
+      {(product.audience || product.period || product.role) && (
         <dl>
           {[
             ["想定ユーザー", product.audience],
             ["開発期間", product.period],
-            ["開発体制", product.team],
             ["担当範囲", product.role],
           ]
             .filter(([, value]) => value)
@@ -69,14 +69,5 @@ const { product } = Astro.props;
           ))}
         </section>
       )}
-      {!!product.links?.length && <div class="productLinks">{product.links.map((link) => (
-        <a
-          class="textLink"
-          href={link.href}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {link.label} ↗
-        </a>
-      ))}</div>}
+      {product.sourceLink && <a class="textLink" href={product.sourceLink.href} target="_blank" rel="noopener noreferrer">{product.sourceLink.label} ↗</a>}
     </div>

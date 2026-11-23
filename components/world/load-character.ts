@@ -1,8 +1,9 @@
+import { loadWalkerBytes } from "../../lib/world-character-asset.ts";
 import * as THREE from "three";
 import { bikeGeometry, getBikeGrip } from "../../lib/world-bike.ts";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 export async function loadCharacter(parent: THREE.Group) {
-  const gltf = await new GLTFLoader().loadAsync("/models/rion-walker.glb");
+  const gltf = await new GLTFLoader().parseAsync(await loadWalkerBytes(), "/models/");
   const model = gltf.scene;
   model.traverse((o) => {
     if (o instanceof THREE.Mesh) {

@@ -170,3 +170,33 @@ test('a riding character keeps both hands on the turned handlebar', async () => 
     }
   }finally{character.dispose();THREE.DefaultLoadingManager.setURLModifier(undefined);}
 });
+
+test('the downloadable walker is at most 250 KiB and expands to the original animated GLB', async () => {
+  const { gunzipSync } = await import('node:zlib');
+  const { GET } = await import('../src/pages/models/rion-walker.glb.gz.ts');
+  const source = await fs.readFile(new URL('../public/models/rion-walker.glb', import.meta.url));
+  const compressed = Buffer.from(await (await GET()).arrayBuffer());
+  assert.ok(compressed.length <= 250 * 1024);
+  assert.deepEqual(gunzipSync(compressed), source);
+});
+
+test('the student portrait follows the head bone through every locomotion clip', async () => {
+  const bytes = await fs.readFile(new URL('../public/models/rion-walker.glb', import.meta.url));
+  const { scene, animations } = await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), '');
+  const head = scene.getObjectByName('Head');
+  const portrait = head.getObjectByName('StudentPortrait');
+  assert.ok(portrait, 'the replacement face and cap must be attached to the animated head');
+  assert.ok(!scene.getObjectByName('Casual2_Head'), 'the old head must not overlap the portrait');
+  const cap = portrait.getObjectByName('Cap');
+  assert.ok(cap?.isMesh);
+  const mixer = new THREE.AnimationMixer(scene);
+  const localCapPoint = () => head.worldToLocal(cap.localToWorld(new THREE.Vector3(0, .1, 0)));
+  const initial = localCapPoint();
+  for (const name of ['Idle', 'Walk', 'Run']) {
+    const clip = animations.find(clip => clip.name === name);
+    mixer.clipAction(clip).play();
+    mixer.setTime(clip.duration * .37);
+    assert.ok(localCapPoint().distanceTo(initial) < .00001, name);
+    mixer.stopAllAction();
+  }
+});

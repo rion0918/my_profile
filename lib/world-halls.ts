@@ -1,34 +1,35 @@
 import { products } from './products.ts';
 import { socials } from './portfolio.ts';
 
-export type HallId = 'experience' | 'yoin' | 'pop-reminder' | 'history' | 'github' | 'zenn' | 'x';
+export type HallId = 'experience' | 'idea-boost' | 'pop-reminder' | 'history' | 'github' | 'zenn' | 'x';
 export const hallIconDisplay = { width: 2.18, depth: .9, scale: 1.2, rotation: Math.atan2(12, 20) };
 export type Hall = {
   id: HallId;
   name: string;
   tagline: string;
-  model: 'workshop' | 'music' | 'bubble' | 'gallery' | 'atelier' | 'bookshop';
+  model: 'workshop' | 'studio' | 'bubble' | 'gallery' | 'atelier' | 'bookshop';
   x: number; z: number; width: number; depth: number; height: number;
   href: string;
   theme?: { word: string; primary: number; surface: number; light: number; lettering: number };
   icon?: 'github' | 'zenn' | 'x';
   external?: { label: string; href: string };
 };
+const ideaBoost = products.find(p => p.slug === 'idea-boost')!;
 const fuwatto = products.find(p => p.slug === 'pop-reminder')!;
 export const halls: Hall[] = [
-  { id: 'experience', name: '経験館', tagline: 'Skyでのインターンと、We部の立ち上げ', model: 'workshop',
-    x: 8, z: 23, width: 4, depth: 3, height: 2.9, href: '/career#experience',
-    theme: { word: 'Experience', primary: 0x356f5d, surface: 0xf0eadb, light: 0xb9cfb2, lettering: 0x356f5d } },
-  { id: 'yoin', name: 'Yoin館', tagline: '会話・日時・場所と曲を記録するアプリ', model: 'music',
-    x: -8, z: 6, width: 3.1, depth: 2.5, height: 2.9, href: '/projects/yoin',
-    theme: { word: 'Yoin', primary: 0x795166, surface: 0xe9c9c2, light: 0xf4d9a6, lettering: 0xfff1db } },
-  { id: 'pop-reminder', name: `${fuwatto.name}館`, tagline: '声で残せるリマインダーアプリ（Google Play配信中）', model: 'bubble',
+  { id: 'experience', name: 'Activities', tagline: 'We部の立ち上げと学生ハッカソンの運営', model: 'workshop',
+    x: 8, z: 23, width: 4, depth: 3, height: 2.9, href: '/activities',
+    theme: { word: 'Activities', primary: 0x356f5d, surface: 0xf0eadb, light: 0xb9cfb2, lettering: 0x356f5d } },
+  { id: 'idea-boost', name: `${ideaBoost.name}館`, tagline: ideaBoost.summary, model: 'studio',
+    x: -8, z: 6, width: 3.1, depth: 2.5, height: 2.9, href: '/projects/idea-boost', external: ideaBoost.primaryLink,
+    theme: { word: ideaBoost.name, primary: 0x1855a2, surface: 0xdceaff, light: 0xf2d66b, lettering: 0xffffff } },
+  { id: 'pop-reminder', name: `${fuwatto.name}館`, tagline: fuwatto.summary, model: 'bubble',
     x: 8, z: 6, width: 3, depth: 2.6, height: 3.5, href: '/projects/pop-reminder',
     theme: { word: fuwatto.name, primary: 0x67adb5, surface: 0xffddd6, light: 0xfff0dc, lettering: 0x2f7078 },
-    external: { label: 'ふわっと。公式サイトへ', href: fuwatto.links![0].href } },
-  { id: 'history', name: 'Background', tagline: '上宮高校・神戸電子・DMM内定', model: 'gallery',
-    x: -8, z: 23, width: 4, depth: 3.4, height: 2.9, href: '/career#history',
-    theme: { word: 'Background', primary: 0x243b55, surface: 0xf2ebdb, light: 0xc5a46b, lettering: 0xf2ebdb } },
+    external: { label: 'ふわっと。公式サイトへ', href: fuwatto.officialSite!.href } },
+  { id: 'history', name: 'Career', tagline: '上宮高校・神戸電子・Sky・DMM内定', model: 'gallery',
+    x: -8, z: 23, width: 4, depth: 3.4, height: 2.9, href: '/career',
+    theme: { word: 'Career', primary: 0x243b55, surface: 0xf2ebdb, light: 0xc5a46b, lettering: 0xf2ebdb } },
   { id: 'github', name: 'GitHub館', tagline: 'ソースコード・開発記録', model: 'atelier',
     x: -22, z: 14, width: 3.6, depth: 2.7, height: 3.8, href: '/social#github',
     icon: 'github',

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createStaticGeometryCache, releaseUnusedGeometries } from './static-geometry.ts';
 import { gamingPC, gamingPCSpecs } from '../../lib/world-gaming-pc.ts';
@@ -35,7 +35,7 @@ export function createGamingPC(scene: THREE.Scene, applyVisibility: (material: T
   };
   const box = (parent: THREE.Object3D, x: number, y: number, z: number, w: number, h: number, d: number, material: THREE.Material, radius = .025) => {
     const key = `${w},${h},${d},${radius}`;
-    if (!cache.has(key)) cache.set(key, new RoundedBoxGeometry(w, h, d, 2, Math.min(radius, w / 4, h / 4, d / 4)));
+    if (!cache.has(key)) cache.set(key, createRoundedBox(w, h, d, 2, Math.min(radius, w / 4, h / 4, d / 4)));
     return mesh(parent, cache.get(key)!, material, x, y, z);
   };
   const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, radius: number, depth: number, material: THREE.Material, axis = 'z') => {

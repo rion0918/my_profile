@@ -33,7 +33,7 @@ import {
 } from "../../lib/world-navigation";
 
 type Props = {
-  streets: WorldMapData["streets"];
+  map: WorldMapData;
   quality: WorldQuality;
   paused: boolean;
   onSelect: (id: string) => void;
@@ -41,7 +41,7 @@ type Props = {
   onReady: (navigation: WorldNavigation|null) => void;
   onExplore: () => void;
 };
-export default function WorldCanvas({ streets, quality, paused, onSelect, onError, onReady, onExplore }: Props) {
+export default function WorldCanvas({ map, quality, paused, onSelect, onError, onReady, onExplore }: Props) {
   const qualityRef = useRef(quality);
   const qualityChangeRef = useRef<() => void>(() => {});
   const surface = useRef<HTMLDivElement>(null);
@@ -130,10 +130,10 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();
     };
     const initialize = async () => {
-    const world = await createWorld(person,()=>render(),streets,build.signal);
+    const world = await createWorld(person,()=>render(),map,build.signal);
     if(disposed){world.dispose();return;}
     settings = worldQualitySettings[qualityRef.current];
-    world.setReflectionsEnabled(settings.reflections);
+    world.setReflectionsEnabled(false);
     prepareNavigation(obstacles);
     const entries = createEntryController(buildings);
     const focus = createFocusTransition();
@@ -651,9 +651,32 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       renderer.setSize(width, height);
       render();
     };
+    let reflectionFrame = 0, warmingReflections = false, reflectionsReady = false;
+    const syncReflections = () => {
+      world.setReflectionsEnabled(settings.reflections && reflectionsReady);
+      if (!compiled || !settings.reflections || reflectionsReady || warmingReflections) return;
+      warmingReflections = true;
+      // Present the interactive screen before submitting the offscreen shaders.
+      reflectionFrame = requestAnimationFrame(() => {
+        reflectionFrame = requestAnimationFrame(async () => {
+          try {
+            if (!settings.reflections) return;
+            await world.prepareReflections(renderer, camera);
+            if (disposed) return;
+            reflectionsReady = true;
+            world.setReflectionsEnabled(settings.reflections);
+            render();
+          } catch {
+            // The water's sky shading remains available if its optional target fails.
+          } finally {
+            warmingReflections = false;
+          }
+        });
+      });
+    };
     qualityChangeRef.current = () => {
       settings = worldQualitySettings[qualityRef.current];
-      world.setReflectionsEnabled(settings.reflections);
+      syncReflections();
       world.updateEnvironment(performance.now() / 1000, person.position, 0, reduced.matches || settings.reducedEnvironment);
       resize();
       start();
@@ -1015,19 +1038,17 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
     document.addEventListener("visibilitychange", visibility);
     reduced.addEventListener("change", motionPreferenceChanged);
     resize();
-    const sceneCompileReady = renderer
-      .compileAsync(world.scene, camera)
-      .then(() => {
-        if (!disposed) return world.prepareReflections(renderer, camera);
-      });
+    const characterInScene = !!character;
+    const sceneCompileReady = renderer.compileAsync(world.scene, camera);
     Promise.all([characterReady, sceneCompileReady])
       .then(() => {
-        if (!disposed) return renderer.compileAsync(person, camera, world.scene);
+        if (!disposed && !characterInScene) return renderer.compileAsync(person, camera, world.scene);
       })
       .then(() => {
         if (disposed) return;
         compiled = true;
         draw();
+        syncReflections();
         setSceneReady(true);
         onReady({
           walkTo(id){
@@ -1076,6 +1097,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
       });
     cleanup = () => {
       focus.cancel();
+      cancelAnimationFrame(reflectionFrame);
       cancelAnimationFrame(drawFrame); drawFrame=0;
       stop();
       disposed = true;
@@ -1121,7 +1143,7 @@ export default function WorldCanvas({ streets, quality, paused, onSelect, onErro
     };
     void initialize().catch(() => { if(!disposed)onError(); });
     return () => {disposed=true;build.abort();renderer.domElement.removeEventListener("webglcontextlost",lost);cleanup();};
-  }, [onSelect, onError, onReady, onExplore, streets]);
+  }, [onSelect, onError, onReady, onExplore, map]);
 
   return (
     <>

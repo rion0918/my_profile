@@ -29,7 +29,7 @@ function Fallback() {
     <div className="worldLoading worldFallback" role="status">
       <strong>この環境では3Dを表示できませんでした。</strong>
       <span>
-        プロフィール・経歴・作品は、「街の案内」からそのまま読めます。
+        プロフィール・経歴・活動・作品は、「街の案内」からそのまま読めます。
       </span>
       <a className="fallbackLink" href="/profile" onClick={rememberWorldModeChoice}>
         通常表示で読む ↗
@@ -96,7 +96,7 @@ export default function WorldExperience({
   useEffect(() => {
     const legacyAnchor = () => {
       if (
-        ["#about", "#tech", "#career", "#social", "#products", "#top"].includes(
+        ["#about", "#career", "#activities", "#social", "#products", "#contact", "#top"].includes(
           location.hash,
         )
       ) {
@@ -274,7 +274,7 @@ export default function WorldExperience({
                 <Fallback />
               ) : (
                 <WorldCanvas
-                  streets={map.streets}
+                  map={map}
                   quality={quality}
                   paused={!!selected || phase !== 'exploring'}
                   onSelect={select}
@@ -386,12 +386,12 @@ export default function WorldExperience({
           </nav>}
           {!currentHall && <h2 id="detail-title" tabIndex={-1}>{complete ? '採用向けの案内はここまで' : guided ? tourStops[step].title : current?.title}</h2>}
           {complete ? <div className="tourComplete">
-            <p className="hallLead">経歴と2つの作品をご覧いただき、ありがとうございます。</p>
+            <p className="hallLead">経歴・活動と2つの作品をご覧いただき、ありがとうございます。</p>
             <p>ここは中央広場です。開発の記録を確認したり、北の温泉や港へ街歩きを続けたりできます。</p>
             <div className="tourCompleteLinks">{halls.filter(h => h.id === 'github' || h.id === 'zenn' || h.id === 'x').map(h => <a key={h.id} className="hallLinkDoor" href={h.external!.href} target="_blank" rel="noopener noreferrer">
               <span><strong>{h.external!.label}</strong><small>{h.tagline} · 別タブで開きます</small></span><span aria-hidden="true">↗</span>
             </a>)}</div>
-            <a className="textLink" href="/profile" onClick={rememberWorldModeChoice}>経歴と作品を通常表示で読む ↗</a>
+            <a className="textLink" href="/profile" onClick={rememberWorldModeChoice}>経歴・活動と作品を通常表示で読む ↗</a>
           </div> : selected && (hallPanels[selected] ?? panels[selected])}
 
         </div>

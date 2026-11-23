@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createStaticGeometryCache } from './static-geometry.ts';
 import { onsen, onsenBoundary, onsenBambooGroves, onsenRocks, onsenLanterns, isInsideBathhouse, isBathhouseApproach } from '../../lib/world-onsen.ts';
@@ -25,7 +25,7 @@ export function createOnsen(scene: THREE.Scene, applyVisibility: (material: THRE
   };
   const boxes=new Map<string,THREE.BufferGeometry>();
   const box=(p:THREE.Object3D,x:number,y:number,z:number,w:number,h:number,d:number,m:THREE.Material,r=.025)=>{
-    const key=[w,h,d,r].join(',');if(!boxes.has(key))boxes.set(key,new RoundedBoxGeometry(w,h,d,2,Math.min(r,w/5,h/5,d/5)));
+    const key=[w,h,d,r].join(',');if(!boxes.has(key))boxes.set(key,createRoundedBox(w,h,d,2,Math.min(r,w/5,h/5,d/5)));
     return mesh(p,boxes.get(key)!,m,x,y,z);
   };
   const beamGeometry=new THREE.CylinderGeometry(1,1,1,10);

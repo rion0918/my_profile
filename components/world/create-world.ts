@@ -1,31 +1,26 @@
+import { meadowCapacity, visitMeadow } from "../../lib/world-meadow";
 import type { WorldMapData } from "../../lib/world-map-data";
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { createCoast } from "./create-coast";
 import { createWater } from "./create-water";
 import { createStreets } from "./create-streets";
-import { bikeStation } from "../../lib/world-bike";
 import { createBike } from "./create-bike";
 import { createHarbor } from "./create-harbor";
 import { createOnsen } from "./create-onsen";
 import { createAreaGate } from "./create-area-gate";
 import { createGamingPC } from "./create-gaming-pc";
-import { gamingPC } from "../../lib/world-gaming-pc";
-import { pastaKitchen } from "../../lib/world-pasta";
 import { createPastaKitchen } from "./create-pasta-kitchen";
-import { isOnsenClearing } from "../../lib/world-onsen";
 import { createCharacterVisibility } from "./character-visibility";
 import { createWildlife } from "./create-wildlife";
 import { createProjectExhibits } from "./create-project-exhibits";
-import { isWildlifeClearing } from "../../lib/world-wildlife";
 import { getHarborDeckHeight } from "../../lib/world-harbor";
 import { getWorldTime } from "../../lib/world-time";
 import {
   coastPoint,
-  distanceToShore,
   getGroundHeight,
 } from "../../lib/world-navigation";
 import { createHallWordGeometry, createHallWordMaterials, createHallWordGlow } from "./create-hall-word";
@@ -45,11 +40,10 @@ import {
   benches,
   ponds,
   landmark,
-  projectExhibits,
   hallIconSites,
 } from "../../lib/world-layout";
 
-export async function createWorld(person: THREE.Group,requestRender:()=>void,streetNetwork:WorldMapData["streets"],signal:AbortSignal) {
+export async function createWorld(person: THREE.Group,requestRender:()=>void,map:WorldMapData,signal:AbortSignal) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xbcd4d3);
   scene.fog = new THREE.FogExp2(0xbcd4d3, 0.007);
@@ -142,7 +136,7 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     if (!geometryCache.has(key))
       geometryCache.set(
         key,
-        new RoundedBoxGeometry(
+        createRoundedBox(
           w,
           h,
           d,
@@ -319,7 +313,7 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
   resources.push(coast.dispose); await pause();
   const water = createWater(scene, ponds);
   resources.push(water.dispose); await pause();
-  const streets = createStreets(scene,streetNetwork);
+  const streets = createStreets(scene,map.streets);
   resources.push(streets.dispose); await pause();
   const harbor = createHarbor(scene);
   resources.push(harbor.dispose); await pause();
@@ -474,9 +468,9 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     });
     if (theme) {
       const y = building.model === "atelier" ? 2.3 : building.model === "bubble" ? 2.16 : 2.15;
-      const width = building.id === 'x' ? 1 : building.model === "music" ? 2.1 : building.model === "bubble" ? 2.6 : building.model === "workshop" ? 3.55 : 3.15;
+      const width = building.id === 'x' ? 1 : building.model === "studio" ? 2.1 : building.model === "bubble" ? 2.6 : building.model === "workshop" ? 3.55 : 3.15;
       const height = building.id === 'x' ? .85 : building.model === "bubble" ? 0.55 : 0.62;
-      const railWidth = building.id === 'x' ? 1.2 : building.model === "music" ? 2.15 : building.model === "bubble" ? 2.8 : building.model === "workshop" ? 3.7 : 3.3;
+      const railWidth = building.id === 'x' ? 1.2 : building.model === "studio" ? 2.15 : building.model === "bubble" ? 2.8 : building.model === "workshop" ? 3.7 : 3.3;
       const wordFont = Array.from(theme.word).every(char => hallFont.data.glyphs[char]) ? hallFont : roundedHallFont;
       const edging = building.model === "gallery" || building.id === 'x' ? theme.light : theme.primary;
       const lettering=createHallWordMaterials(theme.lettering,edging);
@@ -803,67 +797,27 @@ export async function createWorld(person: THREE.Group,requestRender:()=>void,str
     );
   };
   materials.add(bladeMaterial);
-  const blades = new THREE.InstancedMesh(bladeGeometry, bladeMaterial, 22000);
+  const blades = new THREE.InstancedMesh(bladeGeometry, bladeMaterial, meadowCapacity);
   scene.add(blades);
   instances.add(blades);
   blades.receiveShadow = true;
-  const landmarkCos = Math.cos(landmark.rotation),
-    landmarkSin = Math.sin(landmark.rotation);
-  const furniturePads = [{ ...gamingPC, rotation: 0 }, gamingPC.specBoard, { ...pastaKitchen, rotation: 0 }, ...hallIconSites, ...entranceGardens.map(p => ({ ...p, rotation: 0, width: p.radius * 2, depth: p.radius * 2 })), ...benches, ...streetlights, ...projectExhibits].map((p) => ({
-    ...p, c: Math.cos(p.rotation), s: Math.sin(p.rotation),
-  }));
-  let bladeCount = 0;
-  for (let i = 0; i < 80000 && bladeCount < 22000; i++) {
-    if(i%512===0)await pause();
-    const x = (random() - 0.5) * 86,
-      z = (random() - 0.5) * 76;
-    if (
-      Math.hypot(x, z) < 4 ||
-      ponds.some(
-        (p) =>
-          Math.abs(x - p.x) < p.width / 2 + 0.5 &&
-          Math.abs(z - p.z) < p.depth / 2 + 0.5,
-      )
-    )
-      continue;
-    if (
-      buildings.some(
-        (b) =>
-          Math.abs(x - b.x) < b.width / 2 + 0.45 &&
-          Math.abs(z - b.z) < b.depth / 2 + 0.6,
-      )
-    )
-      continue;
-    if (Math.abs(x - bikeStation.x) < bikeStation.width / 2 + 0.1 && Math.abs(z - bikeStation.z) < bikeStation.depth / 2 + 0.1) continue;
-    const localX = (x - landmark.x) * landmarkCos - (z - landmark.z) * landmarkSin,
-      localZ = (x - landmark.x) * landmarkSin + (z - landmark.z) * landmarkCos;
-    if (
-      (localX / (landmark.width / 2 + 0.1)) ** 2 +
-      (localZ / (landmark.depth / 2 + 0.1)) ** 2 < 1
-    ) continue;
-    if (furniturePads.some((p) =>
-      Math.abs((x - p.x) * p.c - (z - p.z) * p.s) < p.width / 2 + 0.15 &&
-      Math.abs((x - p.x) * p.s + (z - p.z) * p.c) < p.depth / 2 + 0.15) ||
-      lightSupports.some((p) => Math.hypot(x - p.x, z - p.z) < 0.35)) continue;
-    if (isWildlifeClearing({ x, z })) continue;
-    if (getHarborDeckHeight({ x, z }, -0.2) !== null) continue;
-    if (isOnsenClearing({ x, z }, .15)) continue;
-    if (distanceToShore({ x, z }) > -3.5) continue;
-    if (isOnRoad({ x, z }, 0.35)) continue;
-    const size = 0.6 + random() * 0.9;
-    dummy.position.set(x, getGroundHeight({ x, z }) + 0.008, z);
-    dummy.scale.set(size, size, size);
-    dummy.rotation.set(
-      (random() - 0.5) * 0.25,
-      random() * 6,
-      (random() - 0.5) * 0.25,
-    );
-    dummy.updateMatrix();
-    blades.setMatrixAt(bladeCount, dummy.matrix);
-    leafColor.set([0xa2c94a, 0xc4d969, 0x8cba4e, 0xd6df80][bladeCount % 4]);
-    blades.setColorAt(bladeCount++, leafColor);
-  }
-  blades.count = bladeCount;
+  const mask = atob(map.meadow);
+  const grassColors = [0xa2c94a, 0xc4d969, 0x8cba4e, 0xd6df80];
+  const meadow = visitMeadow(
+    attempt => (mask.charCodeAt(attempt >> 3) & (1 << (attempt & 7))) !== 0,
+    (index, x, z, size, rx, ry, rz) => {
+      // Every accepted location is inland, on level ground.
+      dummy.position.set(x, .008, z);
+      dummy.scale.setScalar(size);
+      dummy.rotation.set(rx, ry, rz);
+      dummy.updateMatrix();
+      blades.setMatrixAt(index, dummy.matrix);
+      blades.setColorAt(index, leafColor.set(grassColors[index % 4]));
+    },
+  );
+  blades.count = meadow.count;
+  seed = meadow.seed;
+  await pause();
   const rockGeometries = Array.from({ length: 6 }, (_, variant) => {
     const geo = new THREE.SphereGeometry(1, 14, 10),
       positions = geo.getAttribute("position"),

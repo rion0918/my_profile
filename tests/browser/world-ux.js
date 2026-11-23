@@ -67,7 +67,7 @@ async(page)=>{
    if(distance<2.1||distance>3.2)throw Error('fixed movement pace '+distance);
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');const stopped=await metrics();await p.waitForTimeout(200);
    if(JSON.stringify((await metrics()).position)!==JSON.stringify(stopped.position))throw Error('stop failed');
-   await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:'Yoin館へ歩く',exact:true}).click();await p.waitForTimeout(250);
+   await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:'Idea Boost館へ歩く',exact:true}).click();await p.waitForTimeout(250);
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');const cancelled=await metrics();await p.waitForTimeout(250);
    if(JSON.stringify((await metrics()).position)!==JSON.stringify(cancelled.position)||await p.getByRole('dialog').isVisible())throw Error('cannot cancel tap travel');
    await p.screenshot({path:`output/playwright/ux-after-explore-${width}.png`});

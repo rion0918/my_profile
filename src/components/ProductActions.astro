@@ -1,0 +1,12 @@
+---
+import type { Product } from "../../lib/products";
+interface Props { product: Product; showDetails?: boolean; }
+const { product, showDetails = false } = Astro.props;
+---
+<div class="productActions">
+  <a class="productPrimary" href={product.primaryLink.href} target="_blank" rel="noopener noreferrer">
+    {product.primaryLink.label} <span aria-hidden="true">↗</span>
+  </a>
+  {product.officialSite && <a class="textLink" href={product.officialSite.href} target="_blank" rel="noopener noreferrer">{product.officialSite.label} ↗</a>}
+  {showDetails && <a class="textLink" href={`/projects/${product.slug}`} aria-label={`${product.name}の作品詳細`}>作品詳細 →</a>}
+</div>

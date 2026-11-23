@@ -40,8 +40,8 @@ async page => {
       if (views.length !== 2 || new URL(views[1].o).pathname !== '/world') throw Error(`Client navigation was not tracked exactly once: ${JSON.stringify(views)}`);
       if (await p.locator('script[src*="/_vercel/insights/"]').count() !== 1) throw Error('Duplicate analytics script');
       await p.locator('.worldGuide > summary').click();
-      await p.locator('.worldDirectory a').filter({ hasText: 'Background' }).click();
-      await p.getByRole('dialog', { name: 'Background', exact: true }).waitFor();
+      await p.locator('.worldDirectory a').filter({ hasText: 'Career' }).click();
+      await p.getByRole('dialog', { name: 'Career', exact: true }).waitFor();
       await p.getByRole('button', { name: '詳細を閉じる', exact: true }).click();
       await p.waitForTimeout(200);
       if (views.length !== 2) throw Error('Exhibit history counted a duplicate page view');

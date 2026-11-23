@@ -12,4 +12,8 @@ import "../styles/world.css";
     </div>
   </WorldApp>
   <noscript><p class="noscriptNotice">3Dの探索にはJavaScriptが必要です。<a href="/profile">通常表示でプロフィールと作品を読む</a></p></noscript>
+  <script>
+    import { preloadWorld } from "../../lib/world-preload";
+    void preloadWorld();
+  </script>
 </Layout>

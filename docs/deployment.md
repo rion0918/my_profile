@@ -6,7 +6,7 @@
 
 問い合わせには Google フォームを埋め込む。公開フォームの回答通知は Google フォーム内で有効にしている。サイト側の公開フォームURLは `src/components/ContactContent.astro` にある。回答者のメールアドレスはフォームで入力してもらい、Google アカウントのログインや自動収集は要求しない。
 
-`vercel.json` は Framework Preset `Astro`、Install Command `npm ci --include=dev`、Build Command `npm run build`、Output Directory `dist` を指定する。Astroは `output: "static"`、`build.format: "file"` で生成する。アダプター・SSR・Functionsは不要。`cleanUrls: true` で `/profile`・`/projects/yoin`・`/world` などの拡張子なしURLを維持する。`public/_headers` と同じHTTP保護ヘッダーをVercelの全パスへ適用する。
+`vercel.json` は Framework Preset `Astro`、Install Command `npm ci --include=dev`、Build Command `npm run build`、Output Directory `dist` を指定する。Astroは `output: "static"`、`build.format: "file"` で生成する。アダプター・SSR・Functionsは不要。`cleanUrls: true` で `/profile`・`/projects/idea-boost`・`/world` などの拡張子なしURLを維持する。`public/_headers` と同じHTTP保護ヘッダーをVercelの全パスへ適用する。
 
 Astro・Sharpに対応するNode.js 24をVercelプロジェクトのNode.js Versionに設定し、`package.json` の `engines.node` も `24.x` に固定する。これによりVercelのProject Settingsがエンジン指定に上書きされないようにする。インストール元は `package-lock.json` に統一し、旧Next.jsの `pnpm-lock.yaml` は削除した。
 

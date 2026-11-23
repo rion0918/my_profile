@@ -36,7 +36,7 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
       <button className="guideTour" disabled={!canTour} onClick={() => { if (details.current) details.current.open = false; onTour(); }}>案内に沿って見る <span>{tourStops[0].title}から、4つの館へ →</span></button>
       <div className="guideMapHeader"><span>りおまるの街</span><span>地図から、次の寄り道へ。</span></div>
       <p className="guideTouchHint">スマホは1本指で移動、離すと停止。2本指で見渡し・拡大できます。</p>
-      {map && <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・作品。01Background、02経験館、03Yoin館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館、XはX館。北：趣味の街。北に港、北西に温泉、北東にゲーミングPC。中央通りの西にパスタキッチン。青緑の点が現在地です。">
+      {map && <svg className="guideMap" viewBox="0 0 100 100" role="img" aria-label="街の地図。南が入口。南：経歴・活動・作品。01Career、02Activities、03Idea Boost館、04ふわっと。館。脇道のGはGitHub館、ZはZenn館、XはX館。北：趣味の街。北に港、北西に温泉、北東にゲーミングPC。中央通りの西にパスタキッチン。青緑の点が現在地です。">
         <rect width="100" height="100" rx="5" fill="#b8d9d7" />
         <path d={map.coast} fill="#e4d8b6" stroke="#f0e4c4" strokeWidth="2" />
         {map.roads.map((r,i)=><path key={i} d={r.path} fill="none" stroke="#faf0d8" strokeWidth={r.width} strokeLinecap="round" strokeLinejoin="round"/>)}
@@ -62,14 +62,14 @@ export default function WorldGuide({map,navigation,onSelect,onTour,canTour,onExp
         </g>)}
         <text x="50" y={map.boundary-5} textAnchor="middle" fontSize="3" fill="#465d5d">北：趣味の街</text>
         <text x="50" y={map.boundary+4} textAnchor="middle" fontSize="3" fill="#465d5d">中央広場</text>
-        <text x="50" y={map.entrance.y+7} textAnchor="middle" fontSize="3" fill="#465d5d">南：経歴・作品</text>
+        <text x="50" y={map.entrance.y+7} textAnchor="middle" fontSize="3" fill="#465d5d">南：経歴・活動・作品</text>
         <text x="50" y="3" textAnchor="middle" fontSize="3" fill="#465d5d">港</text>
         <text x="94" y="9" textAnchor="middle" fontSize="3" fill="#465d5d">N</text>
         {navigation&&<circle ref={marker} className="guideCurrentPosition" cx={mapPoint(navigation.position).x} cy={mapPoint(navigation.position).y} r="1.65" fill="#287d79" stroke="#fff8e8" strokeWidth=".75"/>}
       </svg>}
       <nav className="worldDirectory" aria-label="探索せずに情報を読む">
         <p>そのまま読む。気になったら、歩いてみる。</p>
-        {[...tourStops.map(stop=>sections.find(s=>s.id===stop.id)!), ...sections.filter(s=>s.id==='github'||s.id==='zenn'||s.id==='x'), ...sections.filter(s=>s.id==='about'||s.id==='tech'||s.id==='social')].map(section=>{
+        {[...tourStops.map(stop=>sections.find(s=>s.id===stop.id)!), ...sections.filter(s=>s.id==='github'||s.id==='zenn'||s.id==='x'), ...sections.filter(s=>s.id==='about'||s.id==='social')].map(section=>{
           const index=halls.findIndex(hall=>hall.id===section.id);
           return <div className="guideDestination" key={section.id}>
             <a href={section.href} onClick={e=>{

@@ -32,7 +32,7 @@ document.addEventListener("astro:before-swap", event => {
 document.addEventListener("astro:page-load", () => {
   const query = new URLSearchParams(location.search);
   if (location.pathname === "/" && (query.get("mode") === "world" || query.has("detail"))) {
-    const anchor = ["#about", "#tech", "#career", "#social", "#products", "#top"].includes(location.hash);
+    const anchor = ["#about", "#career", "#activities", "#social", "#products", "#contact", "#top"].includes(location.hash);
     void navigate(anchor ? `/profile${location.hash}` : `/world${location.search}${location.hash}`, { history: "replace" });
     return;
   }

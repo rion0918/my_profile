@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { hallIconDisplay } from '../../lib/world-halls.ts';
 
 export const hallIcons = {
@@ -28,7 +28,7 @@ export function createHallIcon(brand: keyof typeof hallIcons, texture: THREE.Tex
   const face = new THREE.MeshBasicMaterial({ color: definition.background, toneMapped: false, fog: false });
   const artwork = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false, fog: false });
   const box = (w: number, h: number, d: number, material: THREE.Material, y: number, z = 0, radius = .025) => {
-    const mesh = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, Math.min(radius, w / 4, h / 4, d / 4)), material);
+    const mesh = new THREE.Mesh(createRoundedBox(w, h, d, 3, Math.min(radius, w / 4, h / 4, d / 4)), material);
     mesh.position.set(0, y, z); mesh.castShadow = material === metal; group.add(mesh); return mesh;
   };
   const mount = box(1.65, .1, hallIconDisplay.depth, metal, .05);

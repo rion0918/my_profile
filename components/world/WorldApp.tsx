@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AboutContent, TechContent, CareerContent, SocialContent } from "../PortfolioContent";
+import { AboutContent, CareerContent, ActivitiesContent, SocialContent } from "../PortfolioContent";
 import { HallContent } from "../HallContent";
 import { halls } from "../../lib/world-halls";
 import { loadWorldMap } from "../../lib/world-map-loader";
@@ -10,9 +10,9 @@ import WorldExperience from "./WorldExperience";
 
 const hallPanels = Object.fromEntries(halls.map(hall => [hall.id, <HallContent key={hall.id} id={hall.id} />]));
 const panels = {
-  about: <><AboutContent /><h3 className="panelSectionTitle">技術スタック</h3><TechContent /><h3 className="panelSectionTitle">外部リンク</h3><SocialContent /></>,
-  tech: <TechContent />,
+  about: <><AboutContent /><h3 className="panelSectionTitle">外部リンク</h3><SocialContent /></>,
   career: <CareerContent />,
+  activities: <ActivitiesContent />,
   social: <SocialContent />,
 };
 

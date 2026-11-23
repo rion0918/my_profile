@@ -1,6 +1,6 @@
 async page => {
   const browser = page.context().browser(), origin = 'http://localhost:3001', results = [];
-  const routes = ['/', '/profile', '/about', '/career', '/tech', '/social', '/projects/yoin', '/projects/pop-reminder'];
+  const routes = ['/', '/profile', '/about', '/career', '/activities', '/social', '/projects/idea-boost', '/projects/pop-reminder'];
   const plain = await browser.newContext({ javaScriptEnabled: false });
   try {
     const p = await plain.newPage();
@@ -35,7 +35,7 @@ async page => {
     if (initial.gl || initial.play || requests.some(url => /WorldApp|WorldCanvas|rapier|world-map|\/models\/|\/textures\/|\/audio\//.test(url))) throw Error('Normal page loaded the world: ' + JSON.stringify({ initial, requests }));
     const timeOrigin = await p.evaluate(() => performance.timeOrigin);
     await p.getByRole('link', { name: '3Dワールド', exact: true }).focus();
-    await p.waitForFunction(() => performance.getEntriesByType('resource').some(e => e.name.endsWith('/models/rion-walker.glb')));
+    await p.waitForFunction(() => performance.getEntriesByType('resource').some(e => e.name.endsWith('/models/rion-walker.glb.gz')));
     if (await p.evaluate(() => window.__boundary.gl || window.__boundary.play)) throw Error('Prefetch initialized WebGL or audio');
     await p.getByRole('link', { name: '3Dワールド', exact: true }).click();
     await p.locator('.worldSurface[aria-busy="false"]').waitFor({ timeout: 60000 });
@@ -53,7 +53,7 @@ async page => {
     const c = await browser.newContext();
     try {
       if (failure === 'webgl') await c.addInitScript(() => { const get = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (type, ...args) { return type.startsWith('webgl') ? null : get.call(this, type, ...args); }; });
-      if (failure === 'model') await c.route('**/models/rion-walker.glb', r => r.abort());
+      if (failure === 'model') await c.route('**/models/rion-walker.glb.gz', r => r.abort());
       if (failure === 'island') await c.route('**/WorldApp.*.js', r => r.abort());
       const p = await c.newPage(); await p.goto(origin + '/world');
       if (failure === 'island') await p.getByRole('link', { name: '通常表示でプロフィールと作品を読む ↗', exact: true }).click();
@@ -68,8 +68,8 @@ async page => {
     await p.goto(origin + '/?mode=world#career');
     await p.waitForURL('**/profile#career');
     await p.locator('#career').waitFor();
-    await p.goto(origin + '/?detail=yoin&source=legacy');
-    await p.getByRole('dialog', { name: 'Yoin館', exact: true }).waitFor();
+    await p.goto(origin + '/?detail=idea-boost&source=legacy');
+    await p.getByRole('dialog', { name: 'Idea Boost館', exact: true }).waitFor();
     const url = new URL(p.url());
     if (url.pathname !== '/world' || url.searchParams.get('source') !== 'legacy') throw Error('Legacy query parameters were lost');
     results.push({ legacyAnchor: true, legacyDetail: true, queryPreserved: true });

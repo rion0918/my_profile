@@ -1,0 +1,28 @@
+---
+import { activities } from "../../lib/portfolio";
+---
+<div class="activityList">
+  {activities.map((entry, index) => (
+    <article class="activityItem">
+      <div class="activityMeta">
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        <small>{entry.period}</small>
+      </div>
+      <div>
+        <h3>
+          {entry.prefix && <small>{entry.prefix}</small>}
+          {entry.title}
+          {entry.suffix && <small>{entry.suffix}</small>}
+        </h3>
+        <p>{entry.description}</p>
+        {entry.links && (
+          <div class="careerLinks">
+            {entry.links.map((link) => (
+              <a class="textLink" href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>
+            ))}
+          </div>
+        )}
+      </div>
+    </article>
+  ))}
+</div>

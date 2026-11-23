@@ -1,6 +1,6 @@
 async(page)=>{
  const results=[];
- for(const [id,name,x,z] of [['about','アトリエ',-7,10.295],['career','キャリアギャラリー',8,-3.11],['yoin','Yoin',-8,-8.875],['pop-reminder','Pop Reminder',8,-10.79]]){
+ for(const [id,name,x,z] of [['about','アトリエ',-7,10.295],['career','キャリアギャラリー',8,-3.11],['idea-boost','Idea Boost',-8,-8.875],['pop-reminder','Pop Reminder',8,-10.79]]){
   const c=await page.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   try{
    const p=await c.newPage();await p.goto('http://localhost:3001/world');await p.locator('.worldLoading').waitFor({state:'hidden'});await p.getByRole('button',{name:'自由に探索する',exact:true}).tap();

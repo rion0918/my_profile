@@ -64,3 +64,24 @@ test('batch clones copy buffers without re-running procedural constructors', asy
   assert.deepEqual(second.index.array, source.index.array);
   cache.dispose(); source.dispose(); first.dispose(); second.dispose();
 });
+
+test('town rounded boxes start indexed and preserve the original triangle attributes', async () => {
+  const { createRoundedBox } = await import('../components/world/rounded-box.ts');
+  for (const segments of [1, 2, 3]) for (const radius of [.025, .8]) {
+    const args = [3, .7, 1.25, segments, radius];
+    const source = new RoundedBoxGeometry(...args);
+    const actual = createRoundedBox(...args);
+    assert.ok(actual.index);
+    assert.deepEqual(actual.groups, source.groups);
+    const expanded = actual.toNonIndexed();
+    for (const key of ['position', 'normal', 'uv']) {
+      const expected = source.attributes[key].array;
+      const values = expanded.attributes[key].array;
+      assert.equal(values.length, expected.length);
+      assert.ok(values.every((v, i) => Math.abs(v - expected[i]) < .000001), key);
+    }
+    const original = actual.attributes.position.array.slice();
+    actual.translate(1, 2, 3);
+    assert.deepEqual(createRoundedBox(...args).attributes.position.array, original);
+  }
+});

@@ -1,6 +1,6 @@
 import type { BikePose } from "../../lib/world-bike-physics";
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { bikeStation, bikeStart, bikeGeometry } from '../../lib/world-bike';
 import { createStaticGeometryCache, releaseUnusedGeometries } from './static-geometry.ts';
@@ -17,7 +17,7 @@ export function createBike(scene: THREE.Scene) {
     const m = new THREE.Mesh(geo, mat(color)); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
   };
   const box = (p: THREE.Object3D, x: number, y: number, z: number, w: number, h: number, d: number, color: number) =>
-    mesh(p, new RoundedBoxGeometry(w, h, d, 2, Math.min(w, h, d, 0.12) / 3), color, x, y, z);
+    mesh(p, createRoundedBox(w, h, d, 2, Math.min(w, h, d, 0.12) / 3), color, x, y, z);
   const beamGeo = new THREE.CylinderGeometry(1, 1, 1, 8);
   const beam = (p: THREE.Object3D, a: number[], b: number[], r: number, color: number) => {
     const v = new THREE.Vector3(...a), w = new THREE.Vector3(...b), m = mesh(p, beamGeo, color);

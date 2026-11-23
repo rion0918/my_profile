@@ -56,7 +56,7 @@ test('turning off reflections skips scene captures without replacing water or po
   } finally { water.dispose(); }
 });
 
-test('reflection shaders compile before exploration and restore the active render target', async () => {
+test('reflection shaders compile for their target and restore the active render target', async () => {
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd4d3);
   const water = createWater(scene, []), camera = new THREE.OrthographicCamera();
   const original = new THREE.WebGLRenderTarget(2, 2);

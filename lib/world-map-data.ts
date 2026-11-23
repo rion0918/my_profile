@@ -1,3 +1,4 @@
+import { buildMeadowMask } from "./build-meadow-mask.ts";
 import { zoneBoundary, southEntrance, centralPlaza } from "./world-zones.ts";
 import { hallMarker } from "./world-tour.ts";
 import { buildings, ponds, roads, roadCurves, plaza, entrancePlaza } from './world-layout.ts';
@@ -17,6 +18,7 @@ export function createWorldMapData() {
   const roundRing = (ring: [number, number][]): [number, number][] => ring.map(([x, z]) => [Math.round(x * 1000) / 1000, Math.round(z * 1000) / 1000]);
   const rawStreets = buildStreetNetwork(roads.map((r,i)=>({curve:roadCurves[i],width:r.width})),plaza,[entrancePlaza]);
   return {
+    meadow: buildMeadowMask(),
     streets: {
       surface: rawStreets.surface.map(poly => poly.map(roundRing)),
       curb: rawStreets.curb.map(poly => poly.map(roundRing)),

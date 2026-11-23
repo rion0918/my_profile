@@ -1,6 +1,6 @@
 async page=>{
  const browser=page.context().browser(),results=[],errors=[];
- const halls=[['history',-8,23],['experience',8,23],['yoin',-8,6],['pop-reminder',8,6],['github',-22,14],['zenn',22,14],['x',-32,7]];
+ const halls=[['history',-8,23],['experience',8,23],['idea-boost',-8,6],['pop-reminder',8,6],['github',-22,14],['zenn',22,14],['x',-32,7]];
  for(const [width,height] of [[1440,1000],[390,844]])for(const [id,x,z] of halls){
   const c=await browser.newContext({viewport:{width,height},isMobile:width<760,hasTouch:width<760,reducedMotion:'reduce',timezoneId:'Asia/Tokyo'});
   try{
@@ -33,7 +33,7 @@ async page=>{
    const unchanged=await p.evaluate(id=>{const q=window.__architecture,ids=[];q.scene.getObjectByName('hall-'+id).getObjectByName('hall-architecture').traverse(o=>{if(o.isMesh)ids.push(o.geometry.uuid);});return JSON.stringify(ids)===JSON.stringify(q.geometry)&&!q.renderer.shadowMap.enabled;},id);
    if(!unchanged)throw Error('low mode changes the architecture '+id);
    await p.screenshot({path:`output/playwright/architecture-${id}-low-${width}.png`});
-   if(['github','yoin','pop-reminder'].includes(id)){
+   if(['github','idea-boost','pop-reminder'].includes(id)){
     await p.clock.setFixedTime(new Date('2026-10-25T21:00:00+09:00'));await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');await p.waitForFunction(()=>document.querySelector('.worldSurface').dataset.night==='true');
     await p.screenshot({path:`output/playwright/architecture-${id}-night-${width}.png`});
    }

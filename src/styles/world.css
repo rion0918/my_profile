@@ -699,10 +699,6 @@
   .worldWelcome .welcomeActions { grid-column: 2; grid-row: 1 / span 4; align-self: center; grid-template-columns: 1fr; gap: 2px; }
 }
 
-.careerGroup { scroll-margin-top: 28px; }
-.careerGroup + .careerGroup { margin-top: 48px; }
-.careerGroup > h2 { margin-bottom: 28px; font-size: 24px; }
-.careerGroups .careerItem:not(:last-child)::after { content: '↓'; }
 .careerLinks { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; }
 .careerLinks .textLink { display: inline-flex; align-items: center; min-height: 44px; }
 .socialList a[id] { scroll-margin-top: 24px; }
@@ -740,7 +736,6 @@
 .hallCareerCard h3 { font-size: 21px; line-height: 1.5; margin: 0 0 14px; }
 .hallCareerCard h3 small { display: block; font-size: 12px; font-weight: 500; color: #65715f; }
 .hallCareerCard > p:not(.hallCareerPeriod) { font-size: 14px; line-height: 1.8; margin: 0; }
-.hallCareerCard .miniTags { margin-top: 16px; }
 @media (max-width: 760px) {
   .hallCareerGrid, .hall-history .hallCareerGrid { grid-template-columns: 1fr; gap: 12px; }
   .hallCareerCard { padding: 16px; }
@@ -894,12 +889,11 @@
 .hallCurrentSchool { margin: 0; font-size: 17px; line-height: 1.6; }
 .hallCurrentSchool span { display: block; font-size: 12px; color: #dbe4ea; }
 .hallCurrentOffer { border-top: 1px solid #ffffff38; margin-top: 20px; padding-top: 20px; }
-.hallOfferBadge { display: inline-block; padding: 4px 8px; border-radius: 3px; color: #233c51; background: var(--hall-light); font-size: 11px; font-weight: 650; }
 .hallCurrentOffer h4 { font-size: 26px; font-weight: 600; margin: 10px 0 6px; letter-spacing: -.025em; }
 .hallCurrent .hallFactNote { margin: 0; color: #e1e8ed; font-size: 13px; line-height: 1.75; }
 .hallHistoryExhibit { border-top: 1px solid #dbe2d6; padding-top: 24px; }
 .hallHistoryExhibit > h3 { font-size: 18px; margin: 0 0 22px; font-weight: 600; }
-.hallTimeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; }
+.hallTimeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; }
 .hallTimeline li { position: relative; padding: 20px 22px 0 0; border-top: 1px solid #a5b3a6; }
 .hallTimeline li::before { content: ''; position: absolute; width: 7px; height: 7px; background: var(--hall-accent); border-radius: 50%; top: -4px; left: 0; }
 .hallTimeline .hallCareerCard { background: transparent; padding: 0; border: 0; border-radius: 0; }
@@ -909,15 +903,15 @@
 .hallTimeline .hallCareerCard > p:last-child { font-size: 14px; line-height: 1.9; color: #536353; margin: 0; }
 .hallExperienceIntro { padding: 40px 0 32px; }
 .hallActivities { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #b8c8b9; }
+.hallActivities:has(> :only-child) { grid-template-columns: 1fr; }
 .hallActivities .hallActivity { padding: 30px 32px 12px 0; background: transparent; border: 0; border-radius: 0; }
+.hallActivities:has(> :only-child) .hallActivity { max-width: 680px; padding-right: 0; }
 .hallActivities .hallActivity + .hallActivity { padding-left: 32px; padding-right: 0; border-left: 1px solid #dbe2d6; }
 .hallActivityType { margin: 0 0 20px; color: #356f5d; font-size: 13px; font-weight: 650; }
 .hallActivity h3 { font-size: 29px; line-height: 1.6; margin: 0 0 12px; letter-spacing: -.03em; }
 .hallActivity h3 small { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 400; color: #536353; letter-spacing: 0; }
 .hallActivityPeriod { font-size: 12px; color: #536353; }
 .hallActivityDescription { margin: 26px 0 20px; font-size: 16px; line-height: 1.85; }
-.hallActivityTags { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 12px; color: #41624d; }
-.hallActivityTags span { border-bottom: 1px solid #c1d2c1; padding-bottom: 5px; }
 .hallAction { display: inline-flex; justify-content: center; align-items: center; gap: 36px; min-height: 48px; padding: 13px 22px; border-radius: 6px; background: #253d36; color: #fff; font-size: 14px; font-weight: 600; white-space: nowrap; }
 .hallAction:hover { background: #152b23; }
 .hallActionSecondary { display: inline-flex; justify-content: center; align-items: center; gap: 14px; min-height: 48px; padding: 13px 20px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--control-paper); color: var(--control-ink); font-size: 14px; font-weight: 600; white-space: nowrap; text-decoration: none; }
@@ -982,6 +976,9 @@
 .hallImageFooter { display: flex; gap: 20px; align-items: center; flex: 0 0 auto; padding: 12px 20px; border-top: 1px solid #ffffff29; }
 .hallImageFooter p { flex: 1; margin: 0; font-size: 13px; text-align: center; line-height: 1.7; }
 .hallImageFooter p span { display: block; color: #bacbc1; font-size: 11px; }
+@media (max-width: 960px) {
+  .hallTimeline { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 24px; }
+}
 @media (max-width: 760px) {
   .hallDialog[open], .detailDialog.hallDialog:has(.tourFooter) { width: 100%; height: 100svh; max-height: 100svh; max-width: 100%; margin: 0; border-radius: 0; }
   .hallDialogHeader { min-height: 58px; padding: max(6px, env(safe-area-inset-top)) 16px 6px; gap: 14px; }

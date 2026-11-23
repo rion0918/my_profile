@@ -1,4 +1,4 @@
-import { profile, techGroups, careerGroups, socials } from "../lib/portfolio";
+import { profile, career, activities, socials, type TimelineEntry } from "../lib/portfolio";
 
 export function AboutContent() {
   return (
@@ -13,42 +13,56 @@ export function AboutContent() {
   );
 }
 
-export function TechContent() {
+function TimelineEntryBody({ entry }: { entry: TimelineEntry }) {
   return (
-    <div className="techGrid">
-      {techGroups.map((group) => (
-        <article key={group.title} className="techGroup">
-          <h3>{group.title}</h3>
-          <div className="pillList">
-            {group.items.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
+    <div>
+      <h3>
+        {entry.prefix && <small>{entry.prefix}</small>}
+        {entry.title}
+        {entry.suffix && <small>{entry.suffix}</small>}
+      </h3>
+      <p>{entry.description}</p>
+      {entry.links && (
+        <div className="careerLinks">
+          {entry.links.map((link) => (
+            <a className="textLink" key={link.href} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CareerContent() {
+  return (
+    <div className="careerFlow">
+      {career.map((entry, index) => (
+        <article key={entry.title} className="careerItem">
+          <div className="flowMeta">
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <time>{entry.period.split(/(?=（)/).map((part, partIndex) => (partIndex === 0 ? part : <span className="periodNote" key={part}>{part}</span>))}</time>
           </div>
+          <TimelineEntryBody entry={entry} />
         </article>
       ))}
     </div>
   );
 }
 
-export function CareerContent({ group }: { group?: 'experience' | 'history' }) {
-  return <div className="careerGroups">
-    {careerGroups.filter(item => !group || item.id === group).map(item => <section id={item.id} className="careerGroup" key={item.id}>
-      {!group && <h2>{item.title}</h2>}
-      <div className="careerFlow">
-        {item.items.map((entry, index) => <article key={entry.title} className="careerItem">
-          <div className="flowMeta"><span>{String(index + 1).padStart(2, '0')}</span><time>{entry.period.split(/(?=（)/).map((part, index) => index === 0 ? part : <span className="periodNote" key={part}>{part}</span>)}</time></div>
-          <div>
-            <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
-            <p>{entry.description}</p>
-            <div className="miniTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
-            {'links' in entry && entry.links && <div className="careerLinks">
-              {entry.links.map(link => <a className="textLink" key={link.href} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}
-            </div>}
+export function ActivitiesContent() {
+  return (
+    <div className="activityList">
+      {activities.map((entry, index) => (
+        <article key={entry.title} className="activityItem">
+          <div className="activityMeta">
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <small>{entry.period}</small>
           </div>
-        </article>)}
-      </div>
-    </section>)}
-  </div>;
+          <TimelineEntryBody entry={entry} />
+        </article>
+      ))}
+    </div>
+  );
 }
 
 export function SocialContent() {

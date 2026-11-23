@@ -1,6 +1,6 @@
 import { halls, type HallId } from '../lib/world-halls';
 import { products } from '../lib/products';
-import { careerGroups, socials } from '../lib/portfolio';
+import { career, activities, socials } from '../lib/portfolio';
 import { HallProductExhibit } from './HallProductExhibit';
 
 export function HallContent({ id }: { id: HallId }) {
@@ -9,8 +9,9 @@ export function HallContent({ id }: { id: HallId }) {
   if (product) return <div className={`hallContent hall-${id}`}><HallProductExhibit product={product} /></div>;
 
   if (id === 'history') {
-    const entries = careerGroups.find(group => group.id === id)!.items;
-    const school = entries[1], offer = entries[2];
+    const entries = [...career].reverse();
+    const school = career.find(entry => entry.title === '神戸電子専門学校')!;
+    const offer = career.find(entry => entry.title === '合同会社DMM.com')!;
     return <div className="hallContent hall-history">
       <div className="hallCareerHero">
         <div className="hallIntroduction">
@@ -18,9 +19,8 @@ export function HallContent({ id }: { id: HallId }) {
         </div>
         <section className="hallCurrent" aria-label="現在の立場">
           <p className="hallCurrentLabel">現在の立場</p>
-          <p className="hallCurrentSchool">{school.title}<span>{'suffix' in school && school.suffix} · {school.period}</span></p>
+          <p className="hallCurrentSchool">{school.title}<span>{school.suffix} · {school.period}</span></p>
           <div className="hallCurrentOffer">
-            <span className="hallOfferBadge">{offer.period}・内定</span>
             <h4>{offer.title}</h4>
             <p className="hallFactNote">{offer.description}</p>
           </div>
@@ -32,7 +32,7 @@ export function HallContent({ id }: { id: HallId }) {
           {entries.map(entry => <li key={entry.title}>
             <article className="hallCareerCard">
               <p className="hallTimelinePeriod">{entry.period}</p>
-              <h3>{entry.title}{'suffix' in entry && entry.suffix && <small>{entry.suffix}</small>}</h3>
+              <h3>{entry.title}{entry.suffix && <small>{entry.suffix}</small>}</h3>
               <p>{entry.description}</p>
             </article>
           </li>)}
@@ -43,17 +43,15 @@ export function HallContent({ id }: { id: HallId }) {
 
   if (id === 'experience') return <div className="hallContent hall-experience">
     <div className="hallIntroduction hallExperienceIntro">
-      <h3>実務経験・活動</h3>
+      <h3>{hall.name}</h3>
       <p>{hall.tagline}</p>
     </div>
     <div className="hallActivities">
-      {careerGroups.find(group => group.id === id)!.items.map((entry, index) => <article className="hallCareerCard hallActivity" key={entry.title}>
-        <p className="hallActivityType">{index === 0 ? '実務経験' : 'コミュニティづくり'}</p>
-        <h3>{'prefix' in entry && entry.prefix && <small>{entry.prefix}</small>}{entry.title}</h3>
+      {activities.map(entry => <article className="hallCareerCard hallActivity" key={entry.title}>
+        <h3>{entry.prefix && <small>{entry.prefix}</small>}{entry.title}</h3>
         <p className="hallActivityPeriod">{entry.period}</p>
         <p className="hallActivityDescription">{entry.description}</p>
-        <div className="hallActivityTags">{entry.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
-        {'links' in entry && entry.links && <div className="careerLinks">
+        {entry.links && <div className="careerLinks">
           {entry.links.map(link => <a className="textLink" key={link.href} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}
         </div>}
       </article>)}

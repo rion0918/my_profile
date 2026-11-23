@@ -62,7 +62,7 @@ async page=>{
     if(distance(before,await position())<.5)throw Error('ground tap navigation lost');await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');
     // Reading pauses motion, and releasing an old touch cannot resume it.
     point=await begin(0,-60);await p.waitForTimeout(100);await p.locator('.worldGuide>summary').click();
-    await p.getByRole('link',{name:'経験館 Skyでのインターンと、We部の立ち上げ',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});
+    await p.getByRole('link',{name:'Activities We部コミュニティの立ち上げ・運営',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});
     await touch('touchMove',[{x:point.x,y:point.y-70,id:1}]);await stopped('reading');await touch('touchEnd',[]);
     await p.keyboard.press('Escape');await stopped('closing reader');
     results.push({mode,reverse:true,pinch:true,cancel:true,captureLoss:true,focusLoss:true,tap:true,readingPauses:true});
@@ -81,7 +81,7 @@ async page=>{
     let point=await hallPoint();const before=await position();await touch('touchStart',[{...point,id:1}]);await touch('touchMove',[{x:point.x-45,y:point.y,id:1}]);await p.waitForTimeout(150);await touch('touchEnd',[]);
     if(distance(before,await position())<.25||await p.getByRole('dialog').isVisible())throw Error('drag over a hall does not move safely');
     point=await hallPoint();await p.touchscreen.tap(point.x,point.y);await p.getByRole('dialog').waitFor({state:'visible'});
-    if(await p.locator('#detail-title').innerText()!=='経験館')throw Error('touch tap selects wrong hall');results.push({mode,selection:true});
+    if(await p.locator('#detail-title').innerText()!=='Activities')throw Error('touch tap selects wrong hall');results.push({mode,selection:true});
    }
   }finally{await c.close();}
  }

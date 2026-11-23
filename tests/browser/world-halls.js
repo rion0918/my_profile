@@ -1,7 +1,7 @@
 async(page)=>{
  const origin='http://localhost:3001',results=[],errors=[];
- const stops=[['history','Background'],['experience','経験館'],['yoin','Yoin館'],['pop-reminder','ふわっと。館']];
- const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','pop-reminder':'https://fuwatto.riomaru.jp/'};
+ const stops=[['history','Career'],['experience','Activities'],['idea-boost','Idea Boost館'],['pop-reminder','ふわっと。館']];
+ const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','idea-boost':'https://ideaboost.dev/','pop-reminder':'https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja'};
  const browser=page.context().browser();
  const setup=async c=>{
   await c.addInitScript(()=>{
@@ -15,7 +15,7 @@ async(page)=>{
  const c=await browser.newContext({viewport:{width:1440,height:900},timezoneId:'Asia/Tokyo'});
  try{
   await setup(c);await c.addInitScript(()=>{sessionStorage.setItem('portfolio-position-v4',JSON.stringify({version:4,x:-7,z:8}));sessionStorage.setItem('portfolio-welcome-v3','seen');});
-  await c.route(/^https:\/\/(github.com|zenn.dev|x.com|fuwatto.riomaru.jp)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
+  await c.route(/^https:\/\/(github.com|zenn.dev|x.com|ideaboost.dev|play.google.com)\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>External link target</title><p>Link destination verified.</p>'}));
   const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
   const html=await(await p.request.get(origin)).text();if(!html.includes('街の入口')||!html.includes('通常表示で読む'))throw Error('missing initial HTML');
   await p.goto(origin+'/world');await ready(p);const spawn=await position(p);if(Math.hypot(spawn[0],spawn[2]-31)>.01)throw Error('old position restored '+spawn);
@@ -28,10 +28,10 @@ async(page)=>{
    const point=await position(p);await p.keyboard.down('w');await p.waitForTimeout(80);await p.keyboard.up('w');const held=await position(p);
    if(point[0]!==held[0]||point[2]!==held[2])throw Error('movement during reading');
    if(id==='experience'){
-    const titles=await p.locator('.hallContent .hallCareerCard h3').allTextContents();if(titles.length!==2||!titles[0].includes('Sky')||!titles[1].includes('We部'))throw Error('experience mixed with history '+titles);
+    const titles=await p.locator('.hallContent .hallCareerCard h3').allTextContents();if(titles.length!==2||!titles[0].includes('We部')||!titles[1].includes('KOBE STUDENT HACK 2027'))throw Error('activities mixed or missing '+titles);
    }
    if(id==='history'){
-    const titles=await p.locator('.hallContent .hallCareerCard h3').allTextContents();if(titles.length!==3||!titles[0].includes('上宮')||!titles[1].includes('神戸電子')||!titles[2].includes('DMM'))throw Error('history missing facts '+titles);
+    const titles=await p.locator('.hallContent .hallCareerCard h3').allTextContents();if(titles.length!==4||!titles[0].includes('上宮')||!titles[1].includes('神戸電子')||!titles[2].includes('Sky')||!titles[3].includes('DMM'))throw Error('history missing facts '+titles);
     const current=await p.getByRole('region',{name:'現在の立場',exact:true}).boundingBox(),footer=await p.locator('.tourFooter').boundingBox();if(current.y+current.height>footer.y)throw Error('current position hidden below tour footer');
     if(!await p.locator('.hallFactNote').innerText().then(t=>t.includes('27卒')&&t.includes('内定')))throw Error('offer misrepresented');
    }
@@ -41,7 +41,7 @@ async(page)=>{
     if(popup.url().replace(/\/$/,'')!==destinations[id].replace(/\/$/,''))throw Error('wrong external destination '+popup.url());await popup.close();
     if(!await p.getByRole('dialog').isVisible()||!p.url().includes('detail='+id)||await p.evaluate(()=>history.length)!==h+1)throw Error('external link lost tour');
    }
-   if(id==='yoin'||id==='pop-reminder'){
+   if(id==='idea-boost'||id==='pop-reminder'){
     if(await p.locator('.hallGalleryThumbnails button').count()!==2)throw Error('missing product screens');
     await p.locator('.hallGalleryMain').scrollIntoViewIfNeeded();
     await p.waitForFunction(()=>document.querySelector('.hallGalleryMain img')?.complete&&document.querySelector('.hallGalleryMain img').naturalWidth>300);
@@ -76,10 +76,10 @@ async(page)=>{
   const camera=await p.evaluate(()=>JSON.parse(sessionStorage.getItem('portfolio-position-v5')).view);if(camera.panned)throw Error('camera detached after exit');
   await p.locator('.worldGuide > summary').click();await p.locator('.guideTour').click();await p.getByRole('dialog').waitFor({state:'visible'});await p.locator('.tourNext').click();await p.goBack();await p.waitForTimeout(800);
   if(await p.getByRole('dialog').isVisible())throw Error('back during focus failed');await p.goForward();await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('.tourFooter').count())throw Error('forward retained stale tour');await p.keyboard.press('Escape');
-  for(const id of ['about','career','social','tech',...stops.map(s=>s[0]),'github','zenn','x']){
+  for(const id of ['about','career','activities','social',...stops.map(s=>s[0]),'github','zenn','x']){
    await p.goto(origin+'/?detail='+id);await p.getByRole('dialog').waitFor({state:'visible'});await p.locator('#detail-title').filter({hasText:/\S/}).waitFor({state:'visible'});
   }
-  for(const url of ['/about','/tech','/profile','/projects/yoin','/projects/pop-reminder','/career#experience','/career#history','/social#github','/social#zenn','/social#x']){
+  for(const url of ['/about','/activities','/career','/profile','/projects/idea-boost','/projects/pop-reminder','/social#github','/social#zenn','/social#x']){
    const response=await p.goto(origin+url);if(response&&response.status()!==200)throw Error('article unavailable '+url);if(url.includes('#')&&!await p.locator('#'+url.split('#')[1]).count())throw Error('missing article anchor '+url);
    if(url.includes('pop-reminder')&&(await p.locator('h1').innerText()!=='ふわっと。'||!await p.locator('title').innerText().then(t=>t.includes('ふわっと。'))))throw Error('old product name');
   }

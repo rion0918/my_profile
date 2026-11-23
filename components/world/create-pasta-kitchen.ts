@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createStaticGeometryCache } from './static-geometry.ts';
 import type { Font } from 'three/addons/loaders/FontLoader.js';
@@ -71,7 +71,7 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
     object.castShadow = !Array.isArray(m) && !m.transparent && !(m instanceof THREE.MeshBasicMaterial); object.receiveShadow = true; parent.add(object); return object;
   };
   const box = (p: THREE.Object3D, x: number, y: number, z: number, w: number, h: number, d: number, m: THREE.Material, r = .025) => {
-    const key = [w, h, d, r].join(','); if (!cache.has(key)) cache.set(key, new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 4, h / 4, d / 4)));
+    const key = [w, h, d, r].join(','); if (!cache.has(key)) cache.set(key, createRoundedBox(w, h, d, 2, Math.min(r, w / 4, h / 4, d / 4)));
     return mesh(p, cache.get(key)!, m, x, y, z);
   };
   const sphere = (p: THREE.Object3D, x: number, y: number, z: number, r: number, m: THREE.Material, sx = 1, sy = 1, sz = 1) => {
@@ -209,13 +209,13 @@ export function createPastaKitchen(scene: THREE.Scene, applyVisibility: (materia
   const seared = new THREE.MeshPhysicalMaterial({ color: 0x8b4b2e, roughness: .4, clearcoat: .32, clearcoatRoughness: .25, bumpMap: searRelief, bumpScale: .025, envMap: reflections, envMapIntensity: .55 });
   const renderedFat = new THREE.MeshPhysicalMaterial({ color: 0xe5bd7e, roughness: .29, clearcoat: .7, clearcoatRoughness: .2, bumpMap: searRelief, bumpScale: .01, envMap: reflections, envMapIntensity: .7 });
   for (const m of [seared, renderedFat]) { materials.add(m); applyVisibility(m); }
-  const morselGeometry = new RoundedBoxGeometry(.245, .10, .115, 3, .032), morselPositions = morselGeometry.getAttribute('position');
+  const morselGeometry = createRoundedBox(.245, .10, .115, 3, .032).toNonIndexed(), morselPositions = morselGeometry.getAttribute('position');
   for (let i = 0; i < morselPositions.count; i++) {
     const x = morselPositions.getX(i), y = morselPositions.getY(i), z = morselPositions.getZ(i);
     morselPositions.setXYZ(i, x * (1 + .14 * Math.sin(y * 61 + z * 39)), y + .009 * Math.sin(x * 40 + z * 52), z + .015 * Math.sin(x * 33));
   }
   morselGeometry.computeVertexNormals();
-  const bacon = instances(guanciale, morselGeometry, seared, 38), streaks = instances(guanciale, new RoundedBoxGeometry(.16, .026, .048, 3, .012), renderedFat, 38);
+  const bacon = instances(guanciale, morselGeometry, seared, 38), streaks = instances(guanciale, createRoundedBox(.16, .026, .048, 3, .012), renderedFat, 38);
   const char = standard(0x4b2d20, .64);
   const charred = instances(guanciale, new THREE.DodecahedronGeometry(.019, 0), char, 114);
   for (let i = 0; i < 38; i++) {

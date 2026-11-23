@@ -1,6 +1,6 @@
 async(page)=>{
  const browser=page.context().browser(),results=[],errors=[];
- for(const[id,name,x,z]of[['about','アトリエ',-7,13],['career','キャリアギャラリー',8,0],['yoin','Yoin',-8,-6],['pop-reminder','Pop Reminder',8,-9.5]]){
+ for(const[id,name,x,z]of[['about','アトリエ',-7,13],['career','キャリアギャラリー',8,0],['idea-boost','Idea Boost',-8,-6],['pop-reminder','Pop Reminder',8,-9.5]]){
   const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:id==='about'?'reduce':'no-preference'});
   try{
    const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T18:00:00+09:00'));
@@ -33,6 +33,6 @@ async(page)=>{
   }finally{await c.close();}
  }
  const direct=await browser.newContext({viewport:{width:390,height:844}});
- try{const p=await direct.newPage();await p.goto('http://localhost:3001/?detail=yoin');await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('.worldWelcome').count())throw Error('welcome blocks direct detail');results.push({directDetail:true});}finally{await direct.close();}
+ try{const p=await direct.newPage();await p.goto('http://localhost:3001/?detail=idea-boost');await p.getByRole('dialog').waitFor({state:'visible'});if(await p.locator('.worldWelcome').count())throw Error('welcome blocks direct detail');results.push({directDetail:true});}finally{await direct.close();}
  return {results,errors};
 }

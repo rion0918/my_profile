@@ -41,8 +41,8 @@ async page=>{
   if(await p.getByRole('dialog',{name:'閲覧方法を選択',exact:true}).isVisible())throw Error('history navigation reopened the entry choice');
   const bounds=await p.locator('.worldToolbar').evaluate(el=>({width:el.clientWidth,viewport:innerWidth,scroll:el.scrollWidth,items:[...el.querySelectorAll('.modeSwitch>*')].map(e=>{const r=e.getBoundingClientRect();return [r.x,r.right,r.height];})}));
   if(bounds.scroll>bounds.width+1||bounds.items.some(([x,right,height])=>x<0||right>bounds.viewport||height<44))throw Error('world mode switch is clipped '+JSON.stringify(bounds));
-  await p.goto('http://localhost:3001/?detail=yoin');await p.getByRole('dialog',{name:'Yoin館',exact:true}).waitFor({state:'visible'});
-  const hallTime=await p.evaluate(()=>performance.timeOrigin);await p.locator('.hallDialogHeader a').click();await p.waitForURL('**/projects/yoin');
+  await p.goto('http://localhost:3001/?detail=idea-boost');await p.getByRole('dialog',{name:'Idea Boost館',exact:true}).waitFor({state:'visible'});
+  const hallTime=await p.evaluate(()=>performance.timeOrigin);await p.locator('.hallDialogHeader a[href="/projects/idea-boost"]').click();await p.waitForURL('**/projects/idea-boost');
   if(await p.evaluate(()=>performance.timeOrigin)!==hallTime)throw Error('switching from a hall to its normal article reloaded the document');
   const articleModes=await p.locator('.modeSwitch').evaluate(nav=>({labels:[...nav.children].map(e=>e.textContent.trim()),active:nav.querySelector('[aria-current="page"]')?.textContent.trim()}));
   if(JSON.stringify(articleModes)!==JSON.stringify({labels:['3Dワールド','通常表示'],active:'通常表示'}))throw Error('article mode switch is inconsistent '+JSON.stringify(articleModes));

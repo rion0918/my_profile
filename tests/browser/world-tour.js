@@ -18,18 +18,18 @@ async page => {
         const footer = await p.locator('.tourFooter').boundingBox();
         if (footer.x < 0 || footer.x + footer.width > width || footer.y < 0 || footer.y + footer.height > height) throw Error('Clipped tour footer');
       };
-      await reading('Background');
+      await reading('Career');
       if (!await p.getByRole('button', { name: '← 前へ', exact: true }).isDisabled()) throw Error('First previous is enabled');
       const position = () => p.evaluate(() => JSON.parse(sessionStorage.getItem('portfolio-position-v5')));
       const before = await position(); await p.keyboard.down('w'); await p.waitForTimeout(120); await p.keyboard.up('w');
       const after = await position(); if (before.x !== after.x || before.z !== after.z) throw Error('Movement during reading');
-      await p.locator('.tourNext').click(); await reading('経験館');
+      await p.locator('.tourNext').click(); await reading('Activities');
       const titles = await p.locator('.hallActivity h3').allTextContents();
-      if (!titles[0].includes('Sky') || !titles[1].includes('We部')) throw Error('Experience order changed');
-      await p.getByRole('button', { name: '← 前へ', exact: true }).click(); await reading('Background');
-      for (const title of ['経験館', 'Yoin館', 'ふわっと。館']) {
+      if (titles.length !== 1 || !titles[0].includes('We部')) throw Error('Activities changed');
+      await p.getByRole('button', { name: '← 前へ', exact: true }).click(); await reading('Career');
+      for (const title of ['Activities', 'Idea Boost館', 'ふわっと。館']) {
         await p.locator('.tourNext').click(); await reading(title);
-        if (title !== '経験館') await p.locator('.hallGalleryMain img').waitFor();
+        if (title !== 'Activities') await p.locator('.hallGalleryMain img').waitFor();
       }
       await p.screenshot({ path: `output/playwright/tour-current-${width}.png` });
       if (await p.evaluate(() => history.length) !== historyLength + 1) throw Error('Tour floods history');
@@ -39,34 +39,34 @@ async page => {
       if (new URL(p.url()).searchParams.has('detail')) throw Error('Tour left a stale detail URL');
 
       // Exercise cancellation of a running camera move without late reopening.
-      await p.locator('.worldGuide > summary').click(); await p.locator('.guideTour').click(); await reading('Background');
+      await p.locator('.worldGuide > summary').click(); await p.locator('.guideTour').click(); await reading('Career');
       if (reducedMotion !== 'reduce') {
         await p.locator('.tourNext').click();
         await p.getByRole('region', { name: '展示へ移動中' }).getByRole('button', { name: '案内を離れて探索', exact: true }).click();
         await p.waitForTimeout(850);
         if (await p.getByRole('dialog').isVisible() || await p.locator('.worldPage').getAttribute('data-tour-phase') !== 'exploring') throw Error('Late focus reopened the tour');
         if ((await position()).view.panned) throw Error('Cancelled tour detached the camera');
-        await p.locator('.worldGuide > summary').click(); await p.locator('.guideTour').click(); await reading('Background');
+        await p.locator('.worldGuide > summary').click(); await p.locator('.guideTour').click(); await reading('Career');
       }
       await p.goBack(); await p.getByRole('dialog').waitFor({ state: 'hidden' });
       await p.waitForTimeout(800);
       if (await p.locator('.worldPage').getAttribute('data-tour-phase') !== 'exploring') throw Error('Back did not exit the tour');
-      await p.goForward(); await p.getByRole('dialog', { name: 'Background', exact: true }).waitFor();
+      await p.goForward(); await p.getByRole('dialog', { name: 'Career', exact: true }).waitFor();
       if (await p.locator('.tourFooter').count()) throw Error('Forward restored stale tour progress');
       await p.keyboard.press('Escape'); await p.getByRole('dialog').waitFor({ state: 'hidden' });
 
       if (width < 760) {
         await p.getByLabel('画質・BGM設定').click(); await p.getByLabel('画質モード', { exact: true }).selectOption('low'); await p.getByLabel('画質・BGM設定').click();
         await p.locator('.worldGuide > summary').click();
-        const started = await p.evaluate(() => performance.now()); await p.locator('.guideTour').click(); await reading('Background');
+        const started = await p.evaluate(() => performance.now()); await p.locator('.guideTour').click(); await reading('Career');
         if (await p.evaluate(() => performance.now()) - started > 650) throw Error('Reduced motion waited for camera animation');
-        for (const title of ['経験館', 'Yoin館', 'ふわっと。館']) { await p.locator('.tourNext').click(); await reading(title); }
+        for (const title of ['Activities', 'Idea Boost館', 'ふわっと。館']) { await p.locator('.tourNext').click(); await reading(title); }
         await p.locator('.tourNext').click(); await p.locator('.worldPage[data-tour-phase="complete"]').waitFor();
         const lowFinish = await position(); if (Math.hypot(lowFinish.x, lowFinish.z) > .01) throw Error('Low quality changes the tour destination');
       }
-      await p.goto(origin + '/?detail=yoin'); await p.getByRole('dialog', { name: 'Yoin館', exact: true }).waitFor();
+      await p.goto(origin + '/?detail=idea-boost'); await p.getByRole('dialog', { name: 'Idea Boost館', exact: true }).waitFor();
       if (await p.locator('.tourFooter').count()) throw Error('Direct URL restored stale tour progress');
-      for (const route of ['/profile', '/about', '/career', '/projects/yoin', '/projects/pop-reminder', '/tech', '/social']) {
+      for (const route of ['/profile', '/about', '/career', '/activities', '/projects/idea-boost', '/projects/pop-reminder', '/social']) {
         const response = await p.goto(origin + route);
         if (response.status() !== 200 || await p.locator('h1').count() !== 1) throw Error('Article unavailable: ' + route);
       }

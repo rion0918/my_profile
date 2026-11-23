@@ -2,8 +2,10 @@
 import { Image } from "astro:assets";
 import preview from "../../public/images/world-preview.jpg";
 ---
-<a class="worldPreview" href="/world" data-world-entry aria-label="3Dの街を歩く">
-  <Image src={preview} widths={[180, 360, 540]} sizes="(max-width: 600px) 100px, 180px" width={660} height={408} format="webp" quality={85} alt="作品の館や温泉が並ぶ3Dの街" loading="eager" />
-  <span class="worldPreviewCopy"><strong>3Dの街を歩く</strong><span>作品の展示や、温泉のある街を探索できます。</span></span>
-  <span class="worldPreviewArrow" aria-hidden="true">→</span>
+<a class="worldPreview" href="/world" data-world-entry>
+  <Image src={preview} widths={[480, 800, 1200, 1680]} sizes="(max-width: 1016px) 100vw, 980px" format="webp" quality={84} alt="" loading="eager" />
+  <span class="worldPreviewCaption">
+    <strong>3Dの街を歩く</strong>
+    <span class="worldPreviewArrow" aria-hidden="true">→</span>
+  </span>
 </a>

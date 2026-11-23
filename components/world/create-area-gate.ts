@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Font } from 'three/addons/loaders/FontLoader.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { areaGate } from '../../lib/world-zones.ts';
 import { createHallWordGeometry } from './create-hall-word.ts';
@@ -31,7 +31,7 @@ export function createAreaGate(scene: THREE.Scene, applyVisibility: (material: T
     return object;
   };
   const box = (x: number, y: number, z: number, width: number, height: number, depth: number, material: THREE.Material, radius = .02) =>
-    mesh(new RoundedBoxGeometry(width, height, depth, 2, Math.min(radius, height / 4, depth / 4)), material, x, y, z);
+    mesh(createRoundedBox(width, height, depth, 2, Math.min(radius, height / 4, depth / 4)), material, x, y, z);
   const edges: THREE.BufferGeometry[] = [];
   const glass = (x: number, y: number, z: number, width: number, height: number, depth: number, material: THREE.Material) => {
     const part = box(x, y, z, width, height, depth, material, .065); part.updateMatrix();

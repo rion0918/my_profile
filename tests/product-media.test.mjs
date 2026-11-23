@@ -15,3 +15,19 @@ test('both projects provide real, locally served screen samples with accessible 
     }
   }
 });
+
+test('the two featured products lead directly to their published experiences', () => {
+  assert.deepEqual(products.map(product => product.slug), ['pop-reminder', 'idea-boost']);
+  assert.deepEqual(products.map(product => product.primaryLink.href), [
+    'https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja',
+    'https://ideaboost.dev/',
+  ]);
+  assert.equal(products[1].team, 'チーム開発');
+});
+
+test('product introductions state the core use and link to both public repositories', () => {
+  assert.deepEqual(products.map(product => [product.summary, product.sourceLink?.href]), [
+    ['数秒話すだけで、思いついた用事を残せるリマインダー。', 'https://github.com/rion0918/fuwatto'],
+    ['使う人が本当に欲しいものを、誰でも迷わず考えられるアイデアボード。', 'https://github.com/engineer-first/idea-boost'],
+  ]);
+});

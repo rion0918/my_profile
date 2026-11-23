@@ -12,7 +12,7 @@ async(page)=>{
   const width=await p.evaluate(()=>document.documentElement.scrollWidth);if(width>390)throw Error('mobile overflow');
   await p.clock.resume();await p.close();
  }finally{await c.close();}
- for(const[id,x,z]of[['yoin',-12.85,-7.5],['pop-reminder',13,-16]]){
+ for(const[id,x,z]of[['idea-boost',-12.85,-7.5],['pop-reminder',13,-16]]){
   const context=await browser.newContext({viewport:{width:1440,height:900},timezoneId:'Asia/Tokyo'});
   try{
    const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});

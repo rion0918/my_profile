@@ -305,7 +305,7 @@ function roadsideSite(preferred: { x: number; z: number }, width: number, depth:
   placedProps.push(site);
   return site;
 }
-export const projectExhibits = buildings.filter(b => b.id === 'yoin' || b.id === 'pop-reminder').map(b => {
+export const projectExhibits = buildings.filter(b => b.id === 'idea-boost' || b.id === 'pop-reminder').map(b => {
   const preferred = { x: b.x + (b.x < 0 ? -4.5 : 5.5), z: b.z };
   const exhibitScale = 1.7;
   const prop = { ...preferred, width: 2.8 * exhibitScale, depth: 2.1 * exhibitScale, rotation: Math.atan2(12, 20) };

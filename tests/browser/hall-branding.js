@@ -1,6 +1,6 @@
 async(page)=>{
  const results=[],errors=[],browser=page.context().browser();
- for(const [id,x,word,face,side] of [['experience',8,'Experience',0x356f5d,0x356f5d],['yoin',-8,'Yoin',0xfff1db,0x795166],['pop-reminder',8,'ふわっと。',0x2f7078,0x67adb5],['history',-8,'Background',0xf2ebdb,0xc5a46b],['github',-22,'GitHub',0xf2f5f3,0x0fbf3e],['zenn',22,'Zenn',0x3ea8ff,0x3ea8ff]]){
+ for(const [id,x,word,face,side] of [['experience',8,'Activities',0x356f5d,0x356f5d],['idea-boost',-8,'Idea Boost',0xffffff,0x1855a2],['pop-reminder',8,'ふわっと。',0x2f7078,0x67adb5],['history',-8,'Career',0xf2ebdb,0xc5a46b],['github',-22,'GitHub',0xf2f5f3,0x0fbf3e],['zenn',22,'Zenn',0x3ea8ff,0x3ea8ff]]){
   for(const [width,height] of [[1440,900],[390,844]]){
    const c=await browser.newContext({viewport:{width,height},isMobile:width<760,hasTouch:width<760,reducedMotion:'reduce',timezoneId:'Asia/Tokyo'});
    try{
@@ -8,7 +8,7 @@ async(page)=>{
      sessionStorage.setItem('portfolio-welcome-v4','seen');sessionStorage.setItem('portfolio-position-v5',JSON.stringify({version:5,x,z}));
      window.__THREE_DEVTOOLS__=new EventTarget();window.__brandQA={};
      window.__THREE_DEVTOOLS__.addEventListener('observe',e=>{if(e.detail.isScene)window.__brandQA.scene=e.detail;if(e.detail.isWebGLRenderer){window.__brandQA.renderer=e.detail;const render=e.detail.render.bind(e.detail);e.detail.render=(scene,camera)=>{window.__brandQA.camera=camera;return render(scene,camera);};}});
-    },{x,z:id==='history'||id==='experience'?30:id==='yoin'||id==='pop-reminder'?12.5:20});
+    },{x,z:id==='history'||id==='experience'?30:id==='idea-boost'||id==='pop-reminder'?12.5:20});
     const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-10-24T12:00:00+09:00'));
     await p.goto('http://localhost:3001/world');await p.waitForFunction(()=>document.querySelector('.worldSurface')?.getAttribute('aria-busy')==='false');
     if(!await p.evaluate(()=>{
@@ -37,18 +37,18 @@ async(page)=>{
     await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
     if(!await p.evaluate(()=>window.__brandQA.sign.geometry===window.__brandQA.geometry&&!window.__brandQA.renderer.shadowMap.enabled&&window.__brandQA.sign.material.every(m=>m.emissiveIntensity>=.8)&&window.__brandQA.sign.getObjectByName('hall-word-glow').visible))throw Error('low mode changes lettering');
     await p.screenshot({path:`output/playwright/${id}-word-sign-low-${width}.png`});
-    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:({history:'Background',experience:'経験館',yoin:'Yoin館','pop-reminder':'ふわっと。館',github:'GitHub館',zenn:'Zenn館'}[id])+'へ歩く',exact:true}).click();
+    await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:({history:'Career',experience:'Activities','idea-boost':'Idea Boost館','pop-reminder':'ふわっと。館',github:'GitHub館',zenn:'Zenn館'}[id])+'へ歩く',exact:true}).click();
     await p.getByRole('dialog').waitFor({state:'visible',timeout:15000});
     const link=p.locator('.hallLinkDoor');
     if(id==='history'){
-     if(await p.locator('#detail-title').innerText()!=='Background'||await link.getAttribute('href')!=='/career#history')throw Error('Career name or existing URL changed');
+     if(await p.locator('#detail-title').innerText()!=='Career'||await link.getAttribute('href')!=='/career')throw Error('Career name or existing URL changed');
      if(!await p.locator('.hallFactNote').innerText().then(t=>t.includes('27卒')&&t.includes('内定')))throw Error('Career facts lost');
     }else if(id==='experience'){
-     if(await link.getAttribute('href')!=='/career#experience'||await p.locator('.hallCareerCard').count()!==2)throw Error('Experience contents changed');
-    }else if(id==='yoin'){
-     if(await link.getAttribute('href')!=='/projects/yoin'||await p.locator('.productShowcase img').count()!==2)throw Error('Yoin contents changed');
+     if(await link.getAttribute('href')!=='/activities'||await p.locator('.hallCareerCard').count()!==2)throw Error('Activities contents changed');
+    }else if(id==='idea-boost'){
+     if(await p.locator('.hallHeaderExternal').getAttribute('href')!=='https://ideaboost.dev/'||await p.locator('.hallGalleryThumbnails img').count()!==2)throw Error('Idea Boost contents changed');
     }else if(id==='pop-reminder'){
-     if(await link.getAttribute('href')!=='https://fuwatto.riomaru.jp/'||await link.getAttribute('target')!=='_blank'||await p.locator('.productShowcase img').count()!==2)throw Error('Fuwatto contents changed');
+     if(await p.locator('.hallHeaderExternal').getAttribute('href')!=='https://fuwatto.riomaru.jp/'||await p.locator('.hallHeaderExternal').getAttribute('target')!=='_blank'||await p.locator('.hallGalleryThumbnails img').count()!==2)throw Error('Fuwatto contents changed');
     }else if(await link.getAttribute('target')!=='_blank'||!await link.getAttribute('href').then(h=>h===(id==='github'?'https://github.com/rion0918':'https://zenn.dev/riozenn')))throw Error('hall lost its profile link');
     await p.keyboard.press('Escape');await p.getByRole('dialog').waitFor({state:'hidden'});
     results.push({id,width,height,sign,entry:true,sameLowGeometry:true});

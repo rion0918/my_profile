@@ -8,7 +8,7 @@ async(page)=>{
   await first.focus();await p.keyboard.press('Shift+Tab');if(!await next.evaluate(el=>el===document.activeElement))throw Error('reverse tab escaped modal');
   await p.keyboard.press('Tab');if(!await first.evaluate(el=>el===document.activeElement))throw Error('forward tab escaped modal');
   await next.focus();await p.keyboard.press('Enter');await p.getByRole('dialog').waitFor({state:'visible'});
-  if(await p.locator('#detail-title').innerText()!=='実務経験・活動')throw Error('keyboard next failed');
+  if(await p.locator('#detail-title').innerText()!=='Activities')throw Error('keyboard next failed');
   await p.keyboard.press('Escape');await p.getByRole('dialog').waitFor({state:'hidden'});
   await p.locator('.worldSurface').focus();await p.keyboard.down('w');await p.waitForTimeout(250);await p.keyboard.up('w');await p.keyboard.press('Escape');
   const moved=await p.evaluate(()=>JSON.parse(sessionStorage.getItem('portfolio-position-v3')));
@@ -24,8 +24,8 @@ async(page)=>{
   await disabled.addInitScript(()=>{HTMLCanvasElement.prototype.getContext=()=>null;});
   const p=await disabled.newPage();await p.goto(origin+'/world');await p.locator('.worldFallback').waitFor({state:'visible'});
   await p.locator('.welcomeActions button').first().click();await p.getByRole('dialog').waitFor({state:'visible'});
-  await p.getByRole('button',{name:'次：実務経験・活動 →',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});
-  if(await p.locator('#detail-title').innerText()!=='実務経験・活動')throw Error('fallback tour stuck');
+  await p.getByRole('button',{name:'次：Activities →',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible'});
+  if(await p.locator('#detail-title').innerText()!=='Activities')throw Error('fallback tour stuck');
   results.push({webglFallbackReading:true});
  }finally{await disabled.close();}
  return results;

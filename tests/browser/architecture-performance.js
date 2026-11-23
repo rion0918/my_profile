@@ -20,7 +20,7 @@ async page => {
    const p=await c.newPage();await p.bringToFront();p.on('pageerror',e=>errors.push(e.message));const client=await c.newCDPSession(p);await client.send('Emulation.setCPUThrottlingRate',{rate:cpu});
    const response=await p.goto('http://localhost:3001'),htmlBytes=(await response.body()).byteLength;
    await p.getByRole('link',{name:'3Dワールド',exact:true}).hover();
-   await p.waitForFunction(()=>performance.getEntriesByType('resource').some(e=>e.name.endsWith('/models/rion-walker.glb')&&e.responseEnd>0));
+   await p.waitForFunction(()=>performance.getEntriesByType('resource').some(e=>e.name.endsWith('/models/rion-walker.glb.gz')&&e.responseEnd>0));
    if(await p.locator('.worldSurface').count())throw Error('Normal display eagerly mounts 3D');
    const start=Date.now();await p.getByRole('link',{name:'3Dワールド',exact:true}).click();await p.locator('.worldSurface[aria-busy="false"]').waitFor({timeout:60000});const readyMs=Date.now()-start;
    await p.locator('.worldSurface').focus();await p.keyboard.press('Escape');

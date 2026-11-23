@@ -20,7 +20,7 @@ test('the guide map uses the actual street network, buildings and harbor coordin
 
 test('map identifies four required stops, three optional halls and both districts',()=>{
  const map=createWorldMapData();
- assert.deepEqual(Object.fromEntries(map.buildings.map(b=>[b.id,b.marker])),{experience:'02',yoin:'03','pop-reminder':'04',history:'01',github:'G',zenn:'Z',x:'X'});
+ assert.deepEqual(Object.fromEntries(map.buildings.map(b=>[b.id,b.marker])),{experience:'02','idea-boost':'03','pop-reminder':'04',history:'01',github:'G',zenn:'Z',x:'X'});
  assert.deepEqual(map.entrance,mapPoint({x:0,z:31}));
  assert.deepEqual(map.plaza,mapPoint({x:0,z:0}));
  assert.equal(map.boundary,map.plaza.y);

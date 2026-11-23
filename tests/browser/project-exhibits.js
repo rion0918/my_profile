@@ -1,6 +1,6 @@
 async(page)=>{
  const browser=page.context().browser(),results=[],errors=[];
- for(const [id,name,x] of [['yoin','Yoin館',-8],['pop-reminder','ふわっと。館',8]]){
+ for(const [id,name,x] of [['idea-boost','Idea Boost館',-8],['pop-reminder','ふわっと。館',8]]){
   for(const [width,height] of [[1440,900],[390,844]]){
    const c=await browser.newContext({viewport:{width,height},isMobile:width<760,hasTouch:width<760,reducedMotion:'reduce',timezoneId:'Asia/Tokyo'});
    try{
@@ -36,7 +36,7 @@ async(page)=>{
     await p.getByLabel('画質・BGM設定').click();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').click();
     if(!await p.evaluate(()=>window.__screenQA.exhibit.scale.x===1.7&&window.__screenQA.exhibit.getObjectByName('product-screen-back').geometry===window.__screenQA.geometry&&!window.__screenQA.renderer.shadowMap.enabled))throw Error('low mode changes display');
     await p.locator('.worldGuide > summary').click();await p.getByRole('button',{name:name+'へ歩く',exact:true}).click();await p.getByRole('dialog').waitFor({state:'visible',timeout:20000});
-    if(await p.locator('#detail-title').innerText()!==name||await p.locator('.productShowcase img').count()!==2)throw Error('product entry or full details changed');
+    if(await p.locator('#detail-title').innerText()!==name||await p.locator('.hallGalleryThumbnails img').count()!==2)throw Error('product entry or full details changed');
     results.push({id,width,height,data,realScreenAtDistance:true,entry:true,sameLowGeometry:true});
    }finally{await c.close();}
   }

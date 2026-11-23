@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { createRoundedBox } from './rounded-box.ts';
 import type { Hall } from '../../lib/world-halls.ts';
 
 type Label = (parent: THREE.Object3D, value: string, x: number, y: number, z: number, width: number, color: string) => void;
@@ -39,7 +39,7 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
   };
   const box = (parent: THREE.Object3D, x: number, y: number, z: number, width: number, height: number, depth: number, material: THREE.Material, radius = .015) => {
     const key = `box-${width},${height},${depth},${radius}`;
-    if (!geometries.has(key)) geometries.set(key, new RoundedBoxGeometry(width, height, depth, 1, Math.min(radius, width / 4, height / 4, depth / 4)));
+    if (!geometries.has(key)) geometries.set(key, createRoundedBox(width, height, depth, 1, Math.min(radius, width / 4, height / 4, depth / 4)));
     return mesh(parent, geometries.get(key)!, material, x, y, z);
   };
   const cylinder = (parent: THREE.Object3D, x: number, y: number, z: number, radius: number, height: number, material: THREE.Material, segments = 24) => {
@@ -109,7 +109,7 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
     for (let i = 0; i < 3; i++) box(interior, x, .986, z + .23 + i * .043, width * .67, .006, .012, metal, .001);
   };
   const pendant = (x: number, z: number, length: number) => {
-    const ceiling = building.model === 'music' ? 1.88 + Math.sqrt(1 - (x / (w / 2)) ** 2) * .96
+    const ceiling = building.model === 'studio' ? 1.88 + Math.sqrt(1 - (x / (w / 2)) ** 2) * .96
       : building.model === 'atelier' ? 3.47 - (x + .38) / (w / 2 + .52) * .84 : 2.5;
     cylinder(interior, x, (ceiling + 1.92) / 2, z, .012, ceiling - 1.92, metal, 8);
     box(interior, x, 1.9, z, length, .045, .12, metal); box(interior, x, 1.873, z, length - .04, .012, .085, light, .003);
@@ -143,17 +143,17 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
     const sky = mesh(glazing, new THREE.CircleGeometry(1, 48), glass, 0, 2.725, 0); sky.rotation.x = -Math.PI / 2; sky.scale.set(.78, .61, 1); sky.renderOrder = 2;
     for (const side of [-1, 1]) box(structure, side * .59, 1.25, d / 2, .045, 1.9, .07, metal);
     box(structure, 0, 2.34, d / 2 -.05, 2.95, .36, .16, brand, .025);
-    ['上宮高校', '神戸電子', 'DMM・27卒内定'].forEach((value, i) => {
-      const x = (i - 1) * .98;
-      box(interior, x, .55, -.55, .69, .48, .46, plaster, .025);
-      box(interior, x, 1.17 + i * .06, -.67, .62, .81 + i * .12, .08, ivory);
-      box(interior, x - .26, 1.17 + i * .06, -.619, .026, .7 + i * .12, .015, metal, .003);
-      box(interior, x, 1.65 + i * .12, -.61, .3, .018, .02, light, .002);
-      label(interior, value, x, 1.29, -.619, .54, '#243b55');
+    ['上宮高校', '神戸電子', 'Sky株式会社', 'DMM・27卒内定'].forEach((value, i) => {
+      const x = (i - 1.5) * .72;
+      box(interior, x, .55, -.55, .56, .48, .46, plaster, .025);
+      box(interior, x, 1.15 + i * .045, -.67, .52, .78 + i * .09, .08, ivory);
+      box(interior, x - .21, 1.15 + i * .045, -.619, .024, .68 + i * .09, .015, metal, .003);
+      box(interior, x, 1.60 + i * .09, -.61, .26, .018, .02, light, .002);
+      label(interior, value, x, 1.27, -.619, .46, '#243b55');
     });
     cylinder(interior, -.95, .53, .45, .27, .43, wood); cylinder(interior, -.95, .76, .45, .29, .05, ivory);
     plant(1.22, -.07);
-  } else if (building.model === 'music') {
+  } else if (building.model === 'studio') {
     box(structure, 0, .14, 0, w + .26, .28, d + .28, concrete, .045);
     box(structure, 0, .3, 0, w - .1, .035, d, wood);
     box(structure, 0, 1.2, -d / 2 + .05, w - .1, 1.8, .1, brand);
@@ -188,13 +188,10 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
     }
     for (let i = 0; i < 13; i++) box(interior, -1.35 + i * .225, 1.2, -d / 2 + .15, .055, 1.68, .1, wood, .006);
     desk(-.56, -.3, 1.1, .62); monitor(-.56, -.47, .6); chair(-.56, .23, 0);
-    const record = cylinder(interior, .82, 1.35, -.91, .35, .035, dark, 48); record.rotation.x = Math.PI / 2;
-    for (const r of [.2, .27, .32]) mesh(interior, new THREE.TorusGeometry(r, .006, 4, 48), metal, .82, 1.35, -.885);
-    const recordLabel = cylinder(interior, .82, 1.35, -.874, .09, .012, light, 32); recordLabel.rotation.x = Math.PI / 2;
-    box(interior, .8, .61, -.34, .49, .6, .4, dark);
-    for (const y of [.49, .72]) { const cone = cylinder(interior, .8, y, -.13, .12, .022, metal, 24); cone.rotation.x = Math.PI / 2; }
-    cylinder(interior, .9, .85, .35, .016, 1.04, metal, 8); cylinder(interior, .9, .34, .35, .15, .035, dark, 24);
-    const mic = mesh(interior, new THREE.SphereGeometry(.06, 12, 8), dark, .9, 1.39, .35); mic.scale.y = 1.6;
+    box(interior, .78, 1.29, -.91, 1.12, .76, .06, ivory);
+    for (let i = 0; i < 6; i++) {
+      box(interior, .49 + (i % 3) * .28, 1.45 - Math.floor(i / 3) * .29, -.86, .21, .19, .025, i < 3 ? light : mint);
+    }
     pendant(0, -.15, 1.1);
   } else if (building.model === 'bubble') {
     slab(round(w + .28, d + .28, .45), .25, .03, concrete);
@@ -308,7 +305,7 @@ export function createHallArchitecture(building: Hall & { scale: number }, label
       pendant(.1, -.08, 1.4);
     } else {
       box(interior, 0, 1.6, -d / 2 + .14, w -.48, 1.29, .09, brand, .025);
-      label(interior, 'Sky / We部', 0, 1.93, -d / 2 + .197, 2.18, '#f0eadb');
+      label(interior, 'Webu（We部）', 0, 1.93, -d / 2 + .197, 2.18, '#f0eadb');
       for (let i = 0; i < 6; i++) {
         const x = -.98 + i % 3 * .74, y = 1.51 - Math.floor(i / 3) * .28;
         box(interior, x, y, -d / 2 + .2, .47, .19, .018, i % 2 ? ivory : light, .009);

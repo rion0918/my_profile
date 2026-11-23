@@ -6,7 +6,7 @@ import { products } from '../lib/products.ts';
 import { createWorldMapData } from '../lib/world-map-data.ts';
 
 const directory = resolve('dist');
-const normalRoutes = ['index', 'profile', 'about', 'career', 'tech', 'social', ...products.map(product => `projects/${product.slug}`)];
+const normalRoutes = ['index', 'profile', 'about', 'career', 'activities', 'social', ...products.map(product => `projects/${product.slug}`)];
 const graph = new Map();
 async function staticImports(path) {
   if (graph.has(path)) return;

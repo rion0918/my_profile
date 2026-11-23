@@ -21,7 +21,7 @@ async (page) => {
       window.__securityViolations = [];
       document.addEventListener('securitypolicyviolation', event => window.__securityViolations.push(event.effectiveDirective));
     });
-    for (const path of ['/', '/world', '/?mode=world', '/profile', '/about', '/tech', '/career', '/social', '/projects/yoin', '/projects/pop-reminder', '/404.html', '/_not-found']) {
+    for (const path of ['/', '/world', '/?mode=world', '/profile', '/about', '/activities', '/career', '/social', '/projects/idea-boost', '/projects/pop-reminder', '/404.html', '/_not-found']) {
       const response = await p.goto(`${origin}${path}`);
       if (path === '/world' || path.includes('mode=world')) await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
       await p.waitForTimeout(100);
@@ -50,9 +50,9 @@ async (page) => {
     await p.getByRole('button', { name: '自転車を降りる', exact: true }).waitFor({ timeout: 60000 });
     if ((await p.evaluate(() => window.__securityViolations)).length) throw Error('CSP blocked a legitimate world feature');
     results.push({ world: true, qualitySwitch: true, bgm: true, wasmBike: true });
-    await p.goto(`${origin}/?detail=yoin`);
+    await p.goto(`${origin}/?detail=idea-boost`);
     await p.getByRole('dialog').waitFor({ state: 'visible' });
-    if (!await p.getByRole('dialog').getByRole('heading', { name: 'Yoin館', exact: true }).isVisible()) throw Error('Valid detail URL stopped working');
+    if (!await p.getByRole('dialog').getByRole('heading', { name: 'Idea Boost館', exact: true }).isVisible()) throw Error('Valid detail URL stopped working');
     const payload = '<img src=x onerror="window.__queryInjection=true">';
     await p.goto(`${origin}/?detail=${encodeURIComponent(payload)}`);
     await p.waitForFunction(() => document.querySelector('.worldSurface')?.getAttribute('aria-busy') === 'false');
