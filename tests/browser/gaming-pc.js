@@ -16,6 +16,7 @@ async page=>{
    await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
    await p.goto('http://localhost:3001/world');await p.locator('.worldSurface[aria-busy="false"]').waitFor();
    await p.locator('.worldGuide>summary').click();
+   await p.locator('.guideSpecs > summary').click();
    const specs=await p.locator('.guidePCSpecs').innerText();
    for(const value of ['Ryzen 7 5700X','RTX 3070 Ti','32 GB','1 TB'])if(!specs.includes(value))throw Error('missing PC specification '+value);
    if(width===390){await p.locator('.guidePCSpecs').scrollIntoViewIfNeeded();await p.screenshot({path:'output/playwright/pc-spec-guide-mobile.png'});}

@@ -1,4 +1,14 @@
-export const viewOffset = { x: 12, y: 12.4, z: 20 };
+export const viewOffset = { x: 0, y: 12.4, z: Math.hypot(12, 20) };
+export const overviewOffset = { x: 68, y: 88, z: 116 };
+
+export function getWalkDirections(offset: { x: number; z: number }): Record<string, [number, number]> {
+  const length = Math.hypot(offset.x, offset.z);
+  const x = offset.x / length, z = offset.z / length;
+  return {
+    w: [-x, -z], arrowup: [-x, -z], s: [x, z], arrowdown: [x, z],
+    a: [-z, x], arrowleft: [-z, x], d: [z, -x], arrowright: [z, -x],
+  };
+}
 export const clampZoom = (zoom: number) => Math.max(.65, Math.min(1.6, zoom));
 
 export function getTouchDirection(dx: number, dy: number, offset = viewOffset) {

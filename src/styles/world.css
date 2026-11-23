@@ -233,7 +233,7 @@
   width: min(380px, calc(100vw - 32px));
   pointer-events: none;
 }
-.worldGuide summary {
+.worldGuide > summary {
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -252,91 +252,12 @@
   cursor: pointer;
   list-style: none;
 }
-.worldGuide summary::-webkit-details-marker {
+.worldGuide > summary::-webkit-details-marker {
   display: none;
 }
-.worldGuide[open] summary > span {
+.worldGuide[open] > summary > span {
   transform: rotate(45deg);
 }
-.worldDirectory {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  justify-content: stretch;
-  align-items: stretch;
-  gap: 0;
-  margin-top: 0;
-  padding: 12px 16px 4px;
-  background: transparent;
-  max-height: none;
-  overscroll-behavior: contain;
-}
-.worldDirectory p {
-  color: #65715f;
-  margin: 2px 0 10px;
-  font-size: 11px;
-}
-.worldDirectory a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 44px;
-  padding: 9px 0;
-  border: 0;
-  border-radius: 2px;
-  background: transparent;
-  color: #354e48;
-  font-size: 13px;
-  font-weight: 500;
-}
-.worldDirectory a:hover {
-  color: #207d75;
-  transform: none;
-}
-.worldDirectory a > span {
-  color: inherit;
-}
-.worldGuidePanel {
-  pointer-events: auto;
-  margin-top: 8px;
-  border: 1px solid #fffaf0;
-  border-radius: 18px;
-  background: #fff9ef;
-  box-shadow: 0 16px 55px #263d3d30;
-  overflow: auto;
-  overscroll-behavior: contain;
-  max-height: calc(100dvh - 154px);
-  scrollbar-width: thin;
-  scrollbar-color: #c8cbb8 transparent;
-  color: #40564e;
-}
-.guideMapHeader { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 16px 18px 12px; }
-.guideMapHeader > span:first-child { font-size: 14px; font-weight: 600; }
-.guideMapHeader > span:last-child { color: #65715f; font-size: 10px; }
-.guideMap { display: block; width: calc(100% - 24px); margin: 0 12px; height: 210px; background: #b8d9d7; border-radius: 12px; }
-.guideDestination { display: flex; align-items: center; gap: 8px; border-top: 1px solid #e7e4d5; }
-.guideDestination > a { flex: 1; min-width: 0; }
-.guideDestination > a > span:nth-child(2) { flex: 1; }
-.guideDestination small { display: block; font-size: 10px; color: #65715f; line-height: 1.5; font-weight: 400; margin-top: 3px; }
-.guideDestination .guideDestinationNumber { display: inline-grid; place-items: center; width: 24px; height: 24px; flex-shrink: 0; border: 1px solid #d8d6c6; border-radius: 50%; font-size: 11px; color: #5c715e; }
-.guideDestination > button { min-height: 44px; padding: 8px 10px; border: 0; border-radius: 8px; color: #2d6e63; background: #e7ece0; font-size: 11px; cursor: pointer; }
-.guideDestination > button:disabled, .guideHarbor:disabled, .guideGamingPC:disabled, .guidePasta:disabled { opacity: .4; cursor: wait; }
-.guideHarbor, .guideGamingPC, .guidePasta { display: flex; justify-content: space-between; gap: 8px; margin: 8px 16px 16px; width: calc(100% - 32px); border: 0; border-radius: 10px; background: #deeeea; color: #435f55; padding: 14px 12px; min-height: 48px; cursor: pointer; font-size: 10px; text-align: left; }
-.guideHarbor > span, .guideGamingPC > span, .guidePasta > span { font-size: 12px; color: #2e625d; }
-.guidePasta { background: #f0e5d1; color: #765c3d; flex-wrap: wrap; }
-.guidePasta > span { color: #795b35; }
-.guidePCSpecs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; margin: 16px 16px 0; padding: 16px 12px; background: #edf4f2; border-radius: 10px 10px 0 0; color: #354e50; }
-.guidePCSpecs dt { margin-bottom: 4px; font-size: 10px; color: #5c7474; }
-.guidePCSpecs dd { margin: 0; font-size: 13px; font-weight: 600; }
-.guideGamingPC { margin-top: 0; border-radius: 0 0 10px 10px; flex-wrap: wrap; }
-.guideOnsen { margin: 8px 16px 12px; padding: 14px 12px; border: 1px solid #ded6bd; border-radius: 10px; background: #efe9d8; color: #59634b; }
-.guideOnsen p { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
-.guideOnsen p > span { margin-right: 4px; color: #8a6650; }
-.guideOnsen small { display: block; margin-top: 4px; font-size: 10px; font-weight: 400; }
-.guideOnsen > div { display: flex; gap: 8px; }
-.guideOnsen button { flex: 1; min-height: 44px; padding: 8px 6px; border: 1px solid #c5c9af; border-radius: 8px; background: #fff9ec; color: #46645a; font: inherit; font-size: 11px; cursor: pointer; }
-.guideOnsen button:disabled { opacity: .4; cursor: wait; }
-.guideOnsen button:focus-visible { outline: 3px solid #327e7d; outline-offset: 2px; }
 .buildingLabel.onsenLabel { background: #f4eddb; color: #66563e; border-color: #d5c6a4; }
 .worldWelcome {
   position: absolute; z-index: 2; left: 24px; bottom: 112px;
@@ -462,7 +383,6 @@
     right: 16px;
   }
   .worldGuidePanel { max-height: calc(100dvh - 146px); }
-  .guideMap { height: 180px; }
   .worldWelcome { left: 16px; right: 16px; top: 142px; bottom: auto; width: auto; padding: 14px 18px; border-radius: 16px; }
   .worldWelcome .welcomeKicker { margin-bottom: 6px; font-size: 9px; }
   .worldWelcome h2 { font-size: 20px; margin-bottom: 8px; line-height: 1.25; }
@@ -519,7 +439,6 @@
   .welcomeFullTitle, .worldWelcome > p:last-of-type { display: none; }
   .welcomeMobileTitle { display: inline; }
   .worldGuidePanel { max-height: calc(100dvh - 140px); }
-  .guideMap { height: 140px; }
   .worldControls {
     flex-direction: row;
     bottom: 12px;
@@ -645,9 +564,6 @@
 .welcomeActions button:disabled { opacity: .55; cursor: wait; }
 .worldPage:not([data-tour-phase="exploring"]) .worldControls,
 .worldPage:not([data-tour-phase="exploring"]) .buildingLabels { visibility: hidden !important; }
-.guideTour { display: block; width: calc(100% - 32px); margin: 16px; padding: 12px 16px; min-height: 48px; border: 0; border-radius: 10px; background: #347d78; color: #fff8e8; text-align: left; cursor: pointer; font: inherit; font-size: 14px; }
-.guideTour span { display: block; margin-top: 4px; font-size: 11px; }
-.guideTour:disabled { opacity: .55; cursor: wait; }
 .tourTravel { position: absolute; z-index: 3; bottom: 28px; left: 50%; transform: translateX(-50%); width: min(580px, calc(100% - 32px)); background: #fff8ed; border: 1px solid #d9d7cb; border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; color: #3c514a; box-shadow: 0 8px 40px #3b3c3f21; }
 .tourTravel p { width: 100%; margin: 0; font-size: 14px; }
 .tourTravel a, .tourTravel button { font: inherit; font-size: 12px; min-height: 44px; display: inline-flex; align-items: center; background: transparent; border: 0; color: #286b67; cursor: pointer; }
@@ -811,7 +727,7 @@
   top: calc(100% + 8px); right: 0; left: auto; margin: 0;
   width: min(380px, 100%); max-height: calc(100dvh - var(--world-hud-top) - 54px - max(16px, env(safe-area-inset-bottom)));
 }
-.worldToolbar .worldGuidePanel { position: absolute; }
+.worldToolbar .worldGuidePanel { position: absolute; width: min(660px, 100%); }
 .worldControls { left: max(24px, env(safe-area-inset-left)); right: max(24px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 12px; }
 .worldControlButtons { flex-wrap: nowrap; gap: 2px; padding: 4px; }
 .worldCameraControls { position: static; flex-direction: column; gap: 2px; }
@@ -839,10 +755,6 @@
 .worldTouchPad { position: absolute; top: 0; left: 0; width: 80px; height: 80px; margin: -40px; border: 2px solid #fff8ed; border-radius: 50%; background: #244d4859; pointer-events: none; }
 .worldTouchPad[hidden] { display: none; }
 .worldTouchPad > span { position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; margin: -14px; border: 2px solid #365c53; border-radius: 50%; background: #fff8ed; }
-.guideTouchHint { display: none; }
-@media (pointer: coarse) {
-  .guideTouchHint { display: block; margin: 0 18px 12px; color: #40564e; font-size: 12px; line-height: 1.7; }
-}
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .worldTouchPad { background: #244d48; }
 }
@@ -1222,20 +1134,10 @@
 .worldToolbar .bgmToggle[aria-pressed="true"] span { background: var(--control-primary); color: #fffdf5; }
 .worldToolbar .qualityValue { color: #294f42; font-size: inherit; font-weight: 650; }
 .worldToolbar .bgmSettings > summary { min-width: 126px; }
-.worldToolbar .worldGuide summary > span { transition: transform 140ms ease; }
+.worldToolbar .worldGuide > summary > span { transition: transform 140ms ease; }
 .bgmPanel input { min-height: 44px; }
 .bgmPanel select { border-radius: 10px; }
 .bgmPanel :is(input, select):focus-visible { outline: 3px solid var(--control-focus); outline-offset: 3px; }
-.guideDestination > button, .guideOnsen button {
-  border: 1px solid var(--control-line);
-  background: var(--control-paper);
-  color: var(--control-ink);
-  padding: 10px 12px;
-  font-size: 12px;
-}
-.guideDestination > button { flex-shrink: 0; }
-.guideDestination > a { padding-inline: 6px; border-radius: 8px; }
-.guideOnsen > div { display: grid; grid-template-columns: 1fr; }
 .worldPage .guideTour, .worldPage .hallAction, .worldPage .hallLinkDoor,
 .worldPage .tourFooter .tourNext, .worldEntry .welcomeActions .welcomeTour {
   border-color: var(--control-primary);
@@ -1319,7 +1221,7 @@
   .worldEntry .welcomeActions .welcomeTour:hover { background: var(--control-primary); border-color: var(--control-primary); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .modeSwitch a, .worldPage :is(button, summary, a), .worldToolbar .worldGuide summary > span, .hallImageViewer button { transition: none; }
+  .modeSwitch a, .worldPage :is(button, summary, a), .worldToolbar .worldGuide > summary > span, .hallImageViewer button { transition: none; }
   .modeBar:not(.modeBarDark) .modeSwitch a:active,
   .worldPage :is(.worldToolbar, .worldControlButtons, .worldCameraControls, .hallDialogHeader, .hallChapterNav, .hallGalleryThumbnails, .tourFooter, .welcomeActions, .tourTravel) :is(button:not(:disabled), summary, a):active,
   .worldPage :is(.hallAction, .hallActionSecondary, .hallLinkDoor):active, .hallImageViewer button:active { transform: none; }
@@ -1332,4 +1234,99 @@
   .worldToolbar .worldGuide { margin-left: auto; }
   .worldToolbar .worldGuidePanel, .worldToolbar .bgmPanel, .worldToolbar .bgmError { max-height: calc(100dvh - var(--world-hud-top) - 106px - max(16px, env(safe-area-inset-bottom))); }
   .worldIdentity { top: calc(var(--world-hud-top) + 100px); }
+}
+
+/* The fold-out directory uses the same numbered keys as the island map. */
+.worldGuidePanel {
+  --guide-ink: #234c42;
+  --guide-rule: #d7d9c9;
+  pointer-events: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #fbf8ef;
+  color: var(--guide-ink);
+  border: 1px solid #c1c9b8;
+  border-radius: 16px;
+  box-shadow: 0 16px 52px #233e383b;
+  scrollbar-width: thin;
+  scrollbar-color: #a6b4a4 #fbf8ef;
+}
+.guideTitle {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 19px 24px 15px; gap: 12px;
+  background: #244d43; color: #fff9e9;
+}
+.guideTitle h2 { margin: 0; font: 600 22px/1.4 "Hiragino Mincho ProN", "Yu Mincho", serif; letter-spacing: .045em; }
+.guideTitle > span { color: #e3e9d9; font-size: 12px; white-space: nowrap; }
+.guideSpread { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; }
+.guideOrientation { position: sticky; top: 0; padding: 18px; display: grid; gap: 12px; }
+.guideTour, .guideAtlas > summary, .guideSpecs > summary { cursor: pointer; font: inherit; }
+.guideTour {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 44px; padding: 9px 14px; border: 0; border-radius: 6px;
+  font-size: 14px; font-weight: 650; text-align: left;
+}
+.guideTour span { font-size: 18px; }
+.guideAtlas { border-block: 1px solid var(--guide-rule); }
+.guideAtlas > summary {
+  display: flex; align-items: center; justify-content: space-between; min-height: 44px;
+  font-size: 13px; font-weight: 650; list-style: none;
+}
+.guideAtlas > summary::-webkit-details-marker { display: none; }
+.guideAtlas[open] > summary span { transform: rotate(180deg); }
+.guideMap { display: block; width: 100%; height: auto; aspect-ratio: 1; background: #c5ddd5; border-radius: 6px; }
+.guideAtlas:not(:has(.guideLegend)) .guideMap { margin-bottom: 10px; }
+.guideLegend { display: flex; gap: 6px; align-items: center; margin: 8px 0 10px; font-size: 12px; }
+.guideLegend i { width: 8px; height: 8px; background: #b24730; border-radius: 50%; }
+.guideTouchHint { display: none; }
+.guideListings { min-width: 0; padding: 18px 20px; border-left: 1px solid var(--guide-rule); }
+.worldDirectory { display: block; }
+.worldDirectory section + section, .guideDetours { margin-top: 22px; }
+.worldDirectory h3, .guideDetours h3 {
+  margin: 0; padding-bottom: 7px; border-bottom: 1px solid #8eaa98;
+  color: #49685a; font-size: 12px; font-weight: 650; letter-spacing: .08em;
+}
+.guideDestination { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--guide-rule); }
+.guideDestination > a {
+  flex: 1; min-width: 0; min-height: 48px; padding: 9px 2px;
+  display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--guide-ink);
+  background: transparent; border: 0; border-radius: 0; letter-spacing: normal; text-transform: none;
+}
+.guideDestinationNumber {
+  flex: none; width: 27px; height: 27px; display: inline-grid; place-items: center;
+  border: 1px solid #c4cfbd; border-radius: 50%; background: #eaf0e0; color: #315749;
+  font: 600 12px/1 ui-monospace, monospace;
+}
+.guideDestinationText { flex: 1; font-size: 15px; font-weight: 650; line-height: 1.4; }
+.guideDestinationText small { display: block; color: #52655a; margin-top: 2px; font-size: 12px; font-weight: 400; }
+.guideReadArrow { color: #537466; font-size: 20px; }
+.guideDestination > button, .guideOnsen button, .guideDetours > button {
+  font: inherit; font-size: 12px; min-height: 44px; cursor: pointer; color: var(--guide-ink);
+}
+.worldGuidePanel .guideDestination > button { background: transparent; border: 0; border-left: 1px solid var(--guide-rule); border-radius: 0; padding: 0 8px; min-width: 44px; }
+.guideDetours > button { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 8px 0; border: 0; border-bottom: 1px solid var(--guide-rule); background: transparent; font-size: 14px; }
+.guideDetours > button span { color: #537466; }
+.guideOnsen { padding: 10px 0; border-bottom: 1px solid var(--guide-rule); }
+.guideOnsen h4 { margin: 0 0 4px; font-size: 14px; }
+.guideOnsen p { margin: 0 0 8px; font-size: 12px; color: #52655a; }
+.guideOnsen > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.guideOnsen button { padding: 4px 8px; border: 1px solid var(--guide-rule); border-radius: 5px; background: #f1f2e8; }
+.guideSpecs { margin-top: 4px; }
+.guideSpecs > summary { padding: 12px 0; min-height: 44px; font-size: 13px; }
+.guidePCSpecs { margin: 0; }
+.guidePCSpecs > div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 12px; }
+.guidePCSpecs dd { margin: 0; }
+.worldGuidePanel button:disabled { opacity: .5; cursor: wait; }
+.worldGuidePanel :is(a, button, summary):focus-visible { outline: 2px solid #9c5538; outline-offset: -2px; }
+@media (max-width: 760px) {
+  .guideTitle { padding: 12px 16px; }
+  .guideTitle h2 { font-size: 19px; }
+  .guideSpread { display: block; }
+  .guideOrientation { position: static; padding: 12px 16px 0; gap: 6px; }
+  .guideMap { max-width: 260px; margin: 0 auto; }
+  .guideListings { border: 0; padding: 12px 16px 18px; }
+  .guideTouchHint { display: block; margin: 0; font-size: 11px; color: #52655a; }
+}
+@media (max-height: 560px) {
+  .guideOrientation { position: static; }
 }

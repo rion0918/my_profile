@@ -7,7 +7,7 @@ import type { WorldNavigation } from "../../lib/world-map";
 import { worldQualitySettings, type WorldQuality } from "../../lib/world-quality";
 import { cats, nearestCat, findCatApproach } from "../../lib/world-wildlife";
 import * as THREE from "three";
-import { viewOffset, getViewSpan, panView, clampZoom, getTouchDirection } from "../../lib/world-view";
+import { viewOffset, overviewOffset as overviewView, getWalkDirections, getViewSpan, panView, clampZoom, getTouchDirection } from "../../lib/world-view";
 import { createFocusTransition } from "../../lib/world-focus";
 import { positionStorageKey, positionVersion, centralPlaza } from "../../lib/world-zones";
 import { tourFork, hallMarker } from "../../lib/world-tour";
@@ -168,7 +168,7 @@ export default function WorldCanvas({ map, quality, paused, onSelect, onError, o
     );
     const camera = new THREE.OrthographicCamera(-12, 12, 12, -12, 0.1, 600);
     const cameraOffset = new THREE.Vector3(viewOffset.x, viewOffset.y, viewOffset.z);
-    const overviewOffset = new THREE.Vector3(68, 88, 116);
+    const overviewOffset = new THREE.Vector3(overviewView.x, overviewView.y, overviewView.z);
     const cameraTarget = new THREE.Vector3();
     let isOverview = false;
     let viewZoom = 1;
@@ -226,16 +226,8 @@ export default function WorldCanvas({ map, quality, paused, onSelect, onError, o
     };
     positionCamera();
     const keys = new Set<string>();
-    const directions: Record<string, [number, number]> = {
-      w: [-0.5145, -0.8575],
-      arrowup: [-0.5145, -0.8575],
-      s: [0.5145, 0.8575],
-      arrowdown: [0.5145, 0.8575],
-      a: [-0.8575, 0.5145],
-      arrowleft: [-0.8575, 0.5145],
-      d: [0.8575, -0.5145],
-      arrowright: [0.8575, -0.5145],
-    };
+    const directions = getWalkDirections(cameraOffset);
+    const overviewDirections = getWalkDirections(overviewOffset);
     let compiled = false;
     let path: Point[] = [];
     let frame = 0, drawFrame = 0,
@@ -453,7 +445,7 @@ export default function WorldCanvas({ map, quality, paused, onSelect, onError, o
       let dx = 0,
         dz = 0;
       keys.forEach((key) => {
-        const direction = directions[key];
+        const direction = (isOverview ? overviewDirections : directions)[key];
         if (direction) {
           dx += direction[0];
           dz += direction[1];

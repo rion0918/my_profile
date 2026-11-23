@@ -49,18 +49,18 @@ test('detail identifiers and article paths remain available without tech stack',
 
 test('Career and Activities are separated across the normal headings, halls, signs and tour stops',()=>{
   const historyHall=halls.find(h=>h.id==='history');
-  assert.equal(historyHall.name,'Career');
+  assert.equal(historyHall.name,'Career館');
   assert.equal(sections.find(s=>s.id==='history').title,historyHall.name);
-  assert.equal(sections.find(s=>s.id==='career').title,historyHall.name);
+  assert.equal(sections.find(s=>s.id==='career').title,'Career');
   assert.equal(tourStops[0].title,historyHall.name);
   assert.deepEqual(historyHall.theme,{word:'Career',primary:0x243b55,surface:0xf2ebdb,light:0xc5a46b,lettering:0xf2ebdb});
   assert.equal(historyHall.model,'gallery');
   assert.equal(historyHall.href,'/career');
 
   const experienceHall=halls.find(h=>h.id==='experience');
-  assert.equal(experienceHall.name,'Activities');
+  assert.equal(experienceHall.name,'Activities館');
   assert.equal(sections.find(s=>s.id==='experience').title,experienceHall.name);
-  assert.equal(sections.find(s=>s.id==='activities').title,experienceHall.name);
+  assert.equal(sections.find(s=>s.id==='activities').title,'Activities');
   assert.equal(tourStops[1].title,experienceHall.name);
   assert.deepEqual(experienceHall.theme,{word:'Activities',primary:0x356f5d,surface:0xf0eadb,light:0xb9cfb2,lettering:0x356f5d});
   assert.equal(experienceHall.model,'workshop');

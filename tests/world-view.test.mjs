@@ -38,3 +38,18 @@ test('overview zoom has the same direction as the close view',()=>{
   assert.ok(getViewSpan(390,844,true,1.2)<span);
   assert.ok(getViewSpan(390,844,true,.8)>span);
 });
+
+test('W and the up arrow follow the avenue in walking view and screen up in overview', async () => {
+  const { getWalkDirections, overviewOffset } = await import('../lib/world-view.ts');
+  const walk = getWalkDirections(viewOffset);
+  assert.equal(viewOffset.x, 0);
+  assert.ok(viewOffset.y > 0 && viewOffset.z > 0);
+  assert.equal(Math.abs(walk.w[0]), 0);
+  assert.equal(walk.w[1], -1);
+  assert.deepEqual(walk.w, walk.arrowup);
+  assert.equal(walk.arrowright[0], 1);
+  assert.equal(Math.abs(walk.arrowright[1]), 0);
+  const overview = getWalkDirections(overviewOffset);
+  assert.ok(overview.w[0] < 0 && overview.w[1] < 0);
+  assert.ok(Math.abs(overview.w[0]*overviewOffset.z - overview.w[1]*overviewOffset.x) < 1e-9);
+});

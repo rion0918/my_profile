@@ -24,8 +24,8 @@ async page=>{
    }else{
     await p.waitForFunction(()=>window.__loading.scene);
     await p.locator('.worldGuide > summary').tap();
-    await p.locator('.worldDirectory a').filter({hasText:'Activities'}).tap();await p.getByRole('dialog').waitFor({state:'visible'});
-    const title=await p.locator('#detail-title').innerText();if(title!=='Activities')throw Error('cannot read during loading');
+    await p.locator('.worldDirectory a').filter({hasText:'Activities館'}).tap();await p.getByRole('dialog').waitFor({state:'visible'});
+    const title=await p.locator('#detail-title').innerText();if(title!=='Activities館')throw Error('cannot read during loading');
     await p.keyboard.press('Escape');await p.getByRole('dialog').waitFor({state:'hidden'});
     await p.locator('.worldGuide > summary').tap();
     await p.getByLabel('画質・BGM設定').tap();await p.getByLabel('画質モード',{exact:true}).selectOption('low');await p.getByLabel('画質・BGM設定').tap();

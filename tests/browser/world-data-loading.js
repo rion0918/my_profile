@@ -14,15 +14,15 @@ async page => {
    await p.getByRole('button',{name:'詳細を閉じる',exact:true}).click();
    await p.locator('.worldGuide > summary').click();
    if(fail)await p.locator('.guideTour').click();
-   else await p.locator('.worldDirectory a').filter({hasText:'Career'}).click();
-   await p.getByRole('dialog',{name:'Career',exact:true}).waitFor();
+   else await p.locator('.worldDirectory a').filter({hasText:'Career館'}).click();
+   await p.getByRole('dialog',{name:'Career館',exact:true}).waitFor();
    if(fail){
     await p.getByRole('button',{name:'案内を離れて探索',exact:true}).click();
     await p.getByRole('alert').filter({hasText:'地図を読み込めませんでした'}).waitFor();
     await p.getByRole('link',{name:'通常表示',exact:true}).click();await p.locator('#career').waitFor();
    }else{
     release();await p.locator('.worldSurface[aria-busy="false"]').waitFor();
-    if(!await p.getByRole('dialog',{name:'Career',exact:true}).isVisible())throw Error('Map arrival reset the open exhibit');
+    if(!await p.getByRole('dialog',{name:'Career館',exact:true}).isVisible())throw Error('Map arrival reset the open exhibit');
    }
    if(errors.length)throw Error(errors.join('\n'));
    results.push({failedRequest:fail,detailWithoutMap:true,tourOnMapFailure:fail,canvasDeferred:true,errors});

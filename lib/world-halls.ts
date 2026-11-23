@@ -17,7 +17,7 @@ export type Hall = {
 const ideaBoost = products.find(p => p.slug === 'idea-boost')!;
 const fuwatto = products.find(p => p.slug === 'pop-reminder')!;
 export const halls: Hall[] = [
-  { id: 'experience', name: 'Activities', tagline: 'We部の立ち上げと学生ハッカソンの運営', model: 'workshop',
+  { id: 'experience', name: 'Activities館', tagline: 'We部の立ち上げと学生ハッカソンの運営', model: 'workshop',
     x: 8, z: 23, width: 4, depth: 3, height: 2.9, href: '/activities',
     theme: { word: 'Activities', primary: 0x356f5d, surface: 0xf0eadb, light: 0xb9cfb2, lettering: 0x356f5d } },
   { id: 'idea-boost', name: `${ideaBoost.name}館`, tagline: ideaBoost.summary, model: 'studio',
@@ -27,7 +27,7 @@ export const halls: Hall[] = [
     x: 8, z: 6, width: 3, depth: 2.6, height: 3.5, href: '/projects/pop-reminder',
     theme: { word: fuwatto.name, primary: 0x67adb5, surface: 0xffddd6, light: 0xfff0dc, lettering: 0x2f7078 },
     external: { label: 'ふわっと。公式サイトへ', href: fuwatto.officialSite!.href } },
-  { id: 'history', name: 'Career', tagline: '上宮高校・神戸電子・Sky・DMM内定', model: 'gallery',
+  { id: 'history', name: 'Career館', tagline: '上宮高校・神戸電子・Sky・DMM内定', model: 'gallery',
     x: -8, z: 23, width: 4, depth: 3.4, height: 2.9, href: '/career',
     theme: { word: 'Career', primary: 0x243b55, surface: 0xf2ebdb, light: 0xc5a46b, lettering: 0xf2ebdb } },
   { id: 'github', name: 'GitHub館', tagline: 'ソースコード・開発記録', model: 'atelier',

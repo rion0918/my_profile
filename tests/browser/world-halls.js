@@ -1,6 +1,6 @@
 async(page)=>{
  const origin='http://localhost:3001',results=[],errors=[];
- const stops=[['history','Career'],['experience','Activities'],['idea-boost','Idea Boost館'],['pop-reminder','ふわっと。館']];
+ const stops=[['history','Career館'],['experience','Activities館'],['idea-boost','Idea Boost館'],['pop-reminder','ふわっと。館']];
  const destinations={github:'https://github.com/rion0918',zenn:'https://zenn.dev/riozenn',x:'https://x.com/rioi7_0918','idea-boost':'https://ideaboost.dev/','pop-reminder':'https://play.google.com/store/apps/details?id=com.rion0918.popreminder&hl=ja'};
  const browser=page.context().browser();
  const setup=async c=>{
